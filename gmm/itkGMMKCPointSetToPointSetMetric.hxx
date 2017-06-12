@@ -21,9 +21,6 @@ GMMKCPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 throw (ExceptionObject)
 {
   Superclass::Initialize();
-
-  m_Gradient1.set_size(m_MovingPointSet->GetNumberOfPoints(), MovingPointSetDimension);
-  m_Gradient2.set_size(m_MovingPointSet->GetNumberOfPoints(), MovingPointSetDimension);
 }
 
 /**
