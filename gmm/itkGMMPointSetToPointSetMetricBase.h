@@ -69,12 +69,15 @@ public:
   /** Constants for the pointset dimensions */
   itkStaticConstMacro(MovingPointSetDimension, unsigned int, TMovingPointSet::PointDimension);
   itkStaticConstMacro(FixedPointSetDimension, unsigned int, TFixedPointSet::PointDimension);
+  itkStaticConstMacro(PointDimension, unsigned int, TMovingPointSet::PointDimension);
 
   typedef typename FixedPointSetType::PointsContainer::ConstIterator     FixedPointIterator;
   typedef typename FixedPointSetType::PointDataContainer::ConstIterator  FixedPointDataIterator;
 
   typedef typename MovingPointSetType::PointsContainer::ConstIterator    MovingPointIterator;
   typedef typename MovingPointSetType::PointDataContainer::ConstIterator MovingPointDataIterator;
+
+  typedef itk::CovariantVector<double, PointDimension> GradientType;
 
   /**  Type of the Transform Base class */
   typedef Transform< CoordinateRepresentationType,
@@ -92,6 +95,7 @@ public:
 
   /**  Type of the derivative. */
   typedef Superclass::DerivativeType DerivativeType;
+  typedef Array<double>              LocalDerivativeType;
 
   /**  Type of the parameters. */
   typedef Superclass::ParametersType ParametersType;
@@ -136,6 +140,7 @@ protected:
 
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
+  mutable typename MovingPointSetType::Pointer m_TransformedPointSet;
 
   vnl_matrix<double> m_FixedPointMatrix;
   vnl_matrix<double> m_MovingPointMatrix;
