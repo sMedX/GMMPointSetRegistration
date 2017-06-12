@@ -4,6 +4,7 @@
 #include "gmm/itkGMMRigidPointSetToPointSetMetric.h"
 #include "gmm/itkGMMPointSetToPointSetMetric.h"
 #include "gmm/itkGMMKCPointSetToPointSetMetric.h"
+#include "gmm/itkGMMKCKdTreePointSetToPointSetMetric.h"
 #include "gmm/itkGMMMLEPointSetToPointSetMetric.h"
 
 namespace itk
@@ -27,6 +28,7 @@ namespace itk
       Rigid,
       GMM,
       KC,
+      KCKdTree,
       MLE,
     };
 
@@ -60,6 +62,11 @@ namespace itk
       }
       case Metric::KC: {
         typedef itk::GMMKCPointSetToPointSetMetric<PointSetType, PointSetType> MetricType;
+        m_Metric = MetricType::New();
+        break;
+      }
+      case Metric::KCKdTree: {
+        typedef itk::GMMKCKdTreePointSetToPointSetMetric<PointSetType, PointSetType> MetricType;
         m_Metric = MetricType::New();
         break;
       }
