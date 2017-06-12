@@ -1,14 +1,12 @@
 #pragma once
-//#include <boost/filesystem.hpp>
 
 #include <itkObject.h>
-#include <itkKdTreeGenerator.h>
 #include <itkListSample.h>
 #include <itkSampleToHistogramFilter.h>
 #include <itkHistogram.h>
-#include <itkPointSet.h>
+#include <itkPointsLocator.h>
 
-namespace ssm
+namespace itk
 {
   template< typename TFixedPointSet, typename TMovingPointSet = TFixedPointSet >
   class PointSetToPointSetMetrics : public itk::Object
@@ -35,9 +33,8 @@ namespace ssm
 
     /**  Type of the parameters. */
     typedef itk::Statistics::ListSample<typename MovingPointSetType::PointType> ListSampleType;
-    typedef itk::Statistics::KdTreeGenerator<ListSampleType> TreeGeneratorType;
-    typedef typename TreeGeneratorType::KdTreeType TreeType;
-    typedef typename TreeType::InstanceIdentifierVectorType NeighborhoodType;
+    typedef typename itk::PointsLocator<typename FixedPointSetType::PointsContainer> FixedPointsLocatorType;
+    typedef typename itk::PointsLocator<typename MovingPointSetType::PointsContainer> MovingPointsLocatorType;
 
     /** Type of the additional information. */
     typedef std::pair<std::string, std::string> PairType;
@@ -55,10 +52,6 @@ namespace ssm
     /** Get/Set the Moving Image.  */
     itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
     itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
-
-    /* Compute symmetric metrics*/
-    itkSetMacro(Symmetric, bool);
-    itkGetMacro(Symmetric, bool);
 
     /*Get/Set values to compute quantile. */
     itkSetMacro(LevelOfQuantile, double);
@@ -84,64 +77,19 @@ namespace ssm
       os << std::endl;
     }
 
-    void PrintReportToFile(const std::string & fileName, const std::string & datasetURI) const
-    {
-      std::string dlm = ";";
-
-      std::string header = dlm;
-      std::string scores = datasetURI + dlm;
-
-      header += "Mean" + dlm;
-      scores += std::to_string(m_MeanValue) + dlm;
-
-      header += "RMSE" + dlm;
-      scores += std::to_string(m_RMSEValue) + dlm;
-
-      header += "Quantile " + std::to_string(m_LevelOfQuantile) + dlm;
-      scores += std::to_string(m_QuantileValue) + dlm;
-
-      header += "Maximal" + dlm;
-      scores += std::to_string(m_MaximalValue) + dlm;
-
-      header += dlm;
-      scores += dlm;
-
-      for (auto it = m_Info.begin(); it != m_Info.end(); ++it) {
-        header += (*it).first + dlm;
-        scores += (*it).second + dlm;
-      }
-
-      bool exist = boost::filesystem::exists(fileName);
-      std::ofstream file(fileName, std::ofstream::out | std::ofstream::app);
-
-      if (!exist) {
-        file << header << std::endl;
-      }
-
-      file << scores << std::endl;
-      file.close();
-    }
-
     /** Compute metrics. */
     void Compute()
     {
+      std::vector<MeasureType> movingToFixedMetrics;
+      this->ComputeMetrics(movingToFixedMetrics, m_MovingPointSet, m_FixedPointSet);
+
       std::vector<MeasureType> fixedToMovingMetrics;
       this->ComputeMetrics(fixedToMovingMetrics, m_FixedPointSet, m_MovingPointSet);
 
-      m_MeanValue = fixedToMovingMetrics[0];
-      m_RMSEValue = fixedToMovingMetrics[1];
-      m_QuantileValue = fixedToMovingMetrics[2];
-      m_MaximalValue = fixedToMovingMetrics[3];
-
-      if (m_Symmetric) {
-        std::vector<MeasureType> movingToFixedMetrics;
-        this->ComputeMetrics(movingToFixedMetrics, m_MovingPointSet, m_FixedPointSet);
-
-        m_MeanValue = (fixedToMovingMetrics[0] + movingToFixedMetrics[0])/2;
-        m_RMSEValue = (fixedToMovingMetrics[1] + movingToFixedMetrics[1])/2;
-        m_QuantileValue = (fixedToMovingMetrics[2] + movingToFixedMetrics[2])/2;
-        m_MaximalValue = (fixedToMovingMetrics[3] + movingToFixedMetrics[3])/2;
-      }
+      m_MeanValue = 0.5 * (movingToFixedMetrics[0] + fixedToMovingMetrics[0]);
+      m_RMSEValue = 0.5 * (movingToFixedMetrics[1] + fixedToMovingMetrics[1]);
+      m_QuantileValue = 0.5 * (movingToFixedMetrics[2] + fixedToMovingMetrics[2]);
+      m_MaximalValue = 0.5 * (movingToFixedMetrics[3] + fixedToMovingMetrics[3]);
     }
 
 
@@ -160,44 +108,35 @@ namespace ssm
     size_t m_HistogramSize = 1000;
     double m_LevelOfQuantile = 0.95;
 
-    bool m_Symmetric = true;
     MeasureType m_MeanValue;
     MeasureType m_RMSEValue;
     MeasureType m_QuantileValue;
     MeasureType m_MaximalValue;
     InfoType m_Info;
 
-    typename ListSampleType::Pointer m_ListOfPoints;
-    typename TreeType::ConstPointer m_Tree;
-
-    void ComputeMetrics(std::vector<MeasureType> & metrics, typename FixedPointSetType::ConstPointer fixedPointSet, typename MovingPointSetType::ConstPointer movingPointSet)
+    void ComputeMetrics(std::vector<MeasureType> & metrics, typename MovingPointSetType::ConstPointer movingPointSet, typename FixedPointSetType::ConstPointer fixedPointSet)
     {
-      this->InitializeKdTree(movingPointSet);
-
-      MeasureType mean = itk::NumericTraits<MeasureType>::Zero;
-      MeasureType rmse = itk::NumericTraits<MeasureType>::Zero;
-      MeasureType maximal = itk::NumericTraits<MeasureType>::Zero;
-
       typename FixedPointSetType::PointsContainer::ConstPointer fixedContainer = fixedPointSet->GetPoints();
-      typename MovingPointSetType::PointsContainer::ConstPointer  movingContainer = movingPointSet->GetPoints();
+      typename MovingPointSetType::PointsContainer::ConstPointer movingContainer = movingPointSet->GetPoints();
+
+      typedef itk::PointsLocator<typename FixedPointSetType::PointsContainer> PointsLocatorType;
+      typename PointsLocatorType::Pointer pLocator = PointsLocatorType::New();
+      pLocator->SetPoints(const_cast<typename FixedPointSetType::PointsContainer*> (fixedContainer.GetPointer()));
+      pLocator->Initialize();
 
       typedef itk::Vector<MeasureType, 1> VectorType;
       typedef itk::Statistics::ListSample<VectorType> ListSampleType;
       ListSampleType::Pointer measures = ListSampleType::New();
 
-      for (typename FixedPointSetType::PointsContainerConstIterator fixed = fixedContainer->Begin(); fixed != fixedContainer->End(); ++fixed) {
-        typename FixedPointSetType::PointType fixedPoint = fixed.Value();
-        typename MovingPointSetType::PointType movingPoint = movingPointSet->GetPoint(fixed->Index());
-        /*
-        NeighborhoodType neighbors;
-        std::vector<double> distancies;
-        m_Tree->Search(fixedPoint, 1, neighbors, distancies);
-        if (distancies.size() == 0) {
-          continue;
-        }
-        MeasureType distance = distancies[0];
-        */
-        MeasureType distance = fixedPoint.EuclideanDistanceTo(movingPoint);
+      MeasureType mean = itk::NumericTraits<MeasureType>::Zero;
+      MeasureType rmse = itk::NumericTraits<MeasureType>::Zero;
+      MeasureType maximal = itk::NumericTraits<MeasureType>::Zero;
+
+      for (typename MovingPointSetType::PointsContainerConstIterator moving = movingContainer->Begin(); moving != movingContainer->End(); ++moving) {
+        typename FixedPointSetType::PointType movingPoint = moving.Value();
+
+        size_t idx = pLocator->FindClosestPoint(movingPoint);
+        MeasureType distance = movingPoint.EuclideanDistanceTo(fixedPointSet->GetPoint(idx));
 
         measures->PushBack(distance);
         mean += distance;
@@ -205,8 +144,9 @@ namespace ssm
         maximal = std::max(maximal, distance);
       }
 
-      mean = mean / fixedPointSet->GetNumberOfPoints();
-      rmse = std::sqrt(rmse / fixedPointSet->GetNumberOfPoints());
+      size_t numberOfPoints = movingPointSet->GetNumberOfPoints();
+      mean = mean / numberOfPoints;
+      rmse = std::sqrt(rmse / numberOfPoints);
 
       // compute quantile
       typedef typename itk::Statistics::Histogram<MeasureType, itk::Statistics::DenseFrequencyContainer2> HistogramType;
@@ -231,26 +171,6 @@ namespace ssm
       metrics.push_back(rmse);
       metrics.push_back(quantile);
       metrics.push_back(maximal);
-    }
-
-    void InitializeKdTree(typename MovingPointSetType::ConstPointer pointSet)
-    {
-      m_ListOfPoints = ListSampleType::New();
-      for (typename MovingPointSetType::PointsContainerConstIterator it = pointSet->GetPoints()->Begin(); it != pointSet->GetPoints()->End(); ++it) {
-        m_ListOfPoints->PushBack(it.Value());
-      }
-
-      typename TreeGeneratorType::Pointer generator = TreeGeneratorType::New();
-      generator->SetSample(m_ListOfPoints);
-      generator->SetBucketSize(m_BucketSize);
-      try {
-        generator->Update();
-      }
-      catch (itk::ExceptionObject& excep) {
-        itkExceptionMacro(<< excep);
-      }
-
-      m_Tree = generator->GetOutput();
     }
   };
 }
