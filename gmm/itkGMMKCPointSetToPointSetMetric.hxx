@@ -73,6 +73,9 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
   LocalDerivativeType derivative2(m_NumberOfParameters);
   derivative2.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
 
+  double scale1 = (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale) / 2;
+  double scale2 = m_MovingPointSetScale*m_MovingPointSetScale;
+
   for (MovingPointIterator movingIter1 = m_TransformedPointSet->GetPoints()->Begin(); movingIter1 != m_TransformedPointSet->GetPoints()->End(); ++movingIter1) {
     const typename MovingPointSetType::PointType transformedPoint1 = movingIter1.Value();
 
@@ -82,16 +85,11 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
 
     for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
-
-      double distance = 0;
-      for (size_t dim = 0; dim < PointDimension; ++dim) {
-        distance += pow(transformedPoint1[dim] / m_MovingPointSetScale - fixedPoint[dim] / m_FixedPointSetScale, 2);
-      }
-      
+      const double distance = transformedPoint1.SquaredEuclideanDistanceTo(fixedPoint) / scale1;
       value1 += exp(-distance);
 
       for (size_t dim = 0; dim < PointDimension; ++dim) {
-        gradient1[dim] += (-2.0) * exp(-distance) * (transformedPoint1[dim] / m_MovingPointSetScale - fixedPoint[dim] / m_FixedPointSetScale) / m_MovingPointSetScale;
+        gradient1[dim] += (-2.0) * exp(-distance) * (transformedPoint1[dim] - fixedPoint[dim]) / scale1;
       }
     }
 
@@ -101,16 +99,11 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
 
     for (MovingPointIterator movingIter2 = m_TransformedPointSet->GetPoints()->Begin(); movingIter2 != m_TransformedPointSet->GetPoints()->End(); ++movingIter2) {
       const typename MovingPointSetType::PointType transformedPoint2 = movingIter2.Value();
-
-      double distance = 0;
-      for (size_t dim = 0; dim < PointDimension; ++dim) {
-        distance += pow(transformedPoint1[dim] / m_MovingPointSetScale - transformedPoint2[dim] / m_MovingPointSetScale, 2);
-      }
-
+      const double distance = transformedPoint1.SquaredEuclideanDistanceTo(transformedPoint2) / scale2;
       value2 += exp(-distance);
 
       for (size_t dim = 0; dim < PointDimension; ++dim) {
-        gradient2[dim] += (-2.0) * exp(-distance) * (transformedPoint1[dim] / m_MovingPointSetScale - transformedPoint2[dim] / m_MovingPointSetScale) / m_MovingPointSetScale;
+        gradient2[dim] += (-2.0) * exp(-distance) * (transformedPoint1[dim] - transformedPoint2[dim]) / scale2;
       }
     }
 
