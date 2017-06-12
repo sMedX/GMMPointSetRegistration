@@ -3,10 +3,6 @@
 #include <itkLBFGSBOptimizer.h>
 #include <itkImageRegistrationMethodv4.h>
 
-//#include <agtkTypes.h>
-//#include <agtkPath.h>
-//#include <agtkTimeProbe.h>
-
 #include "gmm/itkGMMPointSetToPointSetRegistrationMethod.h"
 #include "gmm/itkPointSetPropertiesCalculator.h"
 #include "gmm/itkNormalizePointSet.h"
