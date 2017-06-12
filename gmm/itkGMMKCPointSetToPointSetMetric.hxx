@@ -132,7 +132,7 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
   value = -value1 * ratio / factor;
 
   for (size_t par = 0; par < m_NumberOfParameters; par++) {
-    derivative[par] = 2.0 * ratio * (derivative2[par] * ratio - derivative1[par]) / factor;
+    derivative[par] = (-2.0) * (derivative1[par] - derivative2[par] * ratio) * ratio / factor;
   }
 }
 }
