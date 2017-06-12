@@ -36,15 +36,6 @@ namespace itk
     typedef typename itk::PointsLocator<typename FixedPointSetType::PointsContainer> FixedPointsLocatorType;
     typedef typename itk::PointsLocator<typename MovingPointSetType::PointsContainer> MovingPointsLocatorType;
 
-    /** Type of the additional information. */
-    typedef std::pair<std::string, std::string> PairType;
-    typedef std::vector<PairType> InfoType;
-
-    void SetInfo(InfoType& info)
-    {
-      m_Info = info;
-    }
-
     /** Get/Set the Fixed Point Set.  */
     itkSetConstObjectMacro(FixedPointSet, FixedPointSetType);
     itkGetConstObjectMacro(FixedPointSet, FixedPointSetType);
@@ -112,7 +103,6 @@ namespace itk
     MeasureType m_RMSEValue;
     MeasureType m_QuantileValue;
     MeasureType m_MaximalValue;
-    InfoType m_Info;
 
     void ComputeMetrics(std::vector<MeasureType> & metrics, typename MovingPointSetType::ConstPointer movingPointSet, typename FixedPointSetType::ConstPointer fixedPointSet)
     {
