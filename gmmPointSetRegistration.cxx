@@ -16,6 +16,7 @@
 #include "utils/agtkCommandLineArgumentParser.h"
 
 using namespace agtk;
+
 typedef agtk::FloatTriangleMesh3D MeshType;
 typedef itk::PointSet<MeshType::PixelType, MeshType::PointDimension> PointSetType;
 typedef itk::Transform <double, MeshType::PointDimension, MeshType::PointDimension> TransformType;
