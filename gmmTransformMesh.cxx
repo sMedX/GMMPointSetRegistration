@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
   std::vector<double> options;
   parser->GetValue("-transform", options);
 
-  FloatTriangleMesh3D::Pointer model = FloatTriangleMesh3D::New();
+  auto model = FloatTriangleMesh3D::New();
   if (!readMesh<FloatTriangleMesh3D>(model, inputFile)) {
     return EXIT_FAILURE;
   }
@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
   //--------------------------------------------------------------------
   // initialize transform
-  TransformType::Pointer transform = TransformType::New();
+  auto transform = TransformType::New();
   transform->SetIdentity();
   transform->SetCenter(model->GetBoundingBox()->GetCenter());
 
@@ -46,7 +46,8 @@ int main(int argc, char** argv) {
   transform->SetParameters(parameters);
 
   typedef itk::TransformMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType;
-  TransformMeshFilterType::Pointer transformMeshFilter = TransformMeshFilterType::New();
+  auto transformMeshFilter = TransformMeshFilterType::New();
+
   transformMeshFilter->SetInput(model);
   transformMeshFilter->SetTransform(transform);
   transformMeshFilter->Update();
