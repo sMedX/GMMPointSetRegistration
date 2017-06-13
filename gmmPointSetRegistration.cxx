@@ -3,20 +3,15 @@
 #include <itkLBFGSBOptimizer.h>
 #include <itkImageRegistrationMethodv4.h>
 
-//#include <agtkTypes.h>
-//#include <agtkPath.h>
-//#include <agtkTimeProbe.h>
-
 #include "gmm/itkGMMPointSetToPointSetRegistrationMethod.h"
 #include "gmm/itkPointSetPropertiesCalculator.h"
-#include "gmm/ssmPointSetToPointSetMetrics.h"
 #include "gmm/itkNormalizePointSet.h"
 #include "gmm/itkInitializeTransform.h"
 #include "gmm/itkInitializeMetric.h"
+#include "gmm/itkPointSetToPointSetMetrics.h"
 #include "utils/agtkIO.h"
 #include "utils/agtkObservers.h"
 #include "utils/agtkCommandLineArgumentParser.h"
-#include <itkPointSetToPointSetMetricv4.h>
 
 using namespace agtk;
 typedef agtk::FloatTriangleMesh3D MeshType;
@@ -256,17 +251,15 @@ int main(int argc, char** argv) {
   PointSetType::Pointer outputPointSet = PointSetType::New();
   outputPointSet->SetPoints(transformMesh->GetOutput()->GetPoints());
 
-  typedef ssm::PointSetToPointSetMetrics<PointSetType> PointSetToPointSetMetricsType;
+  typedef itk::PointSetToPointSetMetrics<PointSetType> PointSetToPointSetMetricsType;
   PointSetToPointSetMetricsType::Pointer metrics = PointSetToPointSetMetricsType::New();
   metrics->SetFixedPointSet(fixedPointSet);
   metrics->SetMovingPointSet(movingPointSet);
-  metrics->SetSymmetric(true);
   metrics->Compute();
   metrics->PrintReport(std::cout);
 
   metrics->SetFixedPointSet(fixedPointSet);
   metrics->SetMovingPointSet(outputPointSet);
-  metrics->SetSymmetric(true);
   metrics->Compute();
   metrics->PrintReport(std::cout);
 

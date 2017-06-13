@@ -87,8 +87,6 @@ throw ( ExceptionObject )
     }
   }
 
-  std::cout << "points in scene " << m_FixedPointMatrix.cols() << " " << m_FixedPointMatrix.rows() << std::endl;
-
   // If the PointSet is provided by a source, update the source.
   if ( m_MovingPointSet->GetSource() )
     {

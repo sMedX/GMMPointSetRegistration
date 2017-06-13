@@ -1,8 +1,7 @@
-#ifndef itkGMMKCPointSetToPointSetMetric_h
-#define itkGMMKCPointSetToPointSetMetric_h
+#ifndef itkGMMKCKdTreePointSetToPointSetMetric_h
+#define itkGMMKCKdTreePointSetToPointSetMetric_h
 
-#include <itkCovariantVector.h>
-#include <itkPoint.h>
+#include <itkPointsLocator.h>
 
 #include "itkGMMPointSetToPointSetMetricBase.h"
 
@@ -19,11 +18,11 @@ namespace itk
  * Transform.
  */
 template< typename TFixedPointSet, typename TMovingPointSet >
-class GMMKCPointSetToPointSetMetric : public GMMPointSetToPointSetMetricBase < TFixedPointSet, TMovingPointSet >
+class GMMKCKdTreePointSetToPointSetMetric : public GMMPointSetToPointSetMetricBase < TFixedPointSet, TMovingPointSet >
 {
 public:
   /** Standard class typedefs. */
-  typedef GMMKCPointSetToPointSetMetric                                      Self;
+  typedef GMMKCKdTreePointSetToPointSetMetric                                Self;
   typedef GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet > Superclass;
   typedef SmartPointer< Self >                                               Pointer;
   typedef SmartPointer< const Self >                                         ConstPointer;
@@ -32,7 +31,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(GMMKCPointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
+  itkTypeMacro(GMMKCKdTreePointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
 
   /** Types transferred from the base class */
   typedef typename Superclass::TransformType              TransformType;
@@ -45,6 +44,8 @@ public:
   typedef typename Superclass::DerivativeType             DerivativeType;
   typedef typename Superclass::FixedPointSetType          FixedPointSetType;
   typedef typename Superclass::MovingPointSetType         MovingPointSetType;
+  typedef typename Superclass::FixedPointsContainer       FixedPointsContainer;
+  typedef typename Superclass::MovingPointsContainer      MovingPointsContainer;
   typedef typename Superclass::FixedPointSetConstPointer  FixedPointSetConstPointer;
   typedef typename Superclass::MovingPointSetConstPointer MovingPointSetConstPointer;
   typedef typename Superclass::FixedPointIterator         FixedPointIterator;
@@ -52,6 +53,13 @@ public:
 
   typedef typename Superclass::LocalDerivativeType        LocalDerivativeType;
   typedef typename Superclass::GradientType               GradientType;
+
+  typedef itk::PointsLocator<typename FixedPointSetType::PointsContainer>  FixedPointsLocatorType;
+  typedef itk::PointsLocator<typename MovingPointSetType::PointsContainer> MovingPointsLocatorType;
+
+  /** Set/Get radius. */
+  itkSetMacro(Radius, double);
+  itkGetMacro(Radius, double);
 
   /** Get the derivatives of the match measure. */
   void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
@@ -68,17 +76,23 @@ public:
   throw (ExceptionObject);
 
 protected:
-  GMMKCPointSetToPointSetMetric();
-  virtual ~GMMKCPointSetToPointSetMetric() {}
+  GMMKCKdTreePointSetToPointSetMetric();
+  virtual ~GMMKCKdTreePointSetToPointSetMetric() {}
+
+  typename FixedPointsLocatorType::Pointer m_FixedPointsLocator;
+  typename MovingPointsLocatorType::Pointer m_TransformedPointsLocator;
+  typename MovingPointsContainer::Pointer m_TransformedPointsContainer;
+
+  double m_Radius = 3;
 
 private:
-  GMMKCPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
+  GMMKCKdTreePointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;
 };
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkGMMKCPointSetToPointSetMetric.hxx"
+#include "itkGMMKCKdTreePointSetToPointSetMetric.hxx"
 #endif
 
 #endif

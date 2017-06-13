@@ -1,7 +1,7 @@
-#ifndef itkGMMKCPointSetToPointSetMetric_hxx
+#ifndef itkGMMKCKdTreePointSetToPointSetMetric_hxx
 #define itkGMMKCPointSetToPointSetMetric_hxx
 
-#include "itkGMMKCPointSetToPointSetMetric.h"
+#include "itkGMMKCKdTreePointSetToPointSetMetric.h"
 
 namespace itk
 {
@@ -9,26 +9,32 @@ namespace itk
  * Constructor
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMKCPointSetToPointSetMetric()
+GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMKCKdTreePointSetToPointSetMetric()
 {
 }
 
 /** Initialize the metric */
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
-GMMKCPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
+GMMKCKdTreePointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 ::Initialize(void)
 throw (ExceptionObject)
 {
   Superclass::Initialize();
+
+  typename FixedPointSetType::PointsContainer::ConstPointer fixedPointContainer = m_FixedPointSet->GetPoints();
+
+  m_FixedPointsLocator = FixedPointsLocatorType::New();
+  m_FixedPointsLocator->SetPoints(const_cast<typename FixedPointSetType::PointsContainer*> (fixedPointContainer.GetPointer()));
+  m_FixedPointsLocator->Initialize();
 }
 
 /**
  * Get the match Measure
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-typename GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::MeasureType
-GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
+typename GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::MeasureType
+GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
 {
   itkExceptionMacro(<< "not implemented");
 }
@@ -36,7 +42,7 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const T
  * Get the Derivative Measure
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
+void GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
 {
   itkExceptionMacro(<< "not implemented");
 }
@@ -45,7 +51,7 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivati
  * Get both the match Measure and theDerivative Measure
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
+void GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
 {
   m_Transform->SetParameters(parameters);
 
@@ -57,6 +63,10 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
   for (MovingPointIterator iter = m_MovingPointSet->GetPoints()->Begin(); iter != m_MovingPointSet->GetPoints()->End(); ++iter) {
     m_TransformedPointSet->SetPoint(iter.Index(), m_Transform->TransformPoint(iter.Value()));
   }
+
+  typename MovingPointsLocatorType::Pointer m_TransformedPointsLocator = MovingPointsLocatorType::New();
+  m_TransformedPointsLocator->SetPoints(m_TransformedPointSet->GetPoints());
+  m_TransformedPointsLocator->Initialize();
 
   double value1 = 0;
   double value2 = 0;
@@ -70,8 +80,11 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
   LocalDerivativeType derivative2(m_NumberOfParameters);
   derivative2.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
 
-  double scale1 = (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale) / 2;
-  double scale2 = m_MovingPointSetScale*m_MovingPointSetScale;
+  const double scale1 = (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale) / 2;
+  const double scale2 = m_MovingPointSetScale*m_MovingPointSetScale;
+
+  const double radius1 = m_Radius * sqrt(scale1);
+  const double radius2 = m_Radius * sqrt(scale2);
 
   for (MovingPointIterator movingIter1 = m_TransformedPointSet->GetPoints()->Begin(); movingIter1 != m_TransformedPointSet->GetPoints()->End(); ++movingIter1) {
     const typename MovingPointSetType::PointType transformedPoint1 = movingIter1.Value();
@@ -80,8 +93,11 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
     // compute gradient for the first part
     gradient1.Fill(0);
 
-    for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
-      const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
+    typename FixedPointsLocatorType::NeighborsIdentifierType fixedPointNeighbors;
+    m_FixedPointsLocator->FindPointsWithinRadius(transformedPoint1, radius1, fixedPointNeighbors);
+
+    for (size_t n = 0; n < fixedPointNeighbors.size(); ++n) {
+      const typename FixedPointSetType::PointType fixedPoint = m_FixedPointSet->GetPoint(fixedPointNeighbors[n]);
       const double distance = transformedPoint1.SquaredEuclideanDistanceTo(fixedPoint) / scale1;
       value1 += exp(-distance);
 
@@ -94,8 +110,11 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
     // compute gradient for the second part
     gradient2.Fill(0);
 
-    for (MovingPointIterator movingIter2 = m_TransformedPointSet->GetPoints()->Begin(); movingIter2 != m_TransformedPointSet->GetPoints()->End(); ++movingIter2) {
-      const typename MovingPointSetType::PointType transformedPoint2 = movingIter2.Value();
+    typename MovingPointsLocatorType::NeighborsIdentifierType transformedPointNeighbors;
+    m_TransformedPointsLocator->FindPointsWithinRadius(transformedPoint1, radius2, transformedPointNeighbors);
+
+    for (size_t n = 0; n < transformedPointNeighbors.size(); ++n) {
+      const typename MovingPointSetType::PointType transformedPoint2 = m_TransformedPointSet->GetPoint(transformedPointNeighbors[n]);
       const double distance = transformedPoint1.SquaredEuclideanDistanceTo(transformedPoint2) / scale2;
       value2 += exp(-distance);
 
