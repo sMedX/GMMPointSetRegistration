@@ -10,6 +10,7 @@
 #include "gmm/itkInitializeMetric.h"
 #include "gmm/itkPointSetToPointSetMetrics.h"
 
+#include "utils/agtkTypes.h"
 #include "utils/agtkIO.h"
 #include "utils/agtkObservers.h"
 #include "utils/agtkCommandLineArgumentParser.h"
