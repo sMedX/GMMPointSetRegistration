@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
 set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
 
 # Find ITK
-find_package(ITK REQUIRED)
+find_package(ITK 4.9 REQUIRED)
 include(${ITK_USE_FILE})
 
 find_package(OpenMP)
