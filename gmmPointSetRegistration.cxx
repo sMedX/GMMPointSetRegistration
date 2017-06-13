@@ -12,7 +12,7 @@
 #include "gmm/itkPointSetToPointSetMetrics.h"
 
 #include "utils/agtkIO.h"
-#include "utils/agtkObservers.h"
+#include "utils/agtkCommandIterationUpdate.h"
 #include "utils/agtkCommandLineArgumentParser.h"
 
 using namespace agtk;
@@ -171,7 +171,9 @@ int main(int argc, char** argv) {
   optimizer->SetMaximumNumberOfIterations(numberOfIterations);
   optimizer->MinimizeOn();
   if (observer) {
-    CommandIterationUpdate::Pointer observer = CommandIterationUpdate::New();
+    typedef CommandIterationUpdate<itk::LBFGSBOptimizer> CommandLBFGSBOptimizerIterationUpdate;
+
+    CommandLBFGSBOptimizerIterationUpdate::Pointer observer = CommandLBFGSBOptimizerIterationUpdate::New();
     optimizer->AddObserver(itk::IterationEvent(), observer);
   }
 
