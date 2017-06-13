@@ -71,10 +71,12 @@ public:
   itkStaticConstMacro(FixedPointSetDimension, unsigned int, TFixedPointSet::PointDimension);
   itkStaticConstMacro(PointDimension, unsigned int, TMovingPointSet::PointDimension);
 
-  typedef typename FixedPointSetType::PointsContainer::ConstIterator     FixedPointIterator;
+  typedef typename FixedPointSetType::PointsContainer                    FixedPointsContainer;
+  typedef typename FixedPointsContainer::ConstIterator                   FixedPointIterator;
   typedef typename FixedPointSetType::PointDataContainer::ConstIterator  FixedPointDataIterator;
 
-  typedef typename MovingPointSetType::PointsContainer::ConstIterator    MovingPointIterator;
+  typedef typename MovingPointSetType::PointsContainer                   MovingPointsContainer;
+  typedef typename MovingPointsContainer::ConstIterator                  MovingPointIterator;
   typedef typename MovingPointSetType::PointDataContainer::ConstIterator MovingPointDataIterator;
 
   typedef itk::CovariantVector<double, PointDimension> GradientType;
