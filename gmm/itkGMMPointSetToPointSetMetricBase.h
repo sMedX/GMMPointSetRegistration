@@ -18,8 +18,8 @@
 #ifndef itkGMMPointSetToPointSetMetricBase_h
 #define itkGMMPointSetToPointSetMetricBase_h
 
-#include "itkImageBase.h"
 #include "itkTransform.h"
+#include "itkCovariantVector.h"
 #include "itkSingleValuedCostFunction.h"
 #include "itkMacro.h"
 

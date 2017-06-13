@@ -1,8 +1,7 @@
 #ifndef itkGMMKCKdTreePointSetToPointSetMetric_h
 #define itkGMMKCKdTreePointSetToPointSetMetric_h
 
-#include <itkCovariantVector.h>
-#include <itkPoint.h>
+#include <itkPointsLocator.h>
 
 #include "itkGMMPointSetToPointSetMetricBase.h"
 
@@ -45,6 +44,8 @@ public:
   typedef typename Superclass::DerivativeType             DerivativeType;
   typedef typename Superclass::FixedPointSetType          FixedPointSetType;
   typedef typename Superclass::MovingPointSetType         MovingPointSetType;
+  typedef typename Superclass::FixedPointsContainer       FixedPointsContainer;
+  typedef typename Superclass::MovingPointsContainer      MovingPointsContainer;
   typedef typename Superclass::FixedPointSetConstPointer  FixedPointSetConstPointer;
   typedef typename Superclass::MovingPointSetConstPointer MovingPointSetConstPointer;
   typedef typename Superclass::FixedPointIterator         FixedPointIterator;
@@ -52,6 +53,13 @@ public:
 
   typedef typename Superclass::LocalDerivativeType        LocalDerivativeType;
   typedef typename Superclass::GradientType               GradientType;
+
+  typedef itk::PointsLocator<typename FixedPointSetType::PointsContainer>  FixedPointsLocatorType;
+  typedef itk::PointsLocator<typename MovingPointSetType::PointsContainer> MovingPointsLocatorType;
+
+  /** Set/Get radius. */
+  itkSetMacro(Radius, double);
+  itkGetMacro(Radius, double);
 
   /** Get the derivatives of the match measure. */
   void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
@@ -71,8 +79,11 @@ protected:
   GMMKCKdTreePointSetToPointSetMetric();
   virtual ~GMMKCKdTreePointSetToPointSetMetric() {}
 
-  mutable vnl_matrix<double> m_Gradient1;
-  mutable vnl_matrix<double> m_Gradient2;
+  typename FixedPointsLocatorType::Pointer m_FixedPointsLocator;
+  typename MovingPointsLocatorType::Pointer m_TransformedPointsLocator;
+  typename MovingPointsContainer::Pointer m_TransformedPointsContainer;
+
+  double m_Radius = 3;
 
 private:
   GMMKCKdTreePointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;

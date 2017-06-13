@@ -22,8 +22,11 @@ throw (ExceptionObject)
 {
   Superclass::Initialize();
 
-  m_Gradient1.set_size(m_MovingPointSet->GetNumberOfPoints(), MovingPointSetDimension);
-  m_Gradient2.set_size(m_MovingPointSet->GetNumberOfPoints(), MovingPointSetDimension);
+  typename FixedPointSetType::PointsContainer::ConstPointer fixedPointContainer = m_FixedPointSet->GetPoints();
+
+  m_FixedPointsLocator = FixedPointsLocatorType::New();
+  m_FixedPointsLocator->SetPoints(const_cast<typename FixedPointSetType::PointsContainer*> (fixedPointContainer.GetPointer()));
+  m_FixedPointsLocator->Initialize();
 }
 
 /**
@@ -61,6 +64,10 @@ void GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetVa
     m_TransformedPointSet->SetPoint(iter.Index(), m_Transform->TransformPoint(iter.Value()));
   }
 
+  typename MovingPointsLocatorType::Pointer m_TransformedPointsLocator = MovingPointsLocatorType::New();
+  m_TransformedPointsLocator->SetPoints(m_TransformedPointSet->GetPoints());
+  m_TransformedPointsLocator->Initialize();
+
   double value1 = 0;
   double value2 = 0;
 
@@ -73,8 +80,11 @@ void GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetVa
   LocalDerivativeType derivative2(m_NumberOfParameters);
   derivative2.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
 
-  double scale1 = (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale) / 2;
-  double scale2 = m_MovingPointSetScale*m_MovingPointSetScale;
+  const double scale1 = (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale) / 2;
+  const double scale2 = m_MovingPointSetScale*m_MovingPointSetScale;
+
+  const double radius1 = m_Radius * sqrt(scale1);
+  const double radius2 = m_Radius * sqrt(scale2);
 
   for (MovingPointIterator movingIter1 = m_TransformedPointSet->GetPoints()->Begin(); movingIter1 != m_TransformedPointSet->GetPoints()->End(); ++movingIter1) {
     const typename MovingPointSetType::PointType transformedPoint1 = movingIter1.Value();
@@ -83,8 +93,11 @@ void GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetVa
     // compute gradient for the first part
     gradient1.Fill(0);
 
-    for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
-      const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
+    typename FixedPointsLocatorType::NeighborsIdentifierType fixedPointNeighbors;
+    m_FixedPointsLocator->FindPointsWithinRadius(transformedPoint1, radius1, fixedPointNeighbors);
+
+    for (size_t n = 0; n < fixedPointNeighbors.size(); ++n) {
+      const typename FixedPointSetType::PointType fixedPoint = m_FixedPointSet->GetPoint(fixedPointNeighbors[n]);
       const double distance = transformedPoint1.SquaredEuclideanDistanceTo(fixedPoint) / scale1;
       value1 += exp(-distance);
 
@@ -97,8 +110,11 @@ void GMMKCKdTreePointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetVa
     // compute gradient for the second part
     gradient2.Fill(0);
 
-    for (MovingPointIterator movingIter2 = m_TransformedPointSet->GetPoints()->Begin(); movingIter2 != m_TransformedPointSet->GetPoints()->End(); ++movingIter2) {
-      const typename MovingPointSetType::PointType transformedPoint2 = movingIter2.Value();
+    typename MovingPointsLocatorType::NeighborsIdentifierType transformedPointNeighbors;
+    m_TransformedPointsLocator->FindPointsWithinRadius(transformedPoint1, radius2, transformedPointNeighbors);
+
+    for (size_t n = 0; n < transformedPointNeighbors.size(); ++n) {
+      const typename MovingPointSetType::PointType transformedPoint2 = m_TransformedPointSet->GetPoint(transformedPointNeighbors[n]);
       const double distance = transformedPoint1.SquaredEuclideanDistanceTo(transformedPoint2) / scale2;
       value2 += exp(-distance);
 
