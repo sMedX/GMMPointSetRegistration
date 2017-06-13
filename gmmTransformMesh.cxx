@@ -1,7 +1,7 @@
 ﻿#include <itkEuler3DTransform.h>
 #include <itkTransformMeshFilter.h>
 
-#include "gmm/agtkTypes.h"
+#include "utils/agtkTypes.h"
 #include "utils/agtkCommandLineArgumentParser.h"
 #include "utils/agtkIO.h"
 

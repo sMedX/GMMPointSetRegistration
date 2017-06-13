@@ -12,7 +12,7 @@
 
 #include <vtkPolyData.h>
 
-#include "gmm/agtkTypes.h"
+#include "utils/agtkTypes.h"
 
 namespace agtk
 {
