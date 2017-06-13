@@ -47,6 +47,10 @@ int main(int argc, char** argv) {
   size_t typeOfMetric = 0;
   parser->GetValue("-metric", typeOfMetric);
 
+  std::cout << "options" << std::endl;
+  std::cout << "number of iterations " << numberOfIterations << std::endl;
+  std::cout << std::endl;
+
   //--------------------------------------------------------------------
   //
   MeshType::Pointer fixedMesh = MeshType::New();
@@ -161,7 +165,7 @@ int main(int argc, char** argv) {
   optimizer->SetBoundSelection(modeBounds);
   optimizer->SetLowerBound(lowerBounds);
   optimizer->SetUpperBound(upperBounds);
-  optimizer->SetMaximumNumberOfEvaluations(numberOfIterations);
+  optimizer->SetMaximumNumberOfIterations(numberOfIterations);
   optimizer->MinimizeOn();
   if (observer) {
     CommandIterationUpdate::Pointer observer = CommandIterationUpdate::New();
