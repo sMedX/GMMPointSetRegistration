@@ -9,6 +9,7 @@
 #include "gmm/itkInitializeTransform.h"
 #include "gmm/itkInitializeMetric.h"
 #include "gmm/itkPointSetToPointSetMetrics.h"
+
 #include "utils/agtkIO.h"
 #include "utils/agtkObservers.h"
 #include "utils/agtkCommandLineArgumentParser.h"
@@ -202,11 +203,11 @@ int main(int argc, char** argv) {
   registration->SetTransform(transform);
   registration->SetNumberOfLevels(numberOfLevels);
   try {
-	  registration->Update();
+    registration->Update();
   }
   catch (itk::ExceptionObject& excep) {
-	  std::cout << excep << std::endl;
-	  return EXIT_FAILURE;
+    std::cout << excep << std::endl;
+    return EXIT_FAILURE;
   }
   registration->GetTransform();
 
