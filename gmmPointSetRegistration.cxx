@@ -1,4 +1,5 @@
-﻿#include <itkTransformMeshFilter.h>
+﻿#include <itkMesh.h>
+#include <itkTransformMeshFilter.h>
 #include <itkCompositeTransform.h>
 #include <itkLBFGSBOptimizer.h>
 #include <itkImageRegistrationMethodv4.h>
@@ -10,14 +11,13 @@
 #include "gmm/itkInitializeMetric.h"
 #include "gmm/itkPointSetToPointSetMetrics.h"
 
-#include "utils/agtkTypes.h"
 #include "utils/agtkIO.h"
 #include "utils/agtkObservers.h"
 #include "utils/agtkCommandLineArgumentParser.h"
 
 using namespace agtk;
 
-typedef agtk::FloatTriangleMesh3D MeshType;
+typedef itk::Mesh<float, 3U> MeshType;
 typedef itk::PointSet<MeshType::PixelType, MeshType::PointDimension> PointSetType;
 typedef itk::Transform <double, MeshType::PointDimension, MeshType::PointDimension> TransformType;
 

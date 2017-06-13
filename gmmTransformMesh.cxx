@@ -1,12 +1,13 @@
-﻿#include <itkEuler3DTransform.h>
+﻿#include <itkMesh.h>
+#include <itkEuler3DTransform.h>
 #include <itkTransformMeshFilter.h>
 
-#include "utils/agtkTypes.h"
-#include "utils/agtkCommandLineArgumentParser.h"
 #include "utils/agtkIO.h"
+#include "utils/agtkCommandLineArgumentParser.h"
 
 using namespace agtk;
-typedef FloatTriangleMesh3D MeshType;
+
+typedef itk::Mesh<float, 3U> MeshType;
 typedef itk::Euler3DTransform <double> TransformType;
 
 int main(int argc, char** argv) {
@@ -23,8 +24,8 @@ int main(int argc, char** argv) {
   std::vector<double> options;
   parser->GetValue("-transform", options);
 
-  auto model = FloatTriangleMesh3D::New();
-  if (!readMesh<FloatTriangleMesh3D>(model, inputFile)) {
+  MeshType::Pointer model = MeshType::New();
+  if (!readMesh<MeshType>(model, inputFile)) {
     return EXIT_FAILURE;
   }
 
@@ -34,7 +35,7 @@ int main(int argc, char** argv) {
 
   //--------------------------------------------------------------------
   // initialize transform
-  auto transform = TransformType::New();
+  TransformType::Pointer transform = TransformType::New();
   transform->SetIdentity();
   transform->SetCenter(model->GetBoundingBox()->GetCenter());
 
@@ -46,7 +47,7 @@ int main(int argc, char** argv) {
   transform->SetParameters(parameters);
 
   typedef itk::TransformMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType;
-  auto transformMeshFilter = TransformMeshFilterType::New();
+  TransformMeshFilterType::Pointer transformMeshFilter = TransformMeshFilterType::New();
 
   transformMeshFilter->SetInput(model);
   transformMeshFilter->SetTransform(transform);
