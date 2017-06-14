@@ -2,8 +2,8 @@
 #include <itkEuler3DTransform.h>
 #include <itkTransformMeshFilter.h>
 
-#include "thirdparty/args.hxx"
-#include "utils/agtkIO.h"
+#include "args.hxx"
+#include "agtkIO.h"
 
 typedef itk::Mesh<float, 3U> MeshType;
 typedef itk::Euler3DTransform <double> TransformType;

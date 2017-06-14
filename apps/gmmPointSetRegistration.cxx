@@ -4,17 +4,17 @@
 #include <itkLBFGSBOptimizer.h>
 #include <itkImageRegistrationMethodv4.h>
 
-#include "gmm/itkGMMPointSetToPointSetRegistrationMethod.h"
-#include "gmm/itkPointSetPropertiesCalculator.h"
-#include "gmm/itkNormalizePointSet.h"
-#include "gmm/itkInitializeTransform.h"
-#include "gmm/itkInitializeMetric.h"
-#include "gmm/itkPointSetToPointSetMetrics.h"
+#include "itkGMMPointSetToPointSetRegistrationMethod.h"
+#include "itkPointSetPropertiesCalculator.h"
+#include "itkNormalizePointSet.h"
+#include "itkInitializeTransform.h"
+#include "itkInitializeMetric.h"
+#include "itkPointSetToPointSetMetrics.h"
 
-#include "thirdparty/args.hxx"
+#include "args.hxx"
 
-#include "utils/agtkIO.h"
-#include "utils/agtkCommandIterationUpdate.h"
+#include "agtkIO.h"
+#include "agtkCommandIterationUpdate.h"
 
 using namespace agtk;
 

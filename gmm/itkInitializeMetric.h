@@ -1,11 +1,11 @@
 #pragma once
 
 #include "itkGMMPointSetToPointSetMetricBase.h"
-#include "gmm/itkGMMRigidPointSetToPointSetMetric.h"
-#include "gmm/itkGMMPointSetToPointSetMetric.h"
-#include "gmm/itkGMMKCPointSetToPointSetMetric.h"
-#include "gmm/itkGMMKCKdTreePointSetToPointSetMetric.h"
-#include "gmm/itkGMMMLEPointSetToPointSetMetric.h"
+#include "itkGMMRigidPointSetToPointSetMetric.h"
+#include "itkGMMPointSetToPointSetMetric.h"
+#include "itkGMMKCPointSetToPointSetMetric.h"
+#include "itkGMMKCKdTreePointSetToPointSetMetric.h"
+#include "itkGMMMLEPointSetToPointSetMetric.h"
 
 namespace itk
 {

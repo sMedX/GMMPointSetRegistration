@@ -1,5 +1,4 @@
-#ifndef __agtkIO_h
-#define __agtkIO_h
+#pragma once
 
 #include <iostream>
 
@@ -53,5 +52,3 @@ bool writeMesh(const TMesh* mesh, const std::string& fileName)
   return true;
 }
 }
-
-#endif // __agtkIO_h
