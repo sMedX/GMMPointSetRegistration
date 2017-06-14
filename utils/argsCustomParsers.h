@@ -4,7 +4,6 @@
 #include <sstream>
 #include <vector>
 #include <iterator>
-#include <iostream>
 
 #include "args.hxx"
 
