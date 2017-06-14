@@ -82,11 +82,12 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
 
     for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
-      const double distance = transformedPoint1.SquaredEuclideanDistanceTo(fixedPoint) / scale1;
-      value1 += exp(-distance);
+      const double distance = transformedPoint1.SquaredEuclideanDistanceTo(fixedPoint);
+      const double expval = exp(-distance / scale1);
+      value1 += expval;
 
       for (size_t dim = 0; dim < PointDimension; ++dim) {
-        gradient1[dim] += (-2.0) * exp(-distance) * (transformedPoint1[dim] - fixedPoint[dim]) / scale1;
+        gradient1[dim] += (-2.0) * expval * (transformedPoint1[dim] - fixedPoint[dim]) / scale1;
       }
     }
 
@@ -96,11 +97,12 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
 
     for (MovingPointIterator movingIter2 = m_TransformedPointSet->GetPoints()->Begin(); movingIter2 != m_TransformedPointSet->GetPoints()->End(); ++movingIter2) {
       const typename MovingPointSetType::PointType transformedPoint2 = movingIter2.Value();
-      const double distance = transformedPoint1.SquaredEuclideanDistanceTo(transformedPoint2) / scale2;
-      value2 += exp(-distance);
+      const double distance = transformedPoint1.SquaredEuclideanDistanceTo(transformedPoint2);
+      const double expval = exp(-distance / scale2);
+      value2 += expval;
 
       for (size_t dim = 0; dim < PointDimension; ++dim) {
-        gradient2[dim] += (-2.0) * exp(-distance) * (transformedPoint1[dim] - transformedPoint2[dim]) / scale2;
+        gradient2[dim] += (-2.0) * expval * (transformedPoint1[dim] - transformedPoint2[dim]) / scale2;
       }
     }
 
@@ -116,13 +118,17 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
     }
   }
 
-  const double factor = m_MovingPointSet->GetNumberOfPoints() * m_FixedPointSet->GetNumberOfPoints();
+  const double factor1 = m_TransformedPointSet->GetNumberOfPoints() * m_FixedPointSet->GetNumberOfPoints();
+  const double factor2 = m_TransformedPointSet->GetNumberOfPoints() * m_TransformedPointSet->GetNumberOfPoints();
+
+  value1 /= factor1;
+  value2 /= factor2;
+
   const double ratio = value1 / value2;
-  
-  value = -value1 * ratio / factor;
+  value = -value1 * ratio;
 
   for (size_t par = 0; par < m_NumberOfParameters; par++) {
-    derivative[par] = (-2.0) * (derivative1[par] - derivative2[par] * ratio) * ratio / factor;
+    derivative[par] = (-2.0) * (derivative1[par] / factor1 - derivative2[par] * ratio / factor2) * ratio;
   }
 }
 }
