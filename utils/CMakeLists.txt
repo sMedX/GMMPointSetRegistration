@@ -4,6 +4,7 @@ project(${_name})
 set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/agtkIO.h
     ${CMAKE_CURRENT_SOURCE_DIR}/agtkCommandIterationUpdate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/argsCustomParsers.h
 )
 
 add_library(${_name} INTERFACE)
