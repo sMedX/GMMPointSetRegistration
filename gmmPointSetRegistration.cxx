@@ -11,9 +11,10 @@
 #include "gmm/itkInitializeMetric.h"
 #include "gmm/itkPointSetToPointSetMetrics.h"
 
+#include "thirdparty/args.hxx"
+
 #include "utils/agtkIO.h"
 #include "utils/agtkCommandIterationUpdate.h"
-#include "utils/agtkCommandLineArgumentParser.h"
 
 using namespace agtk;
 
@@ -22,33 +23,64 @@ typedef itk::PointSet<MeshType::PixelType, MeshType::PointDimension> PointSetTyp
 typedef itk::Transform <double, MeshType::PointDimension, MeshType::PointDimension> TransformType;
 
 int main(int argc, char** argv) {
+  args::ArgumentParser parser("GMM PointSet Registration", "");
+  args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 
-  agtk::CommandLineArgumentParser::Pointer parser = agtk::CommandLineArgumentParser::New();
-  parser->SetCommandLineArguments(argc, argv);
+  args::Group allRequired(parser, "Required arguments:", args::Group::Validators::All);
 
-  std::string fixedFileName;
-  parser->GetValue("-fixed", fixedFileName);
+  args::ValueFlag<std::string> argFixedFileName(allRequired, "fixed", "The fixed mesh filename", {'f', "fixed"});
+  args::ValueFlag<std::string> argMovingFileName(allRequired, "moving", "The moving mesh filename", {'m', "moving"});
+  args::ValueFlagList<float> argScale(allRequired, "scale", "The scale levels", {'s', "scale"});
+  
+  args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh filename", {'o', "output"});
+  args::ValueFlag<unsigned int> argNumberOfIterations(parser, "iterations", "The number of iterations", {'i', "iterations"});
+  args::Flag argNormalize(parser, "normalize", "Normalization", {'n', "normalize"});
+  args::Flag argObserver(parser, "observer", "Optimizer iterations observer", {'O', "observer"});
+  args::ValueFlag<unsigned int> argTypeOfTransform(parser, "transform", "The type of transform", {'t', "transform"});
+  args::ValueFlag<unsigned int> argTypeOfMetric(parser, "metric", "The type of metric", {'M', "metric"});
 
-  std::string movingFileName;
-  parser->GetValue("-moving", movingFileName);
+  try {
+    parser.ParseCLI(argc, argv);
+  }
+  catch (args::Help) {
+    std::cout << parser;
+    return EXIT_SUCCESS;
+  }
+  catch (args::ParseError e) {
+    std::cerr << e.what() << std::endl;
+    std::cerr << parser;
+    return EXIT_FAILURE;
+  }
+  catch (args::ValidationError e) {
+    std::cerr << e.what() << std::endl;
+    std::cerr << parser;
+    return EXIT_FAILURE;
+  }
 
-  size_t numberOfIterations = 100;
-  parser->GetValue("-iterations", numberOfIterations);
+  std::string fixedFileName = args::get(argFixedFileName);
+  std::string movingFileName = args::get(argMovingFileName);
+  std::vector<float> scale = args::get(argScale);
+  
+  unsigned int numberOfIterations = 100;
 
-  std::vector<float> scale;
-  parser->GetValue("-scale", scale);
+  if (argNumberOfIterations) {
+    numberOfIterations = args::get(argNumberOfIterations);
+  }
 
-  bool normalize = true;
-  parser->GetValue("-normalize", normalize);
+  bool normalize = argNormalize;
+  bool observer = argObserver;
 
-  bool observer = false;
-  parser->GetValue("-observer", observer);
+  unsigned int typeOfTransform = 0;
 
-  size_t typeOfTransform = 0;
-  parser->GetValue("-transform", typeOfTransform);
+  if (argTypeOfTransform) {
+    typeOfTransform = args::get(argTypeOfTransform);
+  }
 
-  size_t typeOfMetric = 0;
-  parser->GetValue("-metric", typeOfMetric);
+  unsigned int typeOfMetric = 0;
+
+  if (argTypeOfMetric) {
+    typeOfMetric = args::get(argTypeOfMetric);
+  }
 
   std::cout << "options" << std::endl;
   std::cout << "number of iterations " << numberOfIterations << std::endl;
@@ -247,9 +279,8 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  if (parser->ArgumentExists("-output")) {
-    std::string fileName;
-    parser->GetValue("-output", fileName);
+  if (argOutputFileName) {
+    std::string fileName = args::get(argOutputFileName);
     std::cout << "write output mesh to the file " << fileName << std::endl;
 
     if (!writeMesh<MeshType>(transformMesh->GetOutput(), fileName)) {
