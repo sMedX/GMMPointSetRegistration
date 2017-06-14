@@ -12,6 +12,7 @@
 #include "itkPointSetToPointSetMetrics.h"
 
 #include "args.hxx"
+#include "argsCustomParsers.h"
 
 #include "agtkIO.h"
 #include "agtkCommandIterationUpdate.h"
@@ -30,7 +31,7 @@ int main(int argc, char** argv) {
 
   args::ValueFlag<std::string> argFixedFileName(allRequired, "fixed", "The fixed mesh filename", {'f', "fixed"});
   args::ValueFlag<std::string> argMovingFileName(allRequired, "moving", "The moving mesh filename", {'m', "moving"});
-  args::ValueFlagList<float> argScale(allRequired, "scale", "The scale levels", {'s', "scale"});
+  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(allRequired, "scale", "The scale levels", {'s', "scale"});
   
   args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh filename", {'o', "output"});
   args::ValueFlag<unsigned int> argNumberOfIterations(parser, "iterations", "The number of iterations", {'i', "iterations"});
@@ -59,7 +60,7 @@ int main(int argc, char** argv) {
 
   std::string fixedFileName = args::get(argFixedFileName);
   std::string movingFileName = args::get(argMovingFileName);
-  std::vector<float> scale = args::get(argScale);
+  std::vector<double> scale = args::get(argScale);
   
   unsigned int numberOfIterations = 100;
 

@@ -3,6 +3,7 @@
 #include <itkTransformMeshFilter.h>
 
 #include "args.hxx"
+#include "argsCustomParsers.h"
 #include "agtkIO.h"
 
 typedef itk::Mesh<float, 3U> MeshType;
@@ -17,7 +18,7 @@ int main(int argc, char** argv) {
 
   args::ValueFlag<std::string> argInputFile(allRequired, "input", "The input mesh filename", {'i', "input"});
   args::ValueFlag<std::string> argOutputFile(allRequired, "output", "The output mesh filename", {'o', "output"});
-  args::ValueFlagList<double> argTransform(allRequired, "transform", "The transform vector", {'t', "transform"});
+  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argTransform(allRequired, "transform", "The transform vector", {'t', "transform"});
 
   try {
     parser.ParseCLI(argc, argv);
