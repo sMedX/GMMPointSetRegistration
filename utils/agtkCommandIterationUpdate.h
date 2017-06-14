@@ -1,5 +1,4 @@
-#ifndef __agtkObservers_h
-#define __agtkObservers_h
+#pragma once
 
 #include <itkCommand.h>
 
@@ -38,4 +37,3 @@ public:
   }
 };
 }
-#endif // __agtkObservers_h

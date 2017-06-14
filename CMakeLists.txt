@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.3)
 
 project(GMMRegistration)
 
@@ -12,12 +12,17 @@ include(${ITK_USE_FILE})
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-add_executable(gmmPointSetRegistration gmmPointSetRegistration.cxx)
-target_link_libraries(gmmPointSetRegistration ${ITK_LIBRARIES})
+set(GMM_INCLUDE_DIRS
+    ${CMAKE_SOURCE_DIR}/thirdparty
+    CACHE INTERNAL "" FORCE
+)
 
-add_executable(gmmTransformMesh gmmTransformMesh.cxx)
-target_link_libraries(gmmTransformMesh ${ITK_LIBRARIES})
+set(GMM_LIBRARIES "" CACHE INTERNAL "" FORCE)
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/gmm)
+add_subdirectory(${CMAKE_SOURCE_DIR}/utils)
+add_subdirectory(${CMAKE_SOURCE_DIR}/apps)
