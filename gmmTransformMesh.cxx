@@ -1,30 +1,48 @@
-﻿#include <itkEuler3DTransform.h>
+﻿#include <itkMesh.h>
+#include <itkEuler3DTransform.h>
 #include <itkTransformMeshFilter.h>
 
-#include "gmm/agtkTypes.h"
-#include "utils/agtkCommandLineArgumentParser.h"
+#include "thirdparty/args.hxx"
 #include "utils/agtkIO.h"
 
-using namespace agtk;
-typedef FloatTriangleMesh3D MeshType;
+typedef itk::Mesh<float, 3U> MeshType;
 typedef itk::Euler3DTransform <double> TransformType;
 
 int main(int argc, char** argv) {
 
-  CommandLineArgumentParser::Pointer parser = CommandLineArgumentParser::New();
-  parser->SetCommandLineArguments(argc, argv);
+  args::ArgumentParser parser("GMM Transform Mesh", "");
+  args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+  
+  args::Group allRequired(parser, "Required arguments:", args::Group::Validators::All);
 
-  std::string inputFile;
-  parser->GetValue("-input", inputFile);
+  args::ValueFlag<std::string> argInputFile(allRequired, "input", "The input mesh filename", {'i', "input"});
+  args::ValueFlag<std::string> argOutputFile(allRequired, "output", "The output mesh filename", {'o', "output"});
+  args::ValueFlagList<double> argTransform(allRequired, "transform", "The transform vector", {'t', "transform"});
 
-  std::string outputFile;
-  parser->GetValue("-output", outputFile);
+  try {
+    parser.ParseCLI(argc, argv);
+  }
+  catch (args::Help) {
+    std::cout << parser;
+    return EXIT_SUCCESS;
+  }
+  catch (args::ParseError e) {
+    std::cerr << e.what() << std::endl;
+    std::cerr << parser;
+    return EXIT_FAILURE;
+  }
+  catch (args::ValidationError e) {
+    std::cerr << e.what() << std::endl;
+    std::cerr << parser;
+    return EXIT_FAILURE;
+  }
 
-  std::vector<double> options;
-  parser->GetValue("-transform", options);
+  std::string inputFile = args::get(argInputFile);
+  std::string outputFile = args::get(argOutputFile);
+  std::vector<double> options = args::get(argTransform);
 
-  FloatTriangleMesh3D::Pointer model = FloatTriangleMesh3D::New();
-  if (!readMesh<FloatTriangleMesh3D>(model, inputFile)) {
+  MeshType::Pointer model = MeshType::New();
+  if (!agtk::readMesh<MeshType>(model, inputFile)) {
     return EXIT_FAILURE;
   }
 
@@ -47,12 +65,13 @@ int main(int argc, char** argv) {
 
   typedef itk::TransformMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType;
   TransformMeshFilterType::Pointer transformMeshFilter = TransformMeshFilterType::New();
+
   transformMeshFilter->SetInput(model);
   transformMeshFilter->SetTransform(transform);
   transformMeshFilter->Update();
 
   std::cout << "output mesh " << inputFile << std::endl;
-  if (!writeMesh<MeshType>(transformMeshFilter->GetOutput(), outputFile)) {
+  if (!agtk::writeMesh<MeshType>(transformMeshFilter->GetOutput(), outputFile)) {
     return EXIT_FAILURE;
   }
 

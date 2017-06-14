@@ -2,23 +2,26 @@
 #define __agtkObservers_h
 
 #include <itkCommand.h>
-#include <itkLBFGSBOptimizer.h>
 
 namespace agtk
 {
+
+template <typename TOptimizer>
 class CommandIterationUpdate : public itk::Command
 {
 public:
-  typedef  CommandIterationUpdate   Self;
-  typedef  itk::Command             Superclass;
-  typedef itk::SmartPointer<Self>   Pointer;
+  typedef CommandIterationUpdate   Self;
+  typedef itk::Command             Superclass;
+  typedef itk::SmartPointer<Self>  Pointer;
+
   itkNewMacro(Self);
 
 protected:
   CommandIterationUpdate() {};
+
 public:
-  typedef itk::LBFGSBOptimizer OptimizerType;
-  typedef const OptimizerType *                            OptimizerPointer;
+  typedef TOptimizer OptimizerType;
+  typedef const OptimizerType * OptimizerPointer;
   void Execute(itk::Object *caller, const itk::EventObject & event) ITK_OVERRIDE
   {
     Execute((const itk::Object *)caller, event);
