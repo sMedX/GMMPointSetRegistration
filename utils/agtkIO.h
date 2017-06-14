@@ -3,9 +3,6 @@
 
 #include <iostream>
 
-#include <itkObject.h>
-#include <itkImageFileReader.h>
-#include <itkImageFileWriter.h>
 #include <itkMeshFileReader.h>
 #include <itkMeshFileWriter.h>
 
