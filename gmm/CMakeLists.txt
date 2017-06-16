@@ -2,7 +2,6 @@ set(_name GMM)
 project(${_name})
 
 set(HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/agtkRandomTransformMeshFilter.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMKCKdTreePointSetToPointSetMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMKCPointSetToPointSetMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMMLEPointSetToPointSetMetric.h
