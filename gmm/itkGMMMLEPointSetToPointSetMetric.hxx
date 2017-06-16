@@ -65,8 +65,8 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
 
     for (MovingPointIterator movingIter = m_MovingPointSet->GetPoints()->Begin(); movingIter != m_MovingPointSet->GetPoints()->End(); ++movingIter) {
       const typename MovingPointSetType::PointType transformedPoint = m_Transform->TransformPoint(movingIter.Value());
-      const double dist = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
-      sum += exp(-dist/scale);
+      const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
+      sum += exp(-distance / scale);
     }
 
     vector[fixedIter.Index()] = sum;
@@ -80,11 +80,12 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
     
     for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
-      const double dist = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
+      const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
+      const double expval = exp(-distance/scale);
       const size_t row = fixedIter.Index();
 
       for (size_t dim = 0; dim < Self::MovingPointSetDimension; ++dim) {
-        m_Gradient(row, dim) -= 2.0 * exp(-dist/scale) * (fixedPoint[dim] - transformedPoint[dim]) / scale / vector[row];
+        m_Gradient(row, dim) += 2.0 * expval * (transformedPoint[dim] - fixedPoint[dim]) / scale / vector[row];
       }
     }
   }
