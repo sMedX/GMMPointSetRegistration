@@ -79,7 +79,7 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
     value -= log(sum);
   }
 
-  // compute gradient
+  // compute the gradient
   m_Gradient.fill(0);
 
   for (MovingPointIterator movingIter = m_TransformedPointSet->GetPoints()->Begin(); movingIter != m_TransformedPointSet->GetPoints()->End(); ++movingIter) {
@@ -88,7 +88,7 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
     for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
       const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
-      const double expval = exp(-distance/scale);
+      const double expval = exp(-distance / scale);
       const size_t row = fixedIter.Index();
 
       for (size_t dim = 0; dim < Self::MovingPointSetDimension; ++dim) {
