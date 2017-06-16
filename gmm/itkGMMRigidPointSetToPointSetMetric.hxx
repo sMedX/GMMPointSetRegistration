@@ -13,6 +13,16 @@ GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMRigidPoint
 {
 }
 
+/** Initialize the metric */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMRigidPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
+::Initialize(void)
+throw (ExceptionObject)
+{
+  Superclass::Initialize();
+}
+
 /**
  * Get the match Measure
  */
@@ -20,30 +30,7 @@ template <typename TFixedPointSet, typename TMovingPointSet>
 typename GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::MeasureType
 GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
 {
-
-	m_Transform->SetParameters(parameters);
-
-  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
-    size_t row = it.Index();
-    const typename MovingPointSetType::PointType transformedPoint = m_Transform->TransformPoint(it.Value());
-
-    for (size_t n = 0; n < Self::MovingPointSetDimension; ++n) {
-      m_TransformedPointMatrix(row, n) = transformedPoint[n];
-    }
-  }
-
-  double value = GaussTransform(m_TransformedPointMatrix.data_block(),
-    m_FixedPointMatrix.data_block(),
-    m_TransformedPointMatrix.rows(),
-    m_FixedPointMatrix.rows(),
-    m_TransformedPointMatrix.cols(),
-    m_MovingPointSetScale, m_FixedPointSetScale,
-    m_Gradient.data_block());
-
-  value *= -1;
-  m_Gradient *= -1;
-
-  return value;
+  itkExceptionMacro(<< "not implemented");
 }
 
 /**
@@ -52,11 +39,11 @@ GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(cons
 template <typename TFixedPointSet, typename TMovingPointSet>
 void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
 {
-
+  itkExceptionMacro(<< "not implemented");
 }
 
 /*
- * Get both the match Measure and theDerivative Measure
+ * Get both the match Measure and the Derivative Measure
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
 void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
@@ -67,42 +54,40 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
     derivative.set_size(m_NumberOfParameters);
   }
 
-  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
-    size_t row = it.Index();
-    const typename MovingPointSetType::PointType transformedPoint = m_Transform->TransformPoint(it.Value());
-
-    for (size_t n = 0; n < Self::MovingPointSetDimension; ++n) {
-      m_TransformedPointMatrix(row, n) = transformedPoint[n];
-    }
+  // compute transformed point set
+  m_TransformedPointSet = MovingPointSetType::New();
+  for (MovingPointIterator iter = m_MovingPointSet->GetPoints()->Begin(); iter != m_MovingPointSet->GetPoints()->End(); ++iter) {
+    m_TransformedPointSet->SetPoint(iter.Index(), m_Transform->TransformPoint(iter.Value()));
   }
 
-  value = GaussTransform(m_TransformedPointMatrix.data_block(),
-    m_FixedPointMatrix.data_block(),
-    m_TransformedPointMatrix.rows(),
-    m_FixedPointMatrix.rows(),
-    m_TransformedPointMatrix.cols(),
-    m_MovingPointSetScale,
-    m_FixedPointSetScale,
-    m_Gradient.data_block());
+  GradientType gradient;
+  gradient.Fill(0);
 
-  value *= -1;
-  m_Gradient *= -1;
+  double scale = (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale) / 2;
 
-  // compute the derivatives
-  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
+  for (MovingPointIterator movingIter = m_TransformedPointSet->GetPoints()->Begin(); movingIter != m_TransformedPointSet->GetPoints()->End(); ++movingIter) {
+    const typename MovingPointSetType::PointType transformedPoint = movingIter.Value();
 
-  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
-    size_t row = it.Index();
-    m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), m_Jacobian, m_JacobianCache);
+    for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
+      const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
+      const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
+      const double expval = exp(-distance / scale);
+      value += expval;
+
+      for (size_t dim = 0; dim < PointDimension; ++dim) {
+        gradient[dim] += (-2.0) * expval * (transformedPoint[dim] - fixedPoint[dim]) / scale;
+      }
+    }
+
+    value *= -1.0;
+
+    // compute the derivatives
+    m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingIter.Value(), m_Jacobian, m_JacobianCache);
 
     for (size_t par = 0; par < m_NumberOfParameters; par++) {
-      double sum = 0;
-
       for (size_t dim = 0; dim < Self::FixedPointSetDimension; dim++) {
-        sum += m_Jacobian(dim, par) * m_Gradient(row, dim);
+        derivative[par] += m_Jacobian(dim, par) * gradient[dim];
       }
-
-      derivative[par] += sum;
     }
   }
 }
