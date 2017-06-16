@@ -98,11 +98,13 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
     const size_t row = movingIter.Index();
 
     for (size_t par = 0; par < m_NumberOfParameters; par++) {
-      double &sum = derivative[par];
+      double value = 0;
 
       for (size_t dim = 0; dim < Self::MovingPointSetDimension; dim++) {
-        sum += m_Jacobian(dim, par) * m_Gradient(row, dim);
+        value += m_Jacobian(dim, par) * m_Gradient(row, dim);
       }
+
+      derivative[par] = value;
     }
   }
 }
