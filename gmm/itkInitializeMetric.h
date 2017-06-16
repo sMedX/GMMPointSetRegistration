@@ -1,6 +1,6 @@
 #pragma once
 
-#include "itkGMMPointSetToPointSetMetricBase.h"
+#include "itkICPPointSetToPointSetMetric.h"
 #include "itkGMMRigidPointSetToPointSetMetric.h"
 #include "itkGMMPointSetToPointSetMetric.h"
 #include "itkGMMKCPointSetToPointSetMetric.h"
@@ -24,6 +24,7 @@ namespace itk
 
     enum class Metric
     {
+      ICP,
       Rigid,
       GMM,
       KC,
@@ -48,6 +49,11 @@ namespace itk
     void Update()
     {
       switch (m_TypeOfMetric) {
+      case Metric::ICP: {
+        typedef itk::ICPPointSetToPointSetMetric<PointSetType, PointSetType> MetricType;
+        m_Metric = MetricType::New();
+        break;
+      }
       case Metric::Rigid: {
         typedef itk::GMMRigidPointSetToPointSetMetric<PointSetType, PointSetType> MetricType;
         m_Metric = MetricType::New();
