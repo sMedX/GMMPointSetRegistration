@@ -54,6 +54,9 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
     derivative.set_size(m_NumberOfParameters);
   }
 
+  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
+  value = NumericTraits<MeasureType>::ZeroValue();
+
   GradientType gradient;
   gradient.Fill(0);
 
@@ -69,7 +72,7 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
       value += expval;
 
       for (size_t dim = 0; dim < PointDimension; ++dim) {
-        gradient[dim] += (-2.0) * expval * (transformedPoint[dim] - fixedPoint[dim]) / scale;
+        gradient[dim] += 2.0 * expval * (transformedPoint[dim] - fixedPoint[dim]);
       }
     }
 
@@ -85,11 +88,10 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
 
   const double factor = m_MovingPointSet->GetNumberOfPoints() * m_FixedPointSet->GetNumberOfPoints();
 
-  value /= factor;
-  value *= -1.0;
+  value *= -1.0 / factor;
 
   for (size_t par = 0; par < m_NumberOfParameters; par++) {
-    derivative[par] = (-2.0) * derivative[par] / factor;
+    derivative[par] = derivative[par] / (scale * factor);
   }
 }
 }
