@@ -79,8 +79,6 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
       }
     }
 
-    value *= -1.0;
-
     // compute the derivatives
     m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingIter.Value(), m_Jacobian, m_JacobianCache);
 
@@ -89,6 +87,15 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
         derivative[par] += m_Jacobian(dim, par) * gradient[dim];
       }
     }
+  }
+
+  const double factor = m_TransformedPointSet->GetNumberOfPoints() * m_FixedPointSet->GetNumberOfPoints();
+
+  value /= factor;
+  value *= -1.0;
+
+  for (size_t par = 0; par < m_NumberOfParameters; par++) {
+    derivative[par] = (-2.0) * derivative[par] / factor;
   }
 }
 }
