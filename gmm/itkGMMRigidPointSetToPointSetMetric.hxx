@@ -54,19 +54,13 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
     derivative.set_size(m_NumberOfParameters);
   }
 
-  // compute transformed point set
-  m_TransformedPointSet = MovingPointSetType::New();
-  for (MovingPointIterator iter = m_MovingPointSet->GetPoints()->Begin(); iter != m_MovingPointSet->GetPoints()->End(); ++iter) {
-    m_TransformedPointSet->SetPoint(iter.Index(), m_Transform->TransformPoint(iter.Value()));
-  }
-
   GradientType gradient;
   gradient.Fill(0);
 
   double scale = (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale) / 2;
 
-  for (MovingPointIterator movingIter = m_TransformedPointSet->GetPoints()->Begin(); movingIter != m_TransformedPointSet->GetPoints()->End(); ++movingIter) {
-    const typename MovingPointSetType::PointType transformedPoint = movingIter.Value();
+  for (MovingPointIterator movingIter = m_MovingPointSet->GetPoints()->Begin(); movingIter != m_MovingPointSet->GetPoints()->End(); ++movingIter) {
+    const typename MovingPointSetType::PointType transformedPoint = m_Transform->TransformPoint(movingIter.Value());
 
     for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
@@ -89,7 +83,7 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
     }
   }
 
-  const double factor = m_TransformedPointSet->GetNumberOfPoints() * m_FixedPointSet->GetNumberOfPoints();
+  const double factor = m_MovingPointSet->GetNumberOfPoints() * m_FixedPointSet->GetNumberOfPoints();
 
   value /= factor;
   value *= -1.0;
