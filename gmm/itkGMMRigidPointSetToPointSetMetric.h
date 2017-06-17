@@ -1,8 +1,6 @@
 #ifndef itkGMMRigidPointSetToPointSetMetric_h
 #define itkGMMRigidPointSetToPointSetMetric_h
 
-#include <itkCovariantVector.h>
-#include <itkPoint.h>
 #include "itkGMMPointSetToPointSetMetricBase.h"
 
 namespace itk
