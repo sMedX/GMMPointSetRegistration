@@ -1,8 +1,6 @@
 #ifndef itkGMMRigidPointSetToPointSetMetric_h
 #define itkGMMRigidPointSetToPointSetMetric_h
 
-#include <itkCovariantVector.h>
-#include <itkPoint.h>
 #include "itkGMMPointSetToPointSetMetricBase.h"
 
 namespace itk
@@ -49,6 +47,8 @@ public:
   typedef typename Superclass::FixedPointIterator         FixedPointIterator;
   typedef typename Superclass::MovingPointIterator        MovingPointIterator;
 
+  typedef typename Superclass::GradientType               GradientType;
+
   /** Get the derivatives of the match measure. */
   void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
 
@@ -57,6 +57,11 @@ public:
 
   /**  Get value and derivatives for multiple valued optimizers. */
   void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
+
+  /** Initialize the Metric by making sure that all the components
+  *  are present and plugged together correctly     */
+  virtual void Initialize(void)
+    throw (ExceptionObject);
 
 protected:
   GMMRigidPointSetToPointSetMetric();

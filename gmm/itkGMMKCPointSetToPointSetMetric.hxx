@@ -42,7 +42,7 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivati
 }
 
 /*
- * Get both the match Measure and theDerivative Measure
+ * Get both the match Measure and the Derivative Measure
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
 void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
