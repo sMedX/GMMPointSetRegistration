@@ -58,12 +58,13 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue
   value = NumericTraits<MeasureType>::ZeroValue();
 
   GradientType gradient;
-  gradient.Fill(0);
 
   double scale = 0.5 * (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale);
 
   for (MovingPointIterator movingIter = m_MovingPointSet->GetPoints()->Begin(); movingIter != m_MovingPointSet->GetPoints()->End(); ++movingIter) {
     const typename MovingPointSetType::PointType transformedPoint = m_Transform->TransformPoint(movingIter.Value());
+
+    gradient.Fill(0);
 
     for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
