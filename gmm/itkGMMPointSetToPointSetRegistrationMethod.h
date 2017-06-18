@@ -96,12 +96,10 @@ public:
   itkGetConstReferenceMacro(LastTransformParameters, ParametersType);
 
   /** Initialize by setting the interconnects between the components. */
-  void Initialize()
-  throw ( ExceptionObject );
+  void Initialize() throw (ExceptionObject);
 
   /** preprocessing of the fixed and moving point sets */
-  virtual void Preprocessing() ITK_OVERRIDE;
-  throw (ExceptionObject);
+  virtual void Preprocessing() throw (ExceptionObject) ITK_OVERRIDE;
 
   /** Returns the transform resulting from the registration process  */
   const TransformOutputType * GetOutput() const;
