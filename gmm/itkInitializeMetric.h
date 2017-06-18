@@ -2,7 +2,7 @@
 
 #include "itkICPPointSetToPointSetMetric.h"
 #include "itkGMML2RigidPointSetToPointSetMetric.h"
-#include "itkGMMPointSetToPointSetMetric.h"
+#include "itkGMML2PointSetToPointSetMetric.h"
 #include "itkGMMKCPointSetToPointSetMetric.h"
 #include "itkGMMMLEPointSetToPointSetMetric.h"
 
@@ -60,7 +60,7 @@ namespace itk
         break;
       }
       case Metric::GMM:{
-        typedef itk::GMMPointSetToPointSetMetric<PointSetType, PointSetType> MetricType;
+        typedef itk::GMML2PointSetToPointSetMetric<PointSetType, PointSetType> MetricType;
         m_Metric = MetricType::New();
         break;
       }
