@@ -96,7 +96,7 @@ public:
   itkGetConstReferenceMacro(LastTransformParameters, ParametersType);
 
   /** Initialize by setting the interconnects between the components. */
-  void Initialize() throw (ExceptionObject) ITK_OVERRIDE;
+  void Initialize() throw (ExceptionObject);
 
   /** preprocessing of the fixed and moving point sets */
   virtual void Preprocessing() throw (ExceptionObject);
