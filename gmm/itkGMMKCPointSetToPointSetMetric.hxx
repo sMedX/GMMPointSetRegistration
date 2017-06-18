@@ -107,7 +107,7 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
 
     //-------------------------------------
     // compute derivatives
-    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(m_MovingPointSet->GetPoint(movingIter1.Index()), this->m_Jacobian, this->m_JacobianCache);
+    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(this->m_MovingPointSet->GetPoint(movingIter1.Index()), this->m_Jacobian, this->m_JacobianCache);
 
     for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
       for (size_t dim = 0; dim < this->PointDimension; dim++) {
