@@ -2,7 +2,7 @@ set(_name GMM)
 project(${_name})
 
 set(HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMICPPointSetToPointSetMetric.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/itkICPPointSetToPointSetMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMKCPointSetToPointSetMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMMLEPointSetToPointSetMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMML2PointSetToPointSetMetric.h
@@ -15,7 +15,7 @@ set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/itkNormalizePointSet.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkPointSetPropertiesCalculator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkPointSetToPointSetMetrics.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMICPPointSetToPointSetMetric.hxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/itkICPPointSetToPointSetMetric.hxx
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMKCPointSetToPointSetMetric.hxx
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMMLEPointSetToPointSetMetric.hxx
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMML2PointSetToPointSetMetric.hxx
