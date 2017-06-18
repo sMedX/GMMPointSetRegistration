@@ -95,14 +95,14 @@ public:
     m_Transform->SetScale(1.0 / m_Scale);
     m_Transform->SetCenter(m_Center);
 
-    TransformType::TranslationType translation;
+    typename TransformType::TranslationType translation;
     for (unsigned int n = 0; n < Dimension; ++n) {
       translation[n] = -m_Center[n];
     }
 
     m_Transform->SetTranslation(translation);
 
-    PointsContainer::Pointer points = PointsContainer::New();
+    typename PointsContainer::Pointer points = PointsContainer::New();
     m_OutputPointSet = PointSetType::New();
 
     // normalize point set
