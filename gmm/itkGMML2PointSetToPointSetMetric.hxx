@@ -49,7 +49,7 @@ void GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivati
 template <typename TFixedPointSet, typename TMovingPointSet>
 void GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
 {
-  m_Transform->SetParameters(parameters);
+  this->m_Transform->SetParameters(parameters);
 
   if (derivative.size() != this->m_NumberOfParameters) {
     derivative.set_size(this->m_NumberOfParameters);
