@@ -1,7 +1,7 @@
-#ifndef itkGMMRigidPointSetToPointSetMetric_hxx
-#define itkGMMRigidPointSetToPointSetMetric_hxx
+#ifndef itkGMML2RigidPointSetToPointSetMetric_hxx
+#define itkGMML2RigidPointSetToPointSetMetric_hxx
 
-#include "itkGMMRigidPointSetToPointSetMetric.h"
+#include "itkGMML2RigidPointSetToPointSetMetric.h"
 
 namespace itk
 {
@@ -9,14 +9,14 @@ namespace itk
  * Constructor
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMRigidPointSetToPointSetMetric()
+GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMML2RigidPointSetToPointSetMetric()
 {
 }
 
 /** Initialize the metric */
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
-GMMRigidPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
+GMML2RigidPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 ::Initialize(void)
 throw (ExceptionObject)
 {
@@ -27,8 +27,8 @@ throw (ExceptionObject)
  * Get the match Measure
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-typename GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::MeasureType
-GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
+typename GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::MeasureType
+GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
 {
   itkExceptionMacro(<< "not implemented");
 }
@@ -37,7 +37,7 @@ GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(cons
  * Get the Derivative Measure
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
+void GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
 {
   itkExceptionMacro(<< "not implemented");
 }
@@ -46,7 +46,7 @@ void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDeriv
  * Get both the match Measure and the Derivative Measure
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-void GMMRigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
+void GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
 {
   m_Transform->SetParameters(parameters);
 

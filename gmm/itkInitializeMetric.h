@@ -1,7 +1,7 @@
 #pragma once
 
 #include "itkICPPointSetToPointSetMetric.h"
-#include "itkGMMRigidPointSetToPointSetMetric.h"
+#include "itkGMML2RigidPointSetToPointSetMetric.h"
 #include "itkGMMPointSetToPointSetMetric.h"
 #include "itkGMMKCPointSetToPointSetMetric.h"
 #include "itkGMMMLEPointSetToPointSetMetric.h"
@@ -55,7 +55,7 @@ namespace itk
         break;
       }
       case Metric::Rigid: {
-        typedef itk::GMMRigidPointSetToPointSetMetric<PointSetType, PointSetType> MetricType;
+        typedef itk::GMML2RigidPointSetToPointSetMetric<PointSetType, PointSetType> MetricType;
         m_Metric = MetricType::New();
         break;
       }

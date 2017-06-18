@@ -9,7 +9,7 @@ set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMPointSetToPointSetMetricBase.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMPointSetToPointSetRegistrationMethod.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMRegstrationUtils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMRigidPointSetToPointSetMetric.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/itkGMML2RigidPointSetToPointSetMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkInitializeMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkInitializeTransform.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkNormalizePointSet.h
@@ -21,7 +21,7 @@ set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMPointSetToPointSetMetric.hxx
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMPointSetToPointSetMetricBase.hxx
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMPointSetToPointSetRegistrationMethod.hxx
-    ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMRigidPointSetToPointSetMetric.hxx
+    ${CMAKE_CURRENT_SOURCE_DIR}/itkGMML2RigidPointSetToPointSetMetric.hxx
 )
 
 add_library(${_name} INTERFACE)
