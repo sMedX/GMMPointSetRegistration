@@ -1,3 +1,5 @@
+[![Build Status](http://178.62.239.31:8080/buildStatus/icon?job=GMMPointSetRegistration-master)](http://178.62.239.31:8080/job/GMMPointSetRegistration-master/)
+
 # GMMPointSetRegistration
 
 Implementations of the robust point set registration algorithms.
