@@ -52,8 +52,7 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
-::Initialize()
-throw (ExceptionObject)
+::Initialize() throw (ExceptionObject)
 {
   if (!m_FixedPointSet) {
     itkExceptionMacro(<< "FixedPointSet is not present");
@@ -103,7 +102,7 @@ throw (ExceptionObject)
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
-::Preprocessing()
+::Preprocessing() throw (ExceptionObject)
 {
   if ( m_FixedInitialTransform )
   {
