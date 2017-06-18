@@ -72,7 +72,7 @@ void GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
   double scale1 = (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale) / 2;
   double scale2 = this->m_MovingPointSetScale*this->m_MovingPointSetScale;
 
-  for (MovingPointIterator movingIter1 = m_TransformedPointSet->GetPoints()->Begin(); movingIter1 != m_TransformedPointSet->GetPoints()->End(); ++movingIter1) {
+  for (MovingPointIterator movingIter1 = this->m_TransformedPointSet->GetPoints()->Begin(); movingIter1 != this->m_TransformedPointSet->GetPoints()->End(); ++movingIter1) {
     const typename MovingPointSetType::PointType transformedPoint1 = movingIter1.Value();
 
     //------------------------------------
