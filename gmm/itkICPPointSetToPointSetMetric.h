@@ -68,12 +68,12 @@ public:
 
   /** Initialize the Metric by making sure that all the components
   *  are present and plugged together correctly     */
-  virtual void Initialize(void)
-  throw (ExceptionObject);
+  virtual void Initialize() throw (ExceptionObject) ITK_OVERRIDE;
 
 protected:
   ICPPointSetToPointSetMetric();
   virtual ~ICPPointSetToPointSetMetric() {}
+
   typename FixedPointsLocatorType::Pointer m_FixedPointsLocator;
 
 private:

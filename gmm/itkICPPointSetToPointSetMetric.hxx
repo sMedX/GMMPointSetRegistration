@@ -17,12 +17,11 @@ ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::ICPPointSetToPoint
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 ICPPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
-::Initialize(void)
-throw (ExceptionObject)
+::Initialize() throw (ExceptionObject)
 {
   Superclass::Initialize();
 
-  typename FixedPointSetType::PointsContainer::ConstPointer fixedPointContainer = m_FixedPointSet->GetPoints();
+  typename FixedPointSetType::PointsContainer::ConstPointer fixedPointContainer = this->m_FixedPointSet->GetPoints();
 
   m_FixedPointsLocator = FixedPointsLocatorType::New();
   m_FixedPointsLocator->SetPoints(const_cast<typename FixedPointSetType::PointsContainer*> (fixedPointContainer.GetPointer()));
