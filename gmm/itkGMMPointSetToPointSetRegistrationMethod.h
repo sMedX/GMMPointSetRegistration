@@ -41,12 +41,12 @@ public:
   typedef typename MovingPointsContainerType::ConstIterator MovingPointConstIterator;
 
   /**  Type of the metric. */
-  typedef typename GMMPointSetToPointSetMetricBase<FixedPointSetType, TMovingPointSet> MetricType;
-  typedef typename MetricType::Pointer                                                 MetricPointer;
+  typedef GMMPointSetToPointSetMetricBase<FixedPointSetType, TMovingPointSet> MetricType;
+  typedef typename MetricType::Pointer                                        MetricPointer;
 
   /**  Type of the Transform . */
-  typedef  typename MetricType::TransformType TransformType;
-  typedef  typename TransformType::Pointer    TransformPointer;
+  typedef typename MetricType::TransformType TransformType;
+  typedef typename TransformType::Pointer    TransformPointer;
 
   /** Type for the output: Using Decorator pattern for enabling
    *  the Transform to be passed in the data pipeline */
@@ -56,10 +56,11 @@ public:
 
   /**  Type of the optimizer. */
   typedef SingleValuedNonLinearOptimizer OptimizerType;
+  typedef typename OptimizerType::Pointer OptimizerPointer;
 
   /** Type of the Transformation parameters This is the same type used to
    *  represent the search space of the optimization algorithm */
-  typedef  typename MetricType::TransformParametersType ParametersType;
+  typedef typename MetricType::TransformParametersType ParametersType;
 
   /** Smart Pointer type to a DataObject. */
   typedef typename DataObject::Pointer DataObjectPointer;
@@ -137,8 +138,8 @@ protected:
   MovingPointSetConstPointer m_MovingPointSet;
   FixedPointSetPointer       m_MovingTransformedPointSet;
 
-  MetricPointer          m_Metric;
-  OptimizerType::Pointer m_Optimizer;
+  MetricPointer m_Metric;
+  OptimizerPointer m_Optimizer;
 
   TransformPointer m_Transform;
   TransformPointer m_FixedInitialTransform;
