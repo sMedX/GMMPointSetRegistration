@@ -17,8 +17,7 @@ GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMMLEPointSetT
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 GMMMLEPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
-::Initialize(void)
-throw (ExceptionObject)
+::Initialize() throw (ExceptionObject)
 {
   Superclass::Initialize();
 }
@@ -47,29 +46,29 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivat
 template <typename TFixedPointSet, typename TMovingPointSet>
 void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
 {
-  m_Transform->SetParameters(parameters);
+  this->m_Transform->SetParameters(parameters);
 
-  if (derivative.size() != m_NumberOfParameters) {
-    derivative.set_size(m_NumberOfParameters);
+  if (derivative.size() != this->m_NumberOfParameters) {
+    derivative.set_size(this->m_NumberOfParameters);
   }
 
   // compute transformed point set
-  m_TransformedPointSet = MovingPointSetType::New();
-  for (MovingPointIterator iter = m_MovingPointSet->GetPoints()->Begin(); iter != m_MovingPointSet->GetPoints()->End(); ++iter) {
-    m_TransformedPointSet->SetPoint(iter.Index(), m_Transform->TransformPoint(iter.Value()));
+  this->m_TransformedPointSet = MovingPointSetType::New();
+  for (MovingPointIterator iter = this->m_MovingPointSet->GetPoints()->Begin(); iter != this->m_MovingPointSet->GetPoints()->End(); ++iter) {
+    this->m_TransformedPointSet->SetPoint(iter.Index(), this->m_Transform->TransformPoint(iter.Value()));
   }
 
   value = NumericTraits<MeasureType>::ZeroValue();
-  double scale = 2*m_MovingPointSetScale*m_MovingPointSetScale;
+  double scale = 2*this->m_MovingPointSetScale*this->m_MovingPointSetScale;
 
   itk::Array<double> vector;
-  vector.set_size(m_FixedPointSet->GetNumberOfPoints());
+  vector.set_size(this->m_FixedPointSet->GetNumberOfPoints());
 
-  for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
+  for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
     const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
     double sum = 1.0e-05;
 
-    for (MovingPointIterator movingIter = m_TransformedPointSet->GetPoints()->Begin(); movingIter != m_TransformedPointSet->GetPoints()->End(); ++movingIter) {
+    for (MovingPointIterator movingIter = this->m_TransformedPointSet->GetPoints()->Begin(); movingIter != this->m_TransformedPointSet->GetPoints()->End(); ++movingIter) {
       const typename MovingPointSetType::PointType transformedPoint = movingIter.Value();
       const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
       sum += exp(-distance / scale);
@@ -80,19 +79,19 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
   }
 
   // compute the gradient
-  m_Gradient.fill(0);
+  this->m_Gradient.fill(0);
 
-  for (MovingPointIterator movingIter = m_TransformedPointSet->GetPoints()->Begin(); movingIter != m_TransformedPointSet->GetPoints()->End(); ++movingIter) {
+  for (MovingPointIterator movingIter = this->m_TransformedPointSet->GetPoints()->Begin(); movingIter != this->m_TransformedPointSet->GetPoints()->End(); ++movingIter) {
     const typename MovingPointSetType::PointType transformedPoint = movingIter.Value();
     
-    for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
+    for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
       const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
       const double expval = exp(-distance / scale);
       const size_t row = fixedIter.Index();
 
       for (size_t dim = 0; dim < Self::MovingPointSetDimension; ++dim) {
-        m_Gradient(row, dim) += 2.0 * expval * (transformedPoint[dim] - fixedPoint[dim]) / scale / vector[row];
+        this->m_Gradient(row, dim) += 2.0 * expval * (transformedPoint[dim] - fixedPoint[dim]) / scale / vector[row];
       }
     }
   }
@@ -100,15 +99,15 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
   // compute the derivatives
   derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
 
-  for (MovingPointIterator movingIter = m_MovingPointSet->GetPoints()->Begin(); movingIter != m_MovingPointSet->GetPoints()->End(); ++movingIter) {
-    m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingIter.Value(), m_Jacobian, m_JacobianCache);
+  for (MovingPointIterator movingIter = this->m_MovingPointSet->GetPoints()->Begin(); movingIter != this->m_MovingPointSet->GetPoints()->End(); ++movingIter) {
+    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingIter.Value(), this->m_Jacobian, this->m_JacobianCache);
     const size_t row = movingIter.Index();
 
-    for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+    for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
       double value = 0;
 
-      for (size_t dim = 0; dim < PointDimension; ++dim) {
-        value += m_Jacobian(dim, par) * m_Gradient(row, dim);
+      for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+        value += this->m_Jacobian(dim, par) * this->m_Gradient(row, dim);
       }
 
       derivative[par] = value;

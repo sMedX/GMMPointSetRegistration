@@ -52,8 +52,7 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
-::Initialize()
-throw (ExceptionObject)
+::Initialize() throw (ExceptionObject)
 {
   if (!m_FixedPointSet) {
     itkExceptionMacro(<< "FixedPointSet is not present");
@@ -103,11 +102,11 @@ throw (ExceptionObject)
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
-::Preprocessing()
+::Preprocessing() throw (ExceptionObject)
 {
   if ( m_FixedInitialTransform )
   {
-    FixedPointsContainerType::Pointer points = FixedPointsContainerType::New();
+    typename FixedPointsContainerType::Pointer points = FixedPointsContainerType::New();
     m_FixedTransformedPointSet = FixedPointSetType::New();
 
     for (FixedPointConstIterator it = m_FixedPointSet->GetPoints()->Begin(); it != m_FixedPointSet->GetPoints()->End(); ++it) {
@@ -119,7 +118,7 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
 
   if ( m_MovingInitialTransform ) 
   {
-    MovingPointsContainerType::Pointer points = MovingPointsContainerType::New();
+    typename MovingPointsContainerType::Pointer points = MovingPointsContainerType::New();
     m_MovingTransformedPointSet = MovingPointSetType::New();
 
     for (MovingPointConstIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
