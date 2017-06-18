@@ -29,16 +29,34 @@ int main(int argc, char** argv) {
 
   args::Group allRequired(parser, "Required arguments:", args::Group::Validators::All);
 
-  args::ValueFlag<std::string> argFixedFileName(allRequired, "fixed", "The fixed mesh filename", {'f', "fixed"});
-  args::ValueFlag<std::string> argMovingFileName(allRequired, "moving", "The moving mesh filename", {'m', "moving"});
+  args::ValueFlag<std::string> argFixedFileName(allRequired, "fixed", "The fixed mesh (point-set) filename", {'f', "fixed"});
+  args::ValueFlag<std::string> argMovingFileName(allRequired, "moving", "The moving mesh (point-set) filename", {'m', "moving"});
   args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(allRequired, "scale", "The scale levels", {'s', "scale"});
   
-  args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh filename", {'o', "output"});
+  args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh (point-set) filename", {'o', "output"});
   args::ValueFlag<unsigned int> argNumberOfIterations(parser, "iterations", "The number of iterations", {'i', "iterations"});
   args::Flag argNormalize(parser, "normalize", "Normalization", {'n', "normalize"});
-  args::Flag argObserver(parser, "observer", "Optimizer iterations observer", {'O', "observer"});
-  args::ValueFlag<unsigned int> argTypeOfTransform(parser, "transform", "The type of transform", {'t', "transform"});
-  args::ValueFlag<unsigned int> argTypeOfMetric(parser, "metric", "The type of metric", {'M', "metric"});
+  args::Flag argTrace(parser, "trace", "Optimizer iterations tracing", {'T', "trace"});
+
+  const std::string transformDescription =
+    "The type of transform (That is number):\n"
+    "  0 : Translation\n"
+    "  1 : Euler3D\n"
+    "  2 : Versor3D\n"
+    "  3 : Similarity\n"
+    "  4 : ScaleSkewVersor3D\n";
+
+  args::ValueFlag<size_t> argTypeOfTransform(parser, "transform", transformDescription, {'t', "transform"});
+  
+  const std::string metricDescription =
+    "The type of metric (That is number):\n"
+    "  0 : ICP\n"
+    "  1 : Rigid\n"
+    "  2 : GMM\n"
+    "  3 : KC\n"
+    "  4 : MLE\n";
+
+  args::ValueFlag<size_t> argTypeOfMetric(parser, "metric", metricDescription, {'M', "metric"});
 
   try {
     parser.ParseCLI(argc, argv);
@@ -69,15 +87,15 @@ int main(int argc, char** argv) {
   }
 
   bool normalize = argNormalize;
-  bool observer = argObserver;
+  bool trace = argTrace;
 
-  unsigned int typeOfTransform = 0;
+  size_t typeOfTransform = 0;
 
   if (argTypeOfTransform) {
     typeOfTransform = args::get(argTypeOfTransform);
   }
 
-  unsigned int typeOfMetric = 0;
+  size_t typeOfMetric = 0;
 
   if (argTypeOfMetric) {
     typeOfMetric = args::get(argTypeOfMetric);
@@ -203,7 +221,7 @@ int main(int argc, char** argv) {
   optimizer->SetUpperBound(upperBounds);
   optimizer->SetMaximumNumberOfIterations(numberOfIterations);
   optimizer->MinimizeOn();
-  if (observer) {
+  if (trace) {
     typedef CommandIterationUpdate<itk::LBFGSBOptimizer> CommandLBFGSBOptimizerIterationUpdate;
 
     CommandLBFGSBOptimizerIterationUpdate::Pointer observer = CommandLBFGSBOptimizerIterationUpdate::New();
