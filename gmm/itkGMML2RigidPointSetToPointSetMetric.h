@@ -1,5 +1,5 @@
-#ifndef itkGMMRigidPointSetToPointSetMetric_h
-#define itkGMMRigidPointSetToPointSetMetric_h
+#ifndef itkGMML2RigidPointSetToPointSetMetric_h
+#define itkGMML2RigidPointSetToPointSetMetric_h
 
 #include "itkGMMPointSetToPointSetMetricBase.h"
 
@@ -16,11 +16,11 @@ namespace itk
  * Transform.
  */
 template< typename TFixedPointSet, typename TMovingPointSet >
-class GMMRigidPointSetToPointSetMetric : public GMMPointSetToPointSetMetricBase < TFixedPointSet, TMovingPointSet >
+class GMML2RigidPointSetToPointSetMetric : public GMMPointSetToPointSetMetricBase < TFixedPointSet, TMovingPointSet >
 {
 public:
   /** Standard class typedefs. */
-  typedef GMMRigidPointSetToPointSetMetric                                   Self;
+  typedef GMML2RigidPointSetToPointSetMetric                                   Self;
   typedef GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet > Superclass;
   typedef SmartPointer< Self >                                               Pointer;
   typedef SmartPointer< const Self >                                         ConstPointer;
@@ -29,7 +29,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(GMMRigidPointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
+  itkTypeMacro(GMML2RigidPointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
 
   /** Types transferred from the base class */
   typedef typename Superclass::TransformType              TransformType;
@@ -64,17 +64,17 @@ public:
     throw (ExceptionObject);
 
 protected:
-  GMMRigidPointSetToPointSetMetric();
-  virtual ~GMMRigidPointSetToPointSetMetric() {}
+  GMML2RigidPointSetToPointSetMetric();
+  virtual ~GMML2RigidPointSetToPointSetMetric() {}
 
 private:
-  GMMRigidPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
+  GMML2RigidPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;
 };
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkGMMRigidPointSetToPointSetMetric.hxx"
+#include "itkGMML2RigidPointSetToPointSetMetric.hxx"
 #endif
 
 #endif

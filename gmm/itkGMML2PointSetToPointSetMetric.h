@@ -1,5 +1,5 @@
-#ifndef itkGMMPointSetToPointSetMetric_h
-#define itkGMMPointSetToPointSetMetric_h
+#ifndef itkGMML2PointSetToPointSetMetric_h
+#define itkGMML2PointSetToPointSetMetric_h
 
 #include <itkCovariantVector.h>
 #include <itkPoint.h>
@@ -18,11 +18,11 @@ namespace itk
  * Transform.
  */
 template< typename TFixedPointSet, typename TMovingPointSet >
-class GMMPointSetToPointSetMetric : public GMMPointSetToPointSetMetricBase < TFixedPointSet, TMovingPointSet >
+class GMML2PointSetToPointSetMetric : public GMMPointSetToPointSetMetricBase < TFixedPointSet, TMovingPointSet >
 {
 public:
   /** Standard class typedefs. */
-  typedef GMMPointSetToPointSetMetric                                   Self;
+  typedef GMML2PointSetToPointSetMetric                                   Self;
   typedef GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet > Superclass;
   typedef SmartPointer< Self >                                               Pointer;
   typedef SmartPointer< const Self >                                         ConstPointer;
@@ -31,7 +31,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(GMMPointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
+  itkTypeMacro(GMML2PointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
 
   /** Types transferred from the base class */
   typedef typename Superclass::TransformType              TransformType;
@@ -64,20 +64,20 @@ public:
   throw (ExceptionObject);
 
 protected:
-  GMMPointSetToPointSetMetric();
-  virtual ~GMMPointSetToPointSetMetric() {}
+  GMML2PointSetToPointSetMetric();
+  virtual ~GMML2PointSetToPointSetMetric() {}
 
   mutable vnl_matrix<double> m_Gradient1;
   mutable vnl_matrix<double> m_Gradient2;
 
 private:
-  GMMPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
+  GMML2PointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;
 };
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkGMMPointSetToPointSetMetric.hxx"
+#include "itkGMML2PointSetToPointSetMetric.hxx"
 #endif
 
 #endif
