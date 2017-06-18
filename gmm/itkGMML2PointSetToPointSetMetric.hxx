@@ -88,7 +88,7 @@ void GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
     size_t row = it.Index();
 
     for (size_t dim = 0; dim < Self::MovingPointSetDimension; ++dim) {
-      m_Gradient(row, dim) = 2.0 * (-m_Gradient1(row, dim) + m_Gradient2(row, dim));
+      this->m_Gradient(row, dim) = 2.0 * (-m_Gradient1(row, dim) + m_Gradient2(row, dim));
     }
   }
 
