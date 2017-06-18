@@ -64,7 +64,7 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
   itk::Array<double> vector;
   vector.set_size(this->m_FixedPointSet->GetNumberOfPoints());
 
-  for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
+  for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
     const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
     double sum = 1.0e-05;
 
