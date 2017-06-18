@@ -17,8 +17,7 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMML2RigidP
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 GMML2RigidPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
-::Initialize(void)
-throw (ExceptionObject)
+::Initialize() throw (ExceptionObject)
 {
   Superclass::Initialize();
 }
@@ -48,10 +47,10 @@ void GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDer
 template <typename TFixedPointSet, typename TMovingPointSet>
 void GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
 {
-  m_Transform->SetParameters(parameters);
+  this->m_Transform->SetParameters(parameters);
 
-  if (derivative.size() != m_NumberOfParameters) {
-    derivative.set_size(m_NumberOfParameters);
+  if (derivative.size() != this->m_NumberOfParameters) {
+    derivative.set_size(this->m_NumberOfParameters);
   }
 
   derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
@@ -59,39 +58,39 @@ void GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetVal
 
   GradientType gradient;
 
-  double scale = 0.5 * (m_FixedPointSetScale*m_FixedPointSetScale + m_MovingPointSetScale*m_MovingPointSetScale);
+  double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
 
-  for (MovingPointIterator movingIter = m_MovingPointSet->GetPoints()->Begin(); movingIter != m_MovingPointSet->GetPoints()->End(); ++movingIter) {
-    const typename MovingPointSetType::PointType transformedPoint = m_Transform->TransformPoint(movingIter.Value());
+  for (MovingPointIterator movingIter = this->m_MovingPointSet->GetPoints()->Begin(); movingIter != this->m_MovingPointSet->GetPoints()->End(); ++movingIter) {
+    const typename MovingPointSetType::PointType transformedPoint = this->m_Transform->TransformPoint(movingIter.Value());
 
     gradient.Fill(0);
 
-    for (FixedPointIterator fixedIter = m_FixedPointSet->GetPoints()->Begin(); fixedIter != m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
+    for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
       const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
       const double expval = exp(-distance / scale);
       value += expval;
 
-      for (size_t dim = 0; dim < PointDimension; ++dim) {
+      for (size_t dim = 0; dim < this->PointDimension; ++dim) {
         gradient[dim] += (-2.0) * expval * (transformedPoint[dim] - fixedPoint[dim]);
       }
     }
 
     // compute the derivatives
-    m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingIter.Value(), m_Jacobian, m_JacobianCache);
+    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingIter.Value(), this->m_Jacobian, this->m_JacobianCache);
 
-    for (size_t par = 0; par < m_NumberOfParameters; par++) {
+    for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
       for (size_t dim = 0; dim < Self::FixedPointSetDimension; dim++) {
-        derivative[par] += m_Jacobian(dim, par) * gradient[dim];
+        derivative[par] += this->m_Jacobian(dim, par) * gradient[dim];
       }
     }
   }
 
-  const double factor = m_MovingPointSet->GetNumberOfPoints() * m_FixedPointSet->GetNumberOfPoints();
+  const double factor = this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
 
   value *= -2.0 / factor;
 
-  for (size_t par = 0; par < m_NumberOfParameters; par++) {
+  for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
     derivative[par] = (-2.0) * derivative[par] / (scale * factor);
   }
 }
