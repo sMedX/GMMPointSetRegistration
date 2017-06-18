@@ -74,7 +74,7 @@ void ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDe
     value += transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
 
     // compute gradient for the current moving point
-    for (size_t dim = 0; dim < PointDimension; ++dim) {
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
       gradient[dim] = 2.0 * (transformedPoint[dim] - fixedPoint[dim]);
     }
 
@@ -82,7 +82,7 @@ void ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDe
     this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingPoint, this->m_Jacobian, this->m_JacobianCache);
 
     for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
-      for (size_t dim = 0; dim < PointDimension; ++dim) {
+      for (size_t dim = 0; dim < this->PointDimension; ++dim) {
         derivative[par] += this->m_Jacobian(dim, par) * gradient[dim];
       }
     }
