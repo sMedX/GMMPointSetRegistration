@@ -100,7 +100,7 @@ public:
   throw ( ExceptionObject );
 
   /** preprocessing of the fixed and moving point sets */
-  virtual void Preprocessing() ITK_OVERRIDE
+  virtual void Preprocessing() ITK_OVERRIDE;
   throw (ExceptionObject);
 
   /** Returns the transform resulting from the registration process  */
