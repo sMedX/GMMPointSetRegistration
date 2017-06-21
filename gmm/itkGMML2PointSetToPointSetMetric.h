@@ -49,6 +49,9 @@ public:
   typedef typename Superclass::FixedPointIterator         FixedPointIterator;
   typedef typename Superclass::MovingPointIterator        MovingPointIterator;
 
+  typedef typename Superclass::GradientType               GradientType;
+  typedef typename Superclass::LocalDerivativeType        LocalDerivativeType;
+
   /** Get the derivatives of the match measure. */
   void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
 
