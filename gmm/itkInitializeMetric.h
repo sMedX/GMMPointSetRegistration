@@ -1,6 +1,5 @@
 #pragma once
 
-#include "itkICPPointSetToPointSetMetric.h"
 #include "itkGMML2RigidPointSetToPointSetMetric.h"
 #include "itkGMML2PointSetToPointSetMetric.h"
 #include "itkGMMKCPointSetToPointSetMetric.h"
@@ -24,9 +23,8 @@ namespace itk
 
     enum class Metric
     {
-      ICP,
-      Rigid,
-      GMM,
+      L2Rigid,
+      L2,
       KC,
       MLE,
     };
@@ -49,17 +47,12 @@ namespace itk
     void Update()
     {
       switch (m_TypeOfMetric) {
-      case Metric::ICP: {
-        typedef itk::ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> ICPMetricType;
-        m_Metric = ICPMetricType::New();
-        break;
-      }
-      case Metric::Rigid: {
+      case Metric::L2Rigid: {
         typedef itk::GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMML2RigidMetricType;
         m_Metric = GMML2RigidMetricType::New();
         break;
       }
-      case Metric::GMM:{
+      case Metric::L2:{
         typedef itk::GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMML2MetricType;
         m_Metric = GMML2MetricType::New();
         break;
@@ -87,7 +80,7 @@ namespace itk
     }
 
   protected:
-    Metric m_TypeOfMetric = Metric::Rigid;
+    Metric m_TypeOfMetric = Metric::L2Rigid;
     typename MetricType::Pointer m_Metric = ITK_NULLPTR;
 
     InitializeMetric()
