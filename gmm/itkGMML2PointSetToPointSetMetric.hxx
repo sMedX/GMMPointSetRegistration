@@ -48,10 +48,6 @@ void GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
 {
   this->m_Transform->SetParameters(parameters);
 
-  if (derivative.size() != this->m_NumberOfParameters) {
-    derivative.set_size(this->m_NumberOfParameters);
-  }
-
   this->m_TransformedPointSet = MovingPointSetType::New();
   for (MovingPointIterator iter = this->m_MovingPointSet->GetPoints()->Begin(); iter != this->m_MovingPointSet->GetPoints()->End(); ++iter) {
     this->m_TransformedPointSet->SetPoint(iter.Index(), this->m_Transform->TransformPoint(iter.Value()));
@@ -63,7 +59,6 @@ void GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
   const double factor1 = this->m_TransformedPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
   const double factor2 = this->m_TransformedPointSet->GetNumberOfPoints() * this->m_TransformedPointSet->GetNumberOfPoints();
 
-  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
   GradientType gradient1;
   GradientType gradient2;
 
@@ -110,17 +105,29 @@ void GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
     }
 
     // compute the derivatives
-
     this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(this->m_MovingPointSet->GetPoint(movingIter1.Index()), this->m_Jacobian, this->m_JacobianCache);
 
     for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
       for (size_t dim = 0; dim < this->PointDimension; dim++) {
-        derivative[par] += 2.0 * m_Jacobian(dim, par) * ( 2.0 * gradient1[dim] / (scale1 * factor1) - gradient2[dim] / (scale2 * factor2));
+        derivative1[par] += m_Jacobian(dim, par) * gradient1[dim];
+        derivative1[par] += m_Jacobian(dim, par) * gradient2[dim];
       }
     }
   }
 
+  // compute output value
   value = -2.0 * value1 / factor1 + value2 / factor2;
+
+  // compute derivatives
+  if (derivative.size() != this->m_NumberOfParameters) {
+    derivative.set_size(this->m_NumberOfParameters);
+  }
+
+  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
+
+  for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
+    derivative[par] = 2.0 * (2.0 * derivative1[par] / (scale1 * factor1) - derivative2[par] / (scale2 * factor2));
+  }
 }
 }
 
