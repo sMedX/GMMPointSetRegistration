@@ -20,9 +20,6 @@ GMML2PointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 ::Initialize() throw (ExceptionObject)
 {
   Superclass::Initialize();
-
-  m_Gradient1.set_size(this->m_MovingPointSet->GetNumberOfPoints(), this->MovingPointSetDimension);
-  m_Gradient2.set_size(this->m_MovingPointSet->GetNumberOfPoints(), this->MovingPointSetDimension);
 }
 
 /**
