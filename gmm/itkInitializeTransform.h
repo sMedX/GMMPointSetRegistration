@@ -1,7 +1,6 @@
 #pragma once
 
 #include <itkTranslationTransform.h>
-#include <itkEuler3DTransform.h>
 #include <itkVersorRigid3DTransform.h>
 #include <itkSimilarity3DTransform.h>
 #include <itkScaleSkewVersor3DTransform.h>
@@ -25,7 +24,6 @@ namespace itk
     enum class Transform
     {
       Translation,
-      Euler3D,
       Versor3D,
       Similarity,
       ScaleSkewVersor3D
@@ -90,37 +88,6 @@ namespace itk
         m_NumberOfTranslationComponents = 3;
 
         size_t count = 0;
-
-        for (size_t i = 0; i < m_NumberOfTranslationComponents; ++i, ++count) {
-          m_Scales[count] = m_TranslationScale;
-          m_ModeBounds[count] = 0;
-        }
-
-        break;
-      }
-      case Transform::Euler3D:{
-        // Euler3DTransform
-        typedef itk::Euler3DTransform<TParametersValueType> Euler3DTransformType;
-        typename Euler3DTransformType::Pointer transform = Euler3DTransformType::New();
-        transform->SetIdentity();
-        transform->SetCenter(m_Center);
-        transform->SetTranslation(m_Translation);
-
-        m_Transform = transform;
-        this->Allocate();
-
-        // define scales
-        m_NumberOfRotationComponents = 3;
-        m_NumberOfTranslationComponents = 3;
-
-        size_t count = 0;
-
-        for (size_t i = 0; i < m_NumberOfRotationComponents; ++i, ++count) {
-          m_Scales[count] = m_RotationScale;
-          m_ModeBounds[count] = 2;
-          m_LowerBounds[count] = -itk::Math::pi;
-          m_UpperBounds[count] = itk::Math::pi;
-        }
 
         for (size_t i = 0; i < m_NumberOfTranslationComponents; ++i, ++count) {
           m_Scales[count] = m_TranslationScale;

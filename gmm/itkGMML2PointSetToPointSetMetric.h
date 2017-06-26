@@ -49,6 +49,9 @@ public:
   typedef typename Superclass::FixedPointIterator         FixedPointIterator;
   typedef typename Superclass::MovingPointIterator        MovingPointIterator;
 
+  typedef typename Superclass::GradientType               GradientType;
+  typedef typename Superclass::LocalDerivativeType        LocalDerivativeType;
+
   /** Get the derivatives of the match measure. */
   void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
 
@@ -65,9 +68,6 @@ public:
 protected:
   GMML2PointSetToPointSetMetric();
   virtual ~GMML2PointSetToPointSetMetric() {}
-
-  mutable vnl_matrix<double> m_Gradient1;
-  mutable vnl_matrix<double> m_Gradient2;
 
 private:
   GMML2PointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;

@@ -72,7 +72,7 @@ void GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetVal
       value += expval;
 
       for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-        gradient[dim] += (-2.0) * expval * (transformedPoint[dim] - fixedPoint[dim]);
+        gradient[dim] += expval * (transformedPoint[dim] - fixedPoint[dim]);
       }
     }
 
@@ -91,7 +91,7 @@ void GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetVal
   value *= -2.0 / factor;
 
   for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
-    derivative[par] = (-2.0) * derivative[par] / (scale * factor);
+    derivative[par] = 4.0 * derivative[par] / (scale * factor);
   }
 }
 }

@@ -6,7 +6,6 @@
 #include "itkSingleValuedNonLinearOptimizer.h"
 #include "itkDataObjectDecorator.h"
 #include "itkGMMPointSetToPointSetMetricBase.h"
-#include "itkGMMRegstrationUtils.h"
 
 namespace itk
 {
