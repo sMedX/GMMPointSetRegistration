@@ -111,7 +111,7 @@ void GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAnd
       const double gradient = 2.0 * (2.0 * gradient1[dim] / (scale1 * factor1) - gradient2[dim] / (scale2 * factor2));
 
       for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
-        derivative[par] += m_Jacobian(dim, par) * gradient;
+        derivative[par] += this->m_Jacobian(dim, par) * gradient;
       }
     }
   }
