@@ -79,8 +79,8 @@ void GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetVal
     // compute the derivatives
     this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingIter.Value(), this->m_Jacobian, this->m_JacobianCache);
 
-    for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
-      for (size_t dim = 0; dim < Self::FixedPointSetDimension; dim++) {
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+      for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
         derivative[par] += this->m_Jacobian(dim, par) * gradient[dim];
       }
     }
