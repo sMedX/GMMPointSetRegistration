@@ -8,7 +8,6 @@ set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMML2PointSetToPointSetMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMPointSetToPointSetMetricBase.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMPointSetToPointSetRegistrationMethod.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/itkGMMRegstrationUtils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkGMML2RigidPointSetToPointSetMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkInitializeMetric.h
     ${CMAKE_CURRENT_SOURCE_DIR}/itkInitializeTransform.h
