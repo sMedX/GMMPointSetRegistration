@@ -41,20 +41,18 @@ int main(int argc, char** argv) {
   const std::string transformDescription =
     "The type of transform (That is number):\n"
     "  0 : Translation\n"
-    "  1 : Euler3D\n"
-    "  2 : Versor3D\n"
-    "  3 : Similarity\n"
-    "  4 : ScaleSkewVersor3D\n";
+    "  1 : Versor3D\n"
+    "  2 : Similarity\n"
+    "  3 : ScaleSkewVersor3D\n";
 
   args::ValueFlag<size_t> argTypeOfTransform(parser, "transform", transformDescription, {'t', "transform"});
   
   const std::string metricDescription =
     "The type of metric (That is number):\n"
-    "  0 : ICP\n"
-    "  1 : Rigid\n"
-    "  2 : GMM\n"
-    "  3 : KC\n"
-    "  4 : MLE\n";
+    "  0 : L2Rigid\n"
+    "  1 : L2\n"
+    "  2 : KC\n"
+    "  3 : MLE\n";
 
   args::ValueFlag<size_t> argTypeOfMetric(parser, "metric", metricDescription, {'M', "metric"});
 
