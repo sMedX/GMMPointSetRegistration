@@ -77,34 +77,11 @@ throw ( ExceptionObject )
     m_FixedPointSet->GetSource()->Update();
     }
 
-  m_FixedPointMatrix.set_size(m_FixedPointSet->GetNumberOfPoints(), FixedPointSetDimension);
-
-  for (FixedPointIterator it = m_FixedPointSet->GetPoints()->Begin(); it != m_FixedPointSet->GetPoints()->End(); ++it) {
-	  typename FixedPointSetType::PointType point = it.Value();
-
-    for (size_t dim = 0; dim < FixedPointSetDimension; ++dim) {
-      m_FixedPointMatrix(it.Index(), dim) = point[dim];
-    }
-  }
-
   // If the PointSet is provided by a source, update the source.
   if ( m_MovingPointSet->GetSource() )
     {
 	  m_MovingPointSet->GetSource()->Update();
     }
-
-  m_MovingPointMatrix.set_size(m_MovingPointSet->GetNumberOfPoints(), MovingPointSetDimension);
-  m_TransformedPointMatrix.set_size(m_MovingPointSet->GetNumberOfPoints(), MovingPointSetDimension);
-
-  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
-    typename MovingPointSetType::PointType point = it.Value();
-
-    for (size_t dim = 0; dim < MovingPointSetDimension; ++dim) {
-      m_MovingPointMatrix(it.Index(), dim) = point[dim];
-    }
-  }
-
-  m_Gradient.set_size(m_MovingPointSet->GetNumberOfPoints(), MovingPointSetDimension);
 }
 
 /** PrintSelf */
