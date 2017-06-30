@@ -20,6 +20,7 @@ GMMMLEPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 ::Initialize() throw (ExceptionObject)
 {
   Superclass::Initialize();
+  m_Gradient.set_size(this->m_MovingPointSet->GetNumberOfPoints(), this->MovingPointSetDimension);
 }
 
 /**
@@ -61,8 +62,8 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
   value = NumericTraits<MeasureType>::ZeroValue();
   double scale = 2*this->m_MovingPointSetScale*this->m_MovingPointSetScale;
 
-  itk::Array<double> vector;
-  vector.set_size(this->m_FixedPointSet->GetNumberOfPoints());
+  itk::Array<double> valuesOfProbability;
+  valuesOfProbability.set_size(this->m_FixedPointSet->GetNumberOfPoints());
 
   for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
     const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
@@ -74,7 +75,7 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
       sum += exp(-distance / scale);
     }
 
-    vector[fixedIter.Index()] = sum;
+    valuesOfProbability[fixedIter.Index()] = sum;
     value -= log(sum);
   }
 
@@ -91,7 +92,7 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
       const size_t row = fixedIter.Index();
 
       for (size_t dim = 0; dim < Self::MovingPointSetDimension; ++dim) {
-        this->m_Gradient(row, dim) += 2.0 * expval * (transformedPoint[dim] - fixedPoint[dim]) / scale / vector[row];
+        this->m_Gradient(row, dim) += 2.0 * expval * (transformedPoint[dim] - fixedPoint[dim]) / scale / valuesOfProbability[row];
       }
     }
   }
@@ -104,13 +105,11 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
     const size_t row = movingIter.Index();
 
     for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
-      double value = 0;
-
+      double sum = 0;
       for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-        value += this->m_Jacobian(dim, par) * this->m_Gradient(row, dim);
+        sum += this->m_Jacobian(dim, par) * this->m_Gradient(row, dim);
       }
-
-      derivative[par] = value;
+      derivative[par] = sum;
     }
   }
 }
