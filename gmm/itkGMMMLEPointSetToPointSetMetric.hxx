@@ -109,7 +109,7 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
       for (size_t dim = 0; dim < this->PointDimension; ++dim) {
         sum += this->m_Jacobian(dim, par) * this->m_Gradient(row, dim);
       }
-      derivative[par] = sum;
+      derivative[par] += sum;
     }
   }
 }
