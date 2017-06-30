@@ -66,8 +66,6 @@ protected:
   GMMMLEPointSetToPointSetMetric();
   virtual ~GMMMLEPointSetToPointSetMetric() {}
 
-  mutable vnl_matrix<double> m_Gradient;
-
 private:
   GMMMLEPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;
