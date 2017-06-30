@@ -153,6 +153,9 @@ protected:
   double m_FixedPointSetScale;
   double m_MovingPointSetScale;
 
+  size_t m_NumberOfFixedPoints;
+  size_t m_NumberOfMovingPoints;
+
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;

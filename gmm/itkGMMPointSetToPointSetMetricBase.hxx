@@ -82,6 +82,9 @@ throw ( ExceptionObject )
     {
 	  m_MovingPointSet->GetSource()->Update();
     }
+
+  m_NumberOfFixedPoints = m_FixedPointSet->GetNumberOfPoints();
+  m_NumberOfMovingPoints = m_MovingPointSet->GetNumberOfPoints();
 }
 
 /** PrintSelf */
