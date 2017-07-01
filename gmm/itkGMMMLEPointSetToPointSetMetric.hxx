@@ -20,6 +20,8 @@ GMMMLEPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 ::Initialize() throw (ExceptionObject)
 {
   Superclass::Initialize();
+
+  m_ValuesOfProbability.set_size(this->m_NumberOfFixedPoints);
 }
 
 /**
@@ -58,12 +60,9 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
     this->m_TransformedPointSet->SetPoint(iter.Index(), this->m_Transform->TransformPoint(iter.Value()));
   }
 
-  value = NumericTraits<MeasureType>::ZeroValue();
-  
   const double scale = 2.0 * this->m_MovingPointSetScale * this->m_MovingPointSetScale;
 
-  itk::Array<double> valuesOfProbability;
-  valuesOfProbability.set_size(this->m_NumberOfFixedPoints);
+  value = NumericTraits<MeasureType>::ZeroValue();
 
   for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
     const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
@@ -75,7 +74,7 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
       sum += exp(-distance / scale);
     }
 
-    valuesOfProbability[fixedIter.Index()] = sum;
+    m_ValuesOfProbability[fixedIter.Index()] = sum;
     value -= log(sum);
   }
 
@@ -93,7 +92,7 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
       const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
       const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
       const double expval = exp(-distance / scale);
-      const double prbval = valuesOfProbability[fixedIter.Index()];
+      const double prbval = m_ValuesOfProbability[fixedIter.Index()];
 
       for (size_t dim = 0; dim < this->PointDimension; ++dim) {
         gradient[dim] += 2.0 * expval * (transformedPoint[dim] - fixedPoint[dim]) / (scale * prbval);
