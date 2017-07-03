@@ -66,6 +66,8 @@ protected:
   GMMMLEPointSetToPointSetMetric();
   virtual ~GMMMLEPointSetToPointSetMetric() {}
 
+  mutable itk::Array<double> m_ValuesOfProbability;
+
 private:
   GMMMLEPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;

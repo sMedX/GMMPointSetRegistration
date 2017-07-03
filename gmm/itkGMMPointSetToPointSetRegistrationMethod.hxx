@@ -25,10 +25,10 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >::GMMP
   m_Optimizer = ITK_NULLPTR;
 
   m_InitialTransformParameters = ParametersType(1);
-  m_LastTransformParameters = ParametersType(1);
+  m_FinalTransformParameters = ParametersType(1);
 
-  m_InitialTransformParameters.Fill(0.0f);
-  m_LastTransformParameters.Fill(0.0f);
+  m_InitialTransformParameters.Fill(0);
+  m_FinalTransformParameters.Fill(0);
 
   TransformOutputPointer transformDecorator = itkDynamicCastInDebugMode< TransformOutputType * >(this->MakeOutput(0).GetPointer() );
   this->ProcessObject::SetNthOutput(0, transformDecorator.GetPointer());
@@ -97,6 +97,9 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   if (m_NumberOfLevels == 0) {
     m_NumberOfLevels = m_FixedPointSetScale.Size();
   }
+
+  m_InitialMetricValue.clear();
+  m_FinalMetricValue.clear();
 }
 
 template< typename TFixedPointSet, typename TMovingPointSet >
@@ -141,10 +144,26 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   os << indent << "Metric: " << m_Metric.GetPointer() << std::endl;
   os << indent << "Optimizer: " << m_Optimizer.GetPointer() << std::endl;
   os << indent << "Transform: " << m_Transform.GetPointer() << std::endl;
-  os << indent << "Fixed PointSet: " << m_FixedPointSet.GetPointer() << std::endl;
+  os << indent << " Fixed PointSet: " << m_FixedPointSet.GetPointer() << std::endl;
   os << indent << "Moving PointSet: " << m_MovingPointSet.GetPointer() << std::endl;
   os << indent << "Initial Transform Parameters: " << m_InitialTransformParameters << std::endl;
-  os << indent << "Last    Transform Parameters: " << m_LastTransformParameters << std::endl;
+  os << indent << "  Final Transform Parameters: " << m_FinalTransformParameters << std::endl;
+
+  if (m_InitialMetricValue.size() > 0) {
+    os << indent << "Initial metric values ";
+    for (size_t n = 0; n < m_InitialMetricValue.size(); ++n) {
+      os << m_InitialMetricValue[n] << " ";
+    }
+    os << std::endl;
+  }
+
+  if (m_FinalMetricValue.size() > 0) {
+    os << indent << "  Final metric values ";
+    for (size_t n = 0; n < m_FinalMetricValue.size(); ++n) {
+      os << m_FinalMetricValue[n] << " ";
+    }
+    os << std::endl;
+  }
 }
 
 /**
@@ -232,8 +251,8 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     this->Initialize();
   }
   catch (ExceptionObject & excep) {
-    m_LastTransformParameters = ParametersType(1);
-    m_LastTransformParameters.Fill(0.0f);
+    m_FinalTransformParameters = ParametersType(1);
+    m_FinalTransformParameters.Fill(0.0f);
 
     // pass exception to caller
     throw excep;
@@ -269,9 +288,11 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   // setup the optimizer
   m_Optimizer->SetCostFunction(m_Metric);
 
-  for (size_t n = 0; n < m_NumberOfLevels; ++n) {
-    m_Metric->SetFixedPointSetScale(m_FixedPointSetScale[n]);
-    m_Metric->SetMovingPointSetScale(m_MovingPointSetScale[n]);
+  for (size_t level = 0; level < m_NumberOfLevels; ++level) {
+    m_Metric->SetFixedPointSetScale(m_FixedPointSetScale[level]);
+    m_Metric->SetMovingPointSetScale(m_MovingPointSetScale[level]);
+
+    m_InitialMetricValue;
     m_Optimizer->SetInitialPosition(m_Transform->GetParameters());
 
     try {
@@ -282,8 +303,11 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     }
 
     // get the results
-    m_LastTransformParameters = m_Optimizer->GetCurrentPosition();
-    m_Transform->SetParameters(m_LastTransformParameters);
+    m_FinalTransformParameters = m_Optimizer->GetCurrentPosition();
+    m_Transform->SetParameters(m_FinalTransformParameters);
+
+    m_InitialMetricValue.push_back(m_Metric->GetValue(m_Optimizer->GetInitialPosition()));
+    m_FinalMetricValue.push_back(m_Metric->GetValue(m_Optimizer->GetCurrentPosition()));
   }
 }
 } // end namespace itk

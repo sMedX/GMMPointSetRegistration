@@ -144,21 +144,17 @@ protected:
   MovingPointSetConstPointer m_MovingPointSet;
   mutable typename MovingPointSetType::Pointer m_TransformedPointSet;
 
-  vnl_matrix<double> m_FixedPointMatrix;
-  vnl_matrix<double> m_MovingPointMatrix;
-
-  mutable vnl_matrix<double> m_TransformedPointMatrix;
-
   mutable TransformPointer m_Transform;
-
   size_t m_NumberOfParameters;
 
-  mutable vnl_matrix<double> m_Gradient;
   mutable TransformJacobianType m_Jacobian;
   mutable TransformJacobianType m_JacobianCache;
 
   double m_FixedPointSetScale;
   double m_MovingPointSetScale;
+
+  size_t m_NumberOfFixedPoints;
+  size_t m_NumberOfMovingPoints;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;

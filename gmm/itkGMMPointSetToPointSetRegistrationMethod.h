@@ -92,7 +92,7 @@ public:
   itkGetConstReferenceMacro(InitialTransformParameters, ParametersType);
 
   /** Get the last transformation parameters visited by the optimizer. */
-  itkGetConstReferenceMacro(LastTransformParameters, ParametersType);
+  itkGetConstReferenceMacro(FinalTransformParameters, ParametersType);
 
   /** Initialize by setting the interconnects between the components. */
   void Initialize() throw (ExceptionObject);
@@ -143,9 +143,10 @@ protected:
   TransformPointer m_MovingInitialTransform;
 
   ParametersType m_InitialTransformParameters;
-  ParametersType m_LastTransformParameters;
+  ParametersType m_FinalTransformParameters;
 
-  double model_scale_, scene_scale_;
+  std::vector<double> m_InitialMetricValue;
+  std::vector<double> m_FinalMetricValue;
 
 private:
   GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;
