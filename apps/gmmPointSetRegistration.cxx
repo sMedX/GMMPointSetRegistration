@@ -262,7 +262,6 @@ int main(int argc, char** argv) {
     std::cout << excep << std::endl;
     return EXIT_FAILURE;
   }
-  registration->Print(std::cout);
 
   std::cout << std::endl;
   std::cout << registration->GetMetric()->GetNameOfClass() << std::endl;
