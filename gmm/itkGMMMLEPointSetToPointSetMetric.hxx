@@ -121,15 +121,17 @@ void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAn
       const double prbval = m_ValuesOfProbability[fixedIter.Index()];
 
       for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-        gradient[dim] += 2.0 * expval * (transformedPoint[dim] - fixedPoint[dim]) / (scale * prbval);
+        gradient[dim] += expval * (transformedPoint[dim] - fixedPoint[dim]) / prbval;
       }
     }
 
     // compute derivatives for the current transformed point
     this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(this->m_MovingPointSet->GetPoint(transformedIter.Index()), this->m_Jacobian, this->m_JacobianCache);
 
-    for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
-      for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+      gradient[dim] *= (2.0 / scale);
+
+      for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
         derivative[par] += this->m_Jacobian(dim, par) * gradient[dim];
       }
     }
