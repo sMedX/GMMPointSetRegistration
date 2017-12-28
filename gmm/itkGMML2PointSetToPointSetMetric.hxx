@@ -107,8 +107,6 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   value = value2 / factor2 - 2.0 * value1 / factor1;
 
   // local derivatives
-  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
-
   for (size_t dim = 0; dim < this->PointDimension; ++dim) {
     derivative[dim] = -2.0 * (derivative2[dim] / (scale2 * factor2) - 2.0 * derivative1[dim] / (scale1 * factor1));
   }
