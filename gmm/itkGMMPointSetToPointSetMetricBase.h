@@ -19,6 +19,7 @@
 #define itkGMMPointSetToPointSetMetricBase_h
 
 #include "itkTransform.h"
+#include "itkPointSet.h"
 #include "itkSingleValuedCostFunction.h"
 #include "itkMacro.h"
 
@@ -174,6 +175,8 @@ protected:
 
   size_t m_NumberOfFixedPoints;
   size_t m_NumberOfMovingPoints;
+
+  double m_NormalizeFactor;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;

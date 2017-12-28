@@ -33,6 +33,8 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 
   m_Jacobian.set_size(MovingPointSetDimension, m_NumberOfParameters);
   m_JacobianCache.set_size(MovingPointSetDimension, MovingPointSetDimension);
+
+  m_NormalizeFactor = 1;
 }
 
 /**
@@ -50,9 +52,7 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const
     value += GetLocalNeighborhoodValue(it.Value());
   }
 
-  const double factor = this->m_TransformedPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
-
-  value *= -2.0 / factor;
+  value *= m_NormalizeFactor;
 
   return value;
 }
@@ -65,17 +65,18 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
 {
   this->InitializeForIteration(parameters);
 
+  double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
+
+  value = NumericTraits<MeasureType>::ZeroValue();
+
   if (derivative.size() != this->m_NumberOfParameters) {
     derivative.set_size(this->m_NumberOfParameters);
   }
-
   derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
-  value = NumericTraits<MeasureType>::ZeroValue();
 
   MeasureType localValue;
-  LocalDerivativeType localDerivative;
 
-  double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
+  LocalDerivativeType localDerivative;
 
   for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
 
@@ -94,11 +95,10 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
     }
   }
 
-  const double factor = -2.0 / (this->m_TransformedPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
-  value *= factor;
+  value *= m_NormalizeFactor;
 
   for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
-    derivative[par] *= factor;
+    derivative[par] *= m_NormalizeFactor;
   }
 }
 
