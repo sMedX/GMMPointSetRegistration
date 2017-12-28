@@ -19,7 +19,6 @@
 #define itkGMMPointSetToPointSetMetricBase_h
 
 #include "itkTransform.h"
-#include "itkCovariantVector.h"
 #include "itkSingleValuedCostFunction.h"
 #include "itkMacro.h"
 

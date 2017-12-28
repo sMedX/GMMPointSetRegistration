@@ -48,6 +48,8 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 {
   const double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
 
+  value = NumericTraits<MeasureType>::ZeroValue();
+
   derivative.Fill(NumericTraits<LocalDerivativeValueType>::ZeroValue());
 
   for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {

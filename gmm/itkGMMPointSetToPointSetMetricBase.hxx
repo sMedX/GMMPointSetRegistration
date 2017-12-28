@@ -46,13 +46,11 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const
 
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
-  for (MovingPointIterator it = this->m_MovingPointSet->GetPoints()->Begin(); it != this->m_MovingPointSet->GetPoints()->End(); ++it) {
-    const typename MovingPointSetType::PointType transformedPoint = this->m_Transform->TransformPoint(it.Value());
-
-    value += GetLocalNeighborhoodValue(transformedPoint);
+  for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
+    value += GetLocalNeighborhoodValue(it.Value());
   }
 
-  const double factor = this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
+  const double factor = this->m_TransformedPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
 
   value *= -2.0 / factor;
 
@@ -74,17 +72,20 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
   derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
   value = NumericTraits<MeasureType>::ZeroValue();
 
+  MeasureType localValue;
   LocalDerivativeType localDerivative;
 
   double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
 
-  for (MovingPointIterator it = this->m_MovingPointSet->GetPoints()->Begin(); it != this->m_MovingPointSet->GetPoints()->End(); ++it) {
-    // transform moving point
-    const typename MovingPointSetType::PointType transformedPoint = this->m_Transform->TransformPoint(it.Value());
+  for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
 
     // compute local value and derivatives
-    this->GetLocalNeighborhoodValueAndDerivative(transformedPoint, value, localDerivative);
-    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), this->m_Jacobian, this->m_JacobianCache);
+    this->GetLocalNeighborhoodValueAndDerivative(it.Value(), localValue, localDerivative);
+
+    value += localValue;
+
+    // compute derivatives
+    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(this->m_MovingPointSet->GetPoint(it.Index()), this->m_Jacobian, this->m_JacobianCache);
 
     for (size_t dim = 0; dim < this->PointDimension; ++dim) {
       for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
@@ -93,7 +94,7 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
     }
   }
 
-  const double factor = -2.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+  const double factor = -2.0 / (this->m_TransformedPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
   value *= factor;
 
   for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
@@ -116,7 +117,13 @@ void
 GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 ::InitializeForIteration(const ParametersType & parameters) const
 {
-  this->m_Transform->SetParameters(parameters);
+  this->SetTransformParameters(parameters);
+
+  this->m_TransformedPointSet = MovingPointSetType::New();
+
+  for (MovingPointIterator iter = this->m_MovingPointSet->GetPoints()->Begin(); iter != this->m_MovingPointSet->GetPoints()->End(); ++iter) {
+    this->m_TransformedPointSet->SetPoint(iter.Index(), this->m_Transform->TransformPoint(iter.Value()));
+  }
 }
 
 /** Set the parameters that define a unique transform */
@@ -125,10 +132,10 @@ void
 GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 ::SetTransformParameters(const ParametersType & parameters) const
 {
-  if ( !m_Transform )
-    {
+  if ( !m_Transform ) {
     itkExceptionMacro(<< "Transform has not been assigned");
-    }
+  }
+
   m_Transform->SetParameters(parameters);
 }
 
