@@ -35,6 +35,91 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_JacobianCache.set_size(MovingPointSetDimension, MovingPointSetDimension);
 }
 
+/**
+* Get the match Measure
+*/
+template <typename TFixedPointSet, typename TMovingPointSet>
+typename GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::MeasureType
+GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
+{
+  this->InitializeForIteration(parameters);
+
+  MeasureType value = NumericTraits<MeasureType>::ZeroValue();
+
+  for (MovingPointIterator it = this->m_MovingPointSet->GetPoints()->Begin(); it != this->m_MovingPointSet->GetPoints()->End(); ++it) {
+    const typename MovingPointSetType::PointType transformedPoint = this->m_Transform->TransformPoint(it.Value());
+
+    value += GetLocalNeighborhoodValue(transformedPoint);
+  }
+
+  const double factor = this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
+
+  value *= -2.0 / factor;
+
+  return value;
+}
+
+/*
+* Get both the match Measure and the Derivative Measure
+*/
+template <typename TFixedPointSet, typename TMovingPointSet>
+void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
+{
+  this->InitializeForIteration(parameters);
+
+  if (derivative.size() != this->m_NumberOfParameters) {
+    derivative.set_size(this->m_NumberOfParameters);
+  }
+
+  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
+  value = NumericTraits<MeasureType>::ZeroValue();
+
+  LocalDerivativeType localDerivative;
+
+  double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
+
+  for (MovingPointIterator it = this->m_MovingPointSet->GetPoints()->Begin(); it != this->m_MovingPointSet->GetPoints()->End(); ++it) {
+    // transform moving point
+    const typename MovingPointSetType::PointType transformedPoint = this->m_Transform->TransformPoint(it.Value());
+
+    // compute local value and derivatives
+    this->GetLocalNeighborhoodValueAndDerivative(transformedPoint, value, localDerivative);
+    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), this->m_Jacobian, this->m_JacobianCache);
+
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+      for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
+        derivative[par] += this->m_Jacobian(dim, par) * localDerivative[dim];
+      }
+    }
+  }
+
+  const double factor = this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
+
+  value *= -2.0 / factor;
+
+  for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
+    derivative[par] = 4.0 * derivative[par] / (scale * factor);
+  }
+}
+
+/**
+* Get the Derivative Measure
+*/
+template <typename TFixedPointSet, typename TMovingPointSet>
+void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
+{
+  itkExceptionMacro(<< "not implemented");
+}
+
+/** Set the parameters that define a unique transform */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::InitializeForIteration(const ParametersType & parameters) const
+{
+  this->m_Transform->SetParameters(parameters);
+}
+
 /** Set the parameters that define a unique transform */
 template< typename TFixedPointSet, typename TMovingPointSet >
 void

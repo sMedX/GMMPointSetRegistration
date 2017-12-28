@@ -59,6 +59,7 @@ public:
 
   /**  Type of the moving Pointset. */
   typedef TMovingPointSet                           MovingPointSetType;
+  typedef typename MovingPointSetType::PointType    MovingPointType;
   typedef typename TMovingPointSet::PixelType       MovingPointSetPixelType;
   typedef typename MovingPointSetType::ConstPointer MovingPointSetConstPointer;
 
@@ -79,8 +80,6 @@ public:
   typedef typename MovingPointsContainer::ConstIterator                  MovingPointIterator;
   typedef typename MovingPointSetType::PointDataContainer::ConstIterator MovingPointDataIterator;
 
-  typedef itk::CovariantVector<double, PointDimension> GradientType;
-
   /**  Type of the Transform Base class */
   typedef Transform< CoordinateRepresentationType,
                      itkGetStaticConstMacro(MovingPointSetDimension),
@@ -96,8 +95,10 @@ public:
   typedef Superclass::MeasureType MeasureType;
 
   /**  Type of the derivative. */
-  typedef Superclass::DerivativeType DerivativeType;
-  typedef Array<double>              LocalDerivativeType;
+  typedef Superclass::DerivativeType                       DerivativeType;
+  typedef DerivativeType::ValueType                        DerivativeValueType;
+  typedef FixedArray<DerivativeValueType, PointDimension>  LocalDerivativeType;
+  typedef typename LocalDerivativeType::ValueType          LocalDerivativeValueType;
 
   /**  Type of the parameters. */
   typedef Superclass::ParametersType ParametersType;
@@ -122,6 +123,25 @@ public:
 
   /** Get a pointer to the Transform.  */
   itkGetModifiableObjectMacro(Transform, TransformType);
+
+  /** Get the value for single valued optimizers. */
+  MeasureType GetValue(const TransformParametersType & parameters) const ITK_OVERRIDE;
+
+  /** Get the derivatives of the match measure. */
+  void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
+
+  /**  Get value and derivatives for multiple valued optimizers. */
+  void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
+
+  /** Calculates the local metric value for a single point. */
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const = 0;
+
+  /** Calculates the local value/derivative for a single point.*/
+  virtual void GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const = 0;
+
+  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize()
+  * which is a one-time initialization. */
+  virtual void InitializeForIteration(const ParametersType & parameters) const;
 
   /** Set the parameters defining the Transform. */
   void SetTransformParameters(const ParametersType & parameters) const;
