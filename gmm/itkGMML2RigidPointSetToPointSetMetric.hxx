@@ -60,6 +60,13 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
       derivative[dim] += expval * (point[dim] - fixedPoint[dim]);
     }
   }
+
+  const double factor = -2.0 / scale;
+
+  for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+    derivative[dim] *= factor;
+  }
+
 }
 }
 

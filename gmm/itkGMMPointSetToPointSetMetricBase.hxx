@@ -93,12 +93,11 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
     }
   }
 
-  const double factor = this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
-
-  value *= -2.0 / factor;
+  const double factor = -2.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+  value *= factor;
 
   for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
-    derivative[par] = 4.0 * derivative[par] / (scale * factor);
+    derivative[par] *= factor;
   }
 }
 
