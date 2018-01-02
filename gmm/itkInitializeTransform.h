@@ -1,5 +1,6 @@
 #pragma once
 
+#include <itkObject.h>
 #include <itkTranslationTransform.h>
 #include <itkVersorRigid3DTransform.h>
 #include <itkSimilarity3DTransform.h>
@@ -8,18 +9,18 @@
 namespace itk
 {
   template<typename TParametersValueType>
-  class InitializeTransform : public itk::ProcessObject
+  class InitializeTransform : public Object
   {
   public:
     /** Standard class typedefs. */
-    typedef InitializeTransform                     Self;
-    typedef itk::ProcessObject                      Superclass;
-    typedef itk::SmartPointer<Self>                 Pointer;
-    typedef itk::SmartPointer<const Self>           ConstPointer;
+    typedef InitializeTransform       Self;
+    typedef Object                    Superclass;
+    typedef SmartPointer<Self>        Pointer;
+    typedef SmartPointer<const Self>  ConstPointer;
 
     /** Method for creation through the object factory. */
     itkNewMacro(Self);
-    itkTypeMacro(InitializeTransform, itk::ProcessObject);
+    itkTypeMacro(InitializeTransform, Object);
 
     enum class Transform
     {
@@ -35,6 +36,7 @@ namespace itk
 
     typedef typename itk::Transform<TParametersValueType, PointDimension> TransformType;
     typedef typename TransformType::InputPointType InputPointType;
+    typedef typename TransformType::OutputPointType OutputPointType;
     typedef typename TransformType::OutputVectorType OutputVectorType;
     typedef itk::Array<double> ParametersType;
     typedef itk::Array<unsigned int> ModeBoundsType;
@@ -66,14 +68,15 @@ namespace itk
     itkGetMacro(LowerBounds, ParametersType);
     itkGetMacro(UpperBounds, ParametersType);
 
-    // Set/Get center and translation
-    itkGetMacro(Center, InputPointType);
-    itkSetMacro(Center, InputPointType);
-    itkGetMacro(Translation, OutputVectorType);
-    itkSetMacro(Translation, OutputVectorType);
+    // Set/Get moving and fixed landmarks
+    itkSetMacro(MovingLandmark, InputPointType);
+    itkSetMacro(FixedLandmark, OutputPointType);
 
     void Update()
     {
+      m_Center = m_MovingLandmark;
+      m_Translation = m_FixedLandmark - m_MovingLandmark;
+
       switch (m_TypeOfTransform) {
       case Transform::Translation: {
         // Translation transform
@@ -209,12 +212,7 @@ namespace itk
 
         break;
       }
-
-      default:
-        itkExceptionMacro(<< "Invalid type of transform");
       }
-
-      m_NumberOfParameters = m_Transform->GetNumberOfParameters();
     }
 
     void PrintReport() const
@@ -239,6 +237,9 @@ namespace itk
     InputPointType m_Center;
     OutputVectorType m_Translation;
 
+    InputPointType m_MovingLandmark;
+    OutputPointType m_FixedLandmark;
+
     /** Set the boundary condition for each variable, where
     * select[i] = 0 if x[i] is unbounded,
     *           = 1 if x[i] has only a lower bound,
@@ -261,28 +262,24 @@ namespace itk
     size_t m_NumberOfSkewComponents = 0;
     size_t m_NumberOfParameters = 0;
 
-    InitializeTransform()
-    {
-      this->SetNumberOfRequiredInputs(0);
-      this->SetNumberOfRequiredOutputs(0);
-      m_Center.Fill(0);
-      m_Translation.Fill(0);
-    }
-
     void Allocate()
     {
-      size_t size = m_Transform->GetNumberOfParameters();
-      m_Scales.set_size(size);
-      m_ModeBounds.set_size(size);
-      m_LowerBounds.set_size(size);
-      m_UpperBounds.set_size(size);
+      m_NumberOfParameters = m_Transform->GetNumberOfParameters();
 
+      m_Scales.set_size(m_NumberOfParameters);
       m_Scales.Fill(0);
+
+      m_ModeBounds.set_size(m_NumberOfParameters);
       m_ModeBounds.Fill(0);
+
+      m_LowerBounds.set_size(m_NumberOfParameters);
       m_LowerBounds.Fill(0);
+
+      m_UpperBounds.set_size(m_NumberOfParameters);
       m_UpperBounds.Fill(0);
     }
 
+    InitializeTransform() {}
     ~InitializeTransform() {}
   };
 }

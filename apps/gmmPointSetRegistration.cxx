@@ -116,7 +116,6 @@ int main(int argc, char** argv) {
     movingPointSetScale[n] = scale[n];
   }
 
-  // initialize transform
   typedef itk::PointSetPropertiesCalculator<PointSetType> PointSetPropertiesCalculatorType;
   PointSetPropertiesCalculatorType::Pointer fixedPointSetCalculator = PointSetPropertiesCalculatorType::New();
   fixedPointSetCalculator->SetPointSet(fixedPointSet);
@@ -141,21 +140,23 @@ int main(int argc, char** argv) {
   }
 
   // initialize transform
-  typedef itk::InitializeTransform<double> InitializeTransformType;
-  InitializeTransformType::Pointer initializeTransform = InitializeTransformType::New();
-  initializeTransform->SetCenter(movingPointSetCalculator->GetCenter());
-  initializeTransform->SetTranslation(fixedPointSetCalculator->GetCenter() - movingPointSetCalculator->GetCenter());
-  initializeTransform->SetTypeOfTransform(typeOfTransform);
-  initializeTransform->Update();
-  initializeTransform->PrintReport();
-  TransformType::Pointer transform = initializeTransform->GetTransform();
+  typedef itk::InitializeTransform<double> TransformInitializerType;
+  TransformInitializerType::Pointer transformInitializer = TransformInitializerType::New();
+  transformInitializer->SetMovingLandmark(movingPointSetCalculator->GetCenter());
+  transformInitializer->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
+  //transformInitializer->SetCenter(movingPointSetCalculator->GetCenter());
+//  transformInitializer->SetTranslation(fixedPointSetCalculator->GetCenter() - movingPointSetCalculator->GetCenter());
+  transformInitializer->SetTypeOfTransform(typeOfTransform);
+  transformInitializer->Update();
+  transformInitializer->PrintReport();
+  TransformType::Pointer transform = transformInitializer->GetTransform();
 
   //--------------------------------------------------------------------
   // initialize optimizer
   typedef itk::LBFGSOptimizer OptimizerType;
   OptimizerType::Pointer optimizer = OptimizerType::New();
   optimizer->SetMaximumNumberOfFunctionEvaluations(numberOfIterations);
-  optimizer->SetScales(initializeTransform->GetScales());
+  optimizer->SetScales(transformInitializer->GetScales());
   optimizer->MinimizeOn();
   optimizer->SetTrace(trace);
 
