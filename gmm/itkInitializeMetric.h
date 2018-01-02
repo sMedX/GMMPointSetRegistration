@@ -3,30 +3,28 @@
 #include "itkGMML2RigidPointSetToPointSetMetric.h"
 #include "itkGMML2PointSetToPointSetMetric.h"
 #include "itkGMMKCPointSetToPointSetMetric.h"
-#include "itkGMMMLEPointSetToPointSetMetric.h"
 
 namespace itk
 {
   template <typename TFixedPointSet, typename TMovingPointSet>
-  class InitializeMetric : public itk::ProcessObject
+  class InitializeMetric : public itk::Object
   {
   public:
     /** Standard class typedefs. */
     typedef InitializeMetric                        Self;
-    typedef itk::ProcessObject                      Superclass;
+    typedef itk::Object                             Superclass;
     typedef itk::SmartPointer<Self>                 Pointer;
     typedef itk::SmartPointer<const Self>           ConstPointer;
 
     /** Method for creation through the object factory. */
     itkNewMacro(Self);
-    itkTypeMacro(InitializeMetric, itk::ProcessObject);
+    itkTypeMacro(InitializeMetric, Object);
 
     enum class Metric
     {
-      L2Rigid,
-      L2,
-      KC,
-      MLE,
+      GMML2Rigid,
+      GMML2,
+      GMMKC,
     };
 
     /** typedefs */
@@ -38,37 +36,26 @@ namespace itk
     // Set/Get type of metric
     itkSetEnumMacro(TypeOfMetric, Metric);
     itkGetEnumMacro(TypeOfMetric, Metric);
+    void SetTypeOfMetric(const size_t & type) { this->SetTypeOfMetric(static_cast<Metric>(type)); }
 
-    void SetTypeOfMetric(const size_t & type) 
-    { 
-      this->SetTypeOfMetric(static_cast<Metric>(type)); 
-    }
-
-    void Update()
+    void Initialize()
     {
       switch (m_TypeOfMetric) {
-      case Metric::L2Rigid: {
+      case Metric::GMML2Rigid: {
         typedef itk::GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMML2RigidMetricType;
         m_Metric = GMML2RigidMetricType::New();
         break;
       }
-      case Metric::L2:{
+      case Metric::GMML2:{
         typedef itk::GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMML2MetricType;
         m_Metric = GMML2MetricType::New();
         break;
       }
-      case Metric::KC: {
+      case Metric::GMMKC: {
         typedef itk::GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMMKCMetricType;
         m_Metric = GMMKCMetricType::New();
         break;
       }
-      case Metric::MLE:{
-        typedef itk::GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMMMLEMetricType;
-        m_Metric = GMMMLEMetricType::New();
-        break;
-      }
-      default:
-        itkExceptionMacro(<< "Invalid type of metric");
       }
     }
 
@@ -80,14 +67,10 @@ namespace itk
     }
 
   protected:
-    Metric m_TypeOfMetric = Metric::L2Rigid;
-    typename MetricType::Pointer m_Metric = ITK_NULLPTR;
+    Metric m_TypeOfMetric;
+    typename MetricType::Pointer m_Metric = nullptr;
 
-    InitializeMetric()
-    {
-      this->SetNumberOfRequiredInputs(0);
-      this->SetNumberOfRequiredOutputs(0);
-    }
+    InitializeMetric() {}
     ~InitializeMetric() {}
   };
 }

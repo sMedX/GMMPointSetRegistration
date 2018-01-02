@@ -51,8 +51,7 @@ int main(int argc, char** argv) {
     "The type of metric (That is number):\n"
     "  0 : L2Rigid\n"
     "  1 : L2\n"
-    "  2 : KC\n"
-    "  3 : MLE\n";
+    "  2 : KC\n";
 
   args::ValueFlag<size_t> argTypeOfMetric(parser, "metric", metricDescription, {'M', "metric"});
 
@@ -229,17 +228,16 @@ int main(int argc, char** argv) {
   //--------------------------------------------------------------------
   // metric
   typedef itk::InitializeMetric<PointSetType, PointSetType> InitializeMetricType;
-  InitializeMetricType::Pointer initializeMetric = InitializeMetricType::New();
-  initializeMetric->SetTypeOfMetric(typeOfMetric);
+  InitializeMetricType::Pointer metricInitializer = InitializeMetricType::New();
+  metricInitializer->SetTypeOfMetric(typeOfMetric);
   try {
-    initializeMetric->Update();
+    metricInitializer->Initialize();
   }
   catch (itk::ExceptionObject& excep) {
-    std::cout << excep << std::endl;
+    std::cerr << excep << std::endl;
     return EXIT_FAILURE;
   }
-  initializeMetric->PrintReport();
-  InitializeMetricType::MetricType::Pointer metric = initializeMetric->GetMetric();
+  metricInitializer->PrintReport();
 
   //--------------------------------------------------------------------
   // perform registration
@@ -252,7 +250,7 @@ int main(int argc, char** argv) {
   registration->SetFixedPointSetScale(fixedPointSetScale);
   registration->SetMovingPointSetScale(movingPointSetScale);
   registration->SetOptimizer(optimizer);
-  registration->SetMetric(metric);
+  registration->SetMetric(metricInitializer->GetMetric());
   registration->SetTransform(transform);
   registration->SetNumberOfLevels(numberOfLevels);
   try {
