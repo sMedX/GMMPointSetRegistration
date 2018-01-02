@@ -21,7 +21,7 @@ GMML2RigidPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 {
   Superclass::Initialize();
 
-  this->m_NormalizeFactor = -2.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+  this->m_NormalizingValueFactor = -2.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>

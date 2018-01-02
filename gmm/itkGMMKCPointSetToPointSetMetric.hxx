@@ -21,7 +21,7 @@ GMMKCPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 {
   Superclass::Initialize();
 
-  this->m_NormalizeFactor = -1.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+  this->m_NormalizingValueFactor = -1.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>

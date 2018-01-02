@@ -144,8 +144,6 @@ int main(int argc, char** argv) {
   TransformInitializerType::Pointer transformInitializer = TransformInitializerType::New();
   transformInitializer->SetMovingLandmark(movingPointSetCalculator->GetCenter());
   transformInitializer->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
-  //transformInitializer->SetCenter(movingPointSetCalculator->GetCenter());
-//  transformInitializer->SetTranslation(fixedPointSetCalculator->GetCenter() - movingPointSetCalculator->GetCenter());
   transformInitializer->SetTypeOfTransform(typeOfTransform);
   transformInitializer->Update();
   transformInitializer->PrintReport();

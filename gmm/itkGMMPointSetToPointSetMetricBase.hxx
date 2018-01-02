@@ -34,7 +34,9 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_Jacobian.set_size(MovingPointSetDimension, m_NumberOfParameters);
   m_JacobianCache.set_size(MovingPointSetDimension, MovingPointSetDimension);
 
-  m_NormalizeFactor = 1;
+  m_NormalizingValueFactor = 1;
+
+  m_UseKdTree = true;
 }
 
 /**
@@ -52,7 +54,7 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const
     value += GetLocalNeighborhoodValue(it.Value());
   }
 
-  value *= m_NormalizeFactor;
+  value *= m_NormalizingValueFactor;
 
   return value;
 }
@@ -95,10 +97,10 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
     }
   }
 
-  value *= m_NormalizeFactor;
+  value *= m_NormalizingValueFactor;
 
   for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
-    derivative[par] *= m_NormalizeFactor;
+    derivative[par] *= m_NormalizingValueFactor;
   }
 }
 

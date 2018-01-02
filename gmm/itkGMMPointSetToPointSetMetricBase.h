@@ -110,13 +110,17 @@ public:
   itkSetMacro(MovingPointSetScale, double);
   itkGetMacro(MovingPointSetScale, double);
 
-  /** Get/Set the Fixed Pointset.  */
+  /** Get/Set the Fixed point set.  */
   itkSetConstObjectMacro(FixedPointSet, FixedPointSetType);
   itkGetConstObjectMacro(FixedPointSet, FixedPointSetType);
 
-  /** Get/Set the Moving Pointset.  */
+  /** Get/Set the Moving point set.  */
   itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
   itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
+
+  /** Get/Set boolean flag  the Moving PointSet.  */
+  itkSetMacro(UseKdTree, bool);
+  itkGetMacro(UseKdTree, bool);
 
   /** Connect the Transform. */
   itkSetObjectMacro(Transform, TransformType);
@@ -176,7 +180,9 @@ protected:
   size_t m_NumberOfFixedPoints;
   size_t m_NumberOfMovingPoints;
 
-  double m_NormalizeFactor;
+  double m_NormalizingValueFactor;
+
+  bool m_UseKdTree;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;
