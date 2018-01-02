@@ -31,7 +31,7 @@ public:
     if (!itk::IterationEvent().CheckEvent(&event)) {
       return;
     }
-    std::cout << optimizer->GetCurrentIteration() << "   ";
+    std::cout << optimizer->GetCurrentPosition() << "   ";
     std::cout << optimizer->GetValue() << "   ";
     std::cout << optimizer->GetCurrentPosition() << std::endl;
   }
