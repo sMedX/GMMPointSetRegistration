@@ -251,9 +251,9 @@ namespace itk
     ParametersType m_Scales;
 
     double m_TranslationScale = 1;
-    double m_RotationScale = 0.2;
-    double m_ScalingScale = 0.2;
-    double m_SkewScale = 0.2;
+    double m_RotationScale = 0.1;
+    double m_ScalingScale = 0.1;
+    double m_SkewScale = 0.1;
 
     size_t m_NumberOfComponents = 0;
     size_t m_NumberOfTranslationComponents = 0;
