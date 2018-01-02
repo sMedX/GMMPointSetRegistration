@@ -14,7 +14,7 @@
 #include "args.hxx"
 #include "argsCustomParsers.h"
 
-#include "agtkIO.h"
+#include "itkIOutils.h"
 #include "agtkCommandIterationUpdate.h"
 
 using namespace agtk;
@@ -31,12 +31,12 @@ int main(int argc, char** argv) {
 
   args::ValueFlag<std::string> argFixedFileName(allRequired, "fixed", "The fixed mesh (point-set) filename", {'f', "fixed"});
   args::ValueFlag<std::string> argMovingFileName(allRequired, "moving", "The moving mesh (point-set) filename", {'m', "moving"});
-  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(allRequired, "scale", "The scale levels", {'s', "scale"});
+  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(allRequired, "scale", "The scale levels", {"scale"});
   
   args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh (point-set) filename", {'o', "output"});
-  args::ValueFlag<unsigned int> argNumberOfIterations(parser, "iterations", "The number of iterations", {'i', "iterations"});
+  args::ValueFlag<size_t> argNumberOfIterations(parser, "iterations", "The number of iterations", {"iterations"}, 1000);
   args::Flag argNormalize(parser, "normalize", "Normalization", {'n', "normalize"});
-  args::Flag argTrace(parser, "trace", "Optimizer iterations tracing", {'T', "trace"});
+  args::Flag trace(parser, "trace", "Optimizer iterations tracing", {"trace"});
 
   const std::string transformDescription =
     "The type of transform (That is number):\n"
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     "  2 : Similarity\n"
     "  3 : ScaleSkewVersor3D\n";
 
-  args::ValueFlag<size_t> argTypeOfTransform(parser, "transform", transformDescription, {'t', "transform"});
+  args::ValueFlag<size_t> argTypeOfTransform(parser, "transform", transformDescription, {'t', "transform"}, 0);
   
   const std::string metricDescription =
     "The type of metric (That is number):\n"
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     "  1 : L2\n"
     "  2 : KC\n";
 
-  args::ValueFlag<size_t> argTypeOfMetric(parser, "metric", metricDescription, {'M', "metric"});
+  args::ValueFlag<size_t> argTypeOfMetric(parser, "metric", metricDescription, {'M', "metric"}, 0);
 
   try {
     parser.ParseCLI(argc, argv);
@@ -76,27 +76,11 @@ int main(int argc, char** argv) {
   std::string fixedFileName = args::get(argFixedFileName);
   std::string movingFileName = args::get(argMovingFileName);
   std::vector<double> scale = args::get(argScale);
-  
-  unsigned int numberOfIterations = 100;
-
-  if (argNumberOfIterations) {
-    numberOfIterations = args::get(argNumberOfIterations);
-  }
+  size_t numberOfIterations = args::get(argNumberOfIterations);
+  size_t typeOfTransform = args::get(argTypeOfTransform);
+  size_t typeOfMetric = args::get(argTypeOfMetric);
 
   bool normalize = argNormalize;
-  bool trace = argTrace;
-
-  size_t typeOfTransform = 0;
-
-  if (argTypeOfTransform) {
-    typeOfTransform = args::get(argTypeOfTransform);
-  }
-
-  size_t typeOfMetric = 0;
-
-  if (argTypeOfMetric) {
-    typeOfMetric = args::get(argTypeOfMetric);
-  }
 
   std::cout << "options" << std::endl;
   std::cout << "number of iterations " << numberOfIterations << std::endl;

@@ -1,13 +1,11 @@
 #pragma once
+#ifndef itkIOutils_h
+#define itkIOutils_h
 
 #include <iostream>
-
 #include <itkMeshFileReader.h>
 #include <itkMeshFileWriter.h>
 
-
-namespace agtk
-{
 
 //! Reads a mesh from a file
 template <typename TMesh>
@@ -51,4 +49,5 @@ bool writeMesh(const TMesh* mesh, const std::string& fileName)
 
   return true;
 }
-}
+
+#endif

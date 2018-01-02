@@ -13,7 +13,7 @@
 #include "args.hxx"
 #include "argsCustomParsers.h"
 
-#include "agtkIO.h"
+#include "itkIOutils.h"
 #include "agtkCommandIterationUpdate.h"
 
 using namespace agtk;
