@@ -22,6 +22,8 @@ GMML2PointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
   Superclass::Initialize();
 
   this->m_NormalizingValueFactor = 1.0 / this->m_MovingPointSet->GetNumberOfPoints();
+
+  this->m_NormalizingDerivativeFactor = -2.0 * this->m_NormalizingValueFactor / (this->m_Scale * this->m_Scale);
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
@@ -104,7 +106,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   // local derivatives
   for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-    derivative[dim] = -2.0 * (derivative2[dim] / (scale * factor2) - 2.0 * derivative1[dim] / (scale * factor1));
+    derivative[dim] = (derivative2[dim] / factor2 - 2.0 * derivative1[dim] / factor1);
   }
 }
 }

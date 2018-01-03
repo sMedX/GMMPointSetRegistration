@@ -177,6 +177,7 @@ protected:
   size_t m_NumberOfMovingPoints;
 
   double m_NormalizingValueFactor;
+  double m_NormalizingDerivativeFactor;
 
   bool m_UseKdTree;
 

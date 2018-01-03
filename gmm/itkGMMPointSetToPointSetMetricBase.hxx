@@ -35,6 +35,7 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_JacobianCache.set_size(MovingPointSetDimension, MovingPointSetDimension);
 
   m_NormalizingValueFactor = 1;
+  m_NormalizingDerivativeFactor = 1;
 
   m_UseKdTree = true;
 }
@@ -100,7 +101,7 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
   value *= m_NormalizingValueFactor;
 
   for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
-    derivative[par] *= m_NormalizingValueFactor;
+    derivative[par] *= m_NormalizingDerivativeFactor;
   }
 }
 

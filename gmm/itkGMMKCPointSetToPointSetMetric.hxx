@@ -21,7 +21,11 @@ GMMKCPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 {
   Superclass::Initialize();
 
-  this->m_NormalizingValueFactor = -1.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+  const double factor = (double) this->m_MovingPointSet->GetNumberOfPoints() / (double) this->m_FixedPointSet->GetNumberOfPoints();
+
+  this->m_NormalizingValueFactor = -factor / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+
+  this->m_NormalizingDerivativeFactor = -4.0 * this->m_NormalizingValueFactor * factor;
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
@@ -30,7 +34,6 @@ typename GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetLocalNeighborhoodValue(const MovingPointType & point) const
 {
-  const double factor = (double) this->m_TransformedPointSet->GetNumberOfPoints() / (double) this->m_FixedPointSet->GetNumberOfPoints();
   const double scale = this->m_Scale*this->m_Scale;
 
   // compute value for the first sum
@@ -52,7 +55,7 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   }
 
   // compute local value
-  const double ratio = (value1 / value2) * factor;
+  const double ratio = value1 / value2;
   const double value = value1 * ratio;
 
   return value;
@@ -63,7 +66,6 @@ void
 GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetLocalNeighborhoodValueAndDerivative(const MovingPointType & point, MeasureType & value, LocalDerivativeType & derivative) const
 {
-  const double factor = (double) this->m_TransformedPointSet->GetNumberOfPoints() / (double) this->m_FixedPointSet->GetNumberOfPoints();
   const double scale = this->m_Scale * this->m_Scale;
 
   // compute gradient for the first sum
@@ -99,12 +101,12 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   }
 
   // compute local value
-  const double ratio = (value1 / value2) * factor;
+  const double ratio = value1 / value2;
   value = value1 * ratio;
 
   // compute local derivatives
   for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-    derivative[dim] = -4.0 * (derivative1[dim] - derivative2[dim] * ratio / factor) * ratio;
+    derivative[dim] = (derivative1[dim] - derivative2[dim] * ratio) * ratio;
   }
 }
 }

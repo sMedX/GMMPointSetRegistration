@@ -22,6 +22,8 @@ GMML2RigidPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
   Superclass::Initialize();
 
   this->m_NormalizingValueFactor = -2.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+
+  this->m_NormalizingDerivativeFactor = -2.0 * this->m_NormalizingValueFactor / (this->m_Scale * this->m_Scale);
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
@@ -63,12 +65,6 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
     for (size_t dim = 0; dim < this->PointDimension; ++dim) {
       derivative[dim] += expval * (point[dim] - fixedPoint[dim]);
     }
-  }
-
-  const double factor = -2.0 / scale;
-
-  for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-    derivative[dim] *= factor;
   }
 }
 }
