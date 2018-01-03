@@ -20,23 +20,23 @@ namespace itk
     itkNewMacro(Self);
     itkTypeMacro(InitializeMetric, Object);
 
+    /** typedefs */
+    typedef itk::GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet> MetricType;
+
+    // define type of metric
     enum class Metric
     {
       GMML2Rigid,
       GMML2,
-      GMMKC,
+      GMMKC
     };
 
-    /** typedefs */
-    typedef itk::GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet> MetricType;
-
-    // Get metric
-    itkGetObjectMacro(Metric, MetricType);
-
-    // Set/Get type of metric
     itkSetEnumMacro(TypeOfMetric, Metric);
     itkGetEnumMacro(TypeOfMetric, Metric);
     void SetTypeOfMetric(const size_t & type) { this->SetTypeOfMetric(static_cast<Metric>(type)); }
+
+    // Get metric
+    itkGetObjectMacro(Metric, MetricType);
 
     void Initialize()
     {
@@ -57,6 +57,10 @@ namespace itk
         break;
       }
       }
+
+      if (m_Metric == nullptr) {
+        itkExceptionMacro(<< "metric has not been initialized.");
+      }
     }
 
     void PrintReport() const
@@ -68,9 +72,12 @@ namespace itk
 
   protected:
     Metric m_TypeOfMetric;
-    typename MetricType::Pointer m_Metric = nullptr;
+    typename MetricType::Pointer m_Metric;
 
-    InitializeMetric() {}
+    InitializeMetric() 
+    {
+      m_Metric = nullptr;
+    }
     ~InitializeMetric() {}
   };
 }
