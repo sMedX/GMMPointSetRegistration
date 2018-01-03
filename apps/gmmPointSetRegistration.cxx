@@ -4,13 +4,12 @@
 
 #include "itkGMMPointSetToPointSetRegistrationMethod.h"
 #include "itkPointSetPropertiesCalculator.h"
-#include "itkNormalizePointSet.h"
 #include "itkInitializeTransform.h"
 #include "itkInitializeMetric.h"
 #include "itkPointSetToPointSetMetrics.h"
 
-#include "argsCustomParsers.h"
 #include "itkIOutils.h"
+#include "argsCustomParsers.h"
 
 const unsigned int Dimension = 3;
 typedef itk::Mesh<float, Dimension> MeshType;
@@ -155,8 +154,8 @@ int main(int argc, char** argv) {
   OptimizerType::Pointer optimizer = OptimizerType::New();
   optimizer->SetMaximumNumberOfFunctionEvaluations(numberOfIterations);
   optimizer->SetScales(transformInitializer->GetScales());
-  optimizer->MinimizeOn();
   optimizer->SetTrace(trace);
+  optimizer->MinimizeOn();
 
   //--------------------------------------------------------------------
   // metric
@@ -185,12 +184,11 @@ int main(int argc, char** argv) {
   registration->SetOptimizer(optimizer);
   registration->SetMetric(metricInitializer->GetMetric());
   registration->SetTransform(transform);
-  registration->SetNumberOfLevels(numberOfLevels);
   try {
     registration->Update();
   }
   catch (itk::ExceptionObject& excep) {
-    std::cout << excep << std::endl;
+    std::cerr << excep << std::endl;
     return EXIT_FAILURE;
   }
 

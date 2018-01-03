@@ -6,19 +6,14 @@
 #include <itkPointSetToPointSetRegistrationMethod.h>
 
 #include "itkPointSetPropertiesCalculator.h"
-#include "itkNormalizePointSet.h"
 #include "itkInitializeTransform.h"
 #include "itkPointSetToPointSetMetrics.h"
 
-#include "args.hxx"
+#include "itkIOutils.h"
 #include "argsCustomParsers.h"
 
-#include "itkIOutils.h"
-#include "agtkCommandIterationUpdate.h"
-
-using namespace agtk;
-
-typedef itk::Mesh<float, 3U> MeshType;
+const unsigned int Dimension = 3;
+typedef itk::Mesh<float, Dimension> MeshType;
 typedef itk::PointSet<MeshType::PixelType, MeshType::PointDimension> PointSetType;
 typedef itk::Transform <double, MeshType::PointDimension, MeshType::PointDimension> TransformType;
 
@@ -30,10 +25,10 @@ int main(int argc, char** argv) {
 
   args::ValueFlag<std::string> argFixedFileName(allRequired, "fixed", "The fixed mesh (point-set) filename", { 'f', "fixed" });
   args::ValueFlag<std::string> argMovingFileName(allRequired, "moving", "The moving mesh (point-set) filename", { 'm', "moving" });
-
   args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh (point-set) filename", { 'o', "output" });
-  args::ValueFlag<unsigned int> argNumberOfIterations(parser, "iterations", "The number of iterations", { 'i', "iterations" });
-  args::Flag argNormalize(parser, "normalize", "Normalization", { 'n', "normalize" });
+
+  args::ValueFlag<size_t> argNumberOfIterations(parser, "iterations", "The number of iterations", { 'i', "iterations" }, 1000);
+  args::Flag trace(parser, "trace", "Optimizer iterations tracing", {"trace"});
 
   const std::string transformDescription =
     "The type of transform (That is number):\n"
@@ -42,7 +37,7 @@ int main(int argc, char** argv) {
     "  2 : Similarity\n"
     "  3 : ScaleSkewVersor3D\n";
 
-  args::ValueFlag<size_t> argTypeOfTransform(parser, "transform", transformDescription, { 't', "transform" });
+  args::ValueFlag<size_t> argTypeOfTransform(parser, "transform", transformDescription, { 't', "transform" }, 0);
 
   try {
     parser.ParseCLI(argc, argv);
@@ -65,19 +60,8 @@ int main(int argc, char** argv) {
   std::string fixedFileName = args::get(argFixedFileName);
   std::string movingFileName = args::get(argMovingFileName);
 
-  unsigned int numberOfIterations = 100;
-
-  if (argNumberOfIterations) {
-    numberOfIterations = args::get(argNumberOfIterations);
-  }
-
-  bool normalize = argNormalize;
-
-  size_t typeOfTransform = 0;
-
-  if (argTypeOfTransform) {
-    typeOfTransform = args::get(argTypeOfTransform);
-  }
+  size_t numberOfIterations = args::get(argNumberOfIterations);
+  size_t typeOfTransform = args::get(argTypeOfTransform);
 
   std::cout << "options" << std::endl;
   std::cout << "number of iterations " << numberOfIterations << std::endl;
@@ -133,39 +117,15 @@ int main(int argc, char** argv) {
   InitialTransformType::Pointer fixedInitialTransform;
   InitialTransformType::Pointer movingInitialTransform;
 
-  if (normalize) {
-    fixedInitialTransform = InitialTransformType::New();
-    fixedInitialTransform->SetIdentity();
-    fixedInitialTransform->SetScale(1.0 / fixedPointSetCalculator->GetScale());
-    fixedInitialTransform->SetCenter(fixedPointSetCalculator->GetCenter());
-    InitialTransformType::TranslationType fixedTranslation;
-    for (unsigned int n = 0; n < 3; ++n) {
-      fixedTranslation[n] = -fixedPointSetCalculator->GetCenter()[n];
-    }
-    fixedInitialTransform->SetTranslation(fixedTranslation);
-
-    movingInitialTransform = InitialTransformType::New();
-    movingInitialTransform->SetIdentity();
-    movingInitialTransform->SetScale(1.0 / movingPointSetCalculator->GetScale());
-    movingInitialTransform->SetCenter(movingPointSetCalculator->GetCenter());
-    InitialTransformType::TranslationType movingTranslation;
-    for (size_t n = 0; n < 3; ++n) {
-      movingTranslation[n] = -movingPointSetCalculator->GetCenter()[n];
-    }
-    movingInitialTransform->SetTranslation(movingTranslation);
-  }
-
   // initialize transform
-  typedef itk::InitializeTransform<double> InitializeTransformType;
-  InitializeTransformType::Pointer initializeTransform = InitializeTransformType::New();
-  if (!normalize) {
-    initializeTransform->SetCenter(movingPointSetCalculator->GetCenter());
-    initializeTransform->SetTranslation(fixedPointSetCalculator->GetCenter() - movingPointSetCalculator->GetCenter());
-  }
-  initializeTransform->SetTypeOfTransform(typeOfTransform);
-  initializeTransform->Update();
-  initializeTransform->PrintReport();
-  TransformType::Pointer transform = initializeTransform->GetTransform();
+  typedef itk::InitializeTransform<double> TransformInitializerType;
+  TransformInitializerType::Pointer transformInitializer = TransformInitializerType::New();
+  transformInitializer->SetMovingLandmark(movingPointSetCalculator->GetCenter());
+  transformInitializer->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
+  transformInitializer->SetTypeOfTransform(typeOfTransform);
+  transformInitializer->Update();
+  transformInitializer->PrintReport();
+  TransformType::Pointer transform = transformInitializer->GetTransform();
 
   //--------------------------------------------------------------------
   // initialize optimizer
@@ -185,6 +145,7 @@ int main(int argc, char** argv) {
   optimizer->SetValueTolerance(valueTolerance);
   optimizer->SetGradientTolerance(gradientTolerance);
   optimizer->SetEpsilonFunction(epsilonFunction);
+  optimizer->SetDebug(trace);
 
   //--------------------------------------------------------------------
   // metric
@@ -203,7 +164,6 @@ int main(int argc, char** argv) {
   registration->SetMetric(metric);
   registration->SetOptimizer(optimizer);
   registration->SetTransform(transform);
-
   try {
     registration->Update();
   }
@@ -224,24 +184,12 @@ int main(int argc, char** argv) {
   typedef itk::TransformMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType;
   TransformMeshFilterType::Pointer transformMesh = TransformMeshFilterType::New();
   transformMesh->SetInput(movingMesh);
-
-  if (normalize) {
-    typedef itk::CompositeTransform<double, PointSetType::PointDimension> CompositeTransformType;
-    CompositeTransformType::Pointer transform = CompositeTransformType::New();
-    transform->AddTransform(fixedInitialTransform->GetInverseTransform());
-    transform->AddTransform(registration->GetTransform());
-    transform->AddTransform(movingInitialTransform);
-    transformMesh->SetTransform(transform);
-  }
-  else {
-    transformMesh->SetTransform(transform);
-  }
-
+  transformMesh->SetTransform(transform);
   try {
     transformMesh->Update();
   }
   catch (itk::ExceptionObject& excep) {
-    std::cout << excep << std::endl;
+    std::cerr << excep << std::endl;
     return EXIT_FAILURE;
   }
 
