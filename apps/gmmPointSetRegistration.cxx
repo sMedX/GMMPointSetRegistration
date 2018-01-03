@@ -116,16 +116,21 @@ int main(int argc, char** argv) {
   movingPointSetCalculator->Compute();
   movingPointSetCalculator->PrintReport(std::cout);
 
-  typedef itk::Similarity3DTransform<double> InitialTransformType;
-  InitialTransformType::Pointer fixedInitialTransform;
-  InitialTransformType::Pointer movingInitialTransform;
-
   itk::Array<double> scale(args::get(argScale).size());
   for (size_t n = 0; n < scale.size(); ++n) {
     scale[n] = args::get(argScale)[n] * movingPointSetCalculator->GetScale();
   }
 
   // initialize transform
+  typedef itk::VersorRigid3DTransform<double> InitialTransformType;
+  InitialTransformType::Pointer fixedInitialTransform = InitialTransformType::New();
+  fixedInitialTransform->SetCenter(fixedPointSetCalculator->GetCenter());
+  fixedInitialTransform->SetIdentity();
+
+  InitialTransformType::Pointer movingInitialTransform = InitialTransformType::New();
+  movingInitialTransform->SetCenter(movingPointSetCalculator->GetCenter());
+  movingInitialTransform->SetIdentity();
+
   typedef itk::InitializeTransform<double> TransformInitializerType;
   TransformInitializerType::Pointer transformInitializer = TransformInitializerType::New();
   transformInitializer->SetMovingLandmark(movingPointSetCalculator->GetCenter());
