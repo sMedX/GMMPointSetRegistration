@@ -11,7 +11,7 @@ namespace itk
 template< typename TFixedPointSet, typename TMovingPointSet >
 GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >::GMMPointSetToPointSetRegistrationMethod()
 {
-  this->SetNumberOfRequiredOutputs(1);    // for the Transform
+  this->SetNumberOfRequiredOutputs(1);    // for the transform
 
   m_FixedPointSet = ITK_NULLPTR;
   m_FixedTransformedPointSet = ITK_NULLPTR;
@@ -23,6 +23,8 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >::GMMP
   m_Transform = ITK_NULLPTR;
   m_Metric = ITK_NULLPTR;
   m_Optimizer = ITK_NULLPTR;
+
+  m_NumberOfLevels = 0;
 
   m_InitialTransformParameters = ParametersType(1);
   m_FinalTransformParameters = ParametersType(1);

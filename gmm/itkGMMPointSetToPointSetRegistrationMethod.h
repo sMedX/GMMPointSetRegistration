@@ -148,13 +148,13 @@ protected:
   std::vector<double> m_InitialMetricValue;
   std::vector<double> m_FinalMetricValue;
 
-private:
-  GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;
-  void operator=(const Self &) ITK_DELETE_FUNCTION;
-
   size_t m_NumberOfLevels;
   itk::Array<double> m_FixedPointSetScale;
   itk::Array<double> m_MovingPointSetScale;
+
+private:
+  GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;
+  void operator=(const Self &) ITK_DELETE_FUNCTION;
 };
 } // end namespace itk
 
