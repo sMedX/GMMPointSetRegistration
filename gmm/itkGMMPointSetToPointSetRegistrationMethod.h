@@ -42,6 +42,7 @@ public:
   /**  Type of the metric. */
   typedef GMMPointSetToPointSetMetricBase<FixedPointSetType, TMovingPointSet> MetricType;
   typedef typename MetricType::Pointer                                        MetricPointer;
+  typedef itk::Array<double>                                                  ScaleType;
 
   /**  Type of the Transform . */
   typedef typename MetricType::TransformType TransformType;
@@ -109,15 +110,11 @@ public:
   using Superclass::MakeOutput;
   virtual DataObjectPointer MakeOutput(DataObjectPointerArraySizeType idx) ITK_OVERRIDE;
 
-  /** Method to return the latest modified time of this object or
-   * any of its cached ivars */
+  /** Method to return the latest modified time of this object or any of its cached ivars */
   virtual ModifiedTimeType GetMTime() const ITK_OVERRIDE;
 
-  itkSetMacro(FixedPointSetScale, itk::Array<double>);
-  itkGetMacro(FixedPointSetScale, itk::Array<double>);
-
-  itkSetMacro(MovingPointSetScale, itk::Array<double>);
-  itkGetMacro(MovingPointSetScale, itk::Array<double>);
+  itkSetMacro(Scale, ScaleType);
+  itkGetMacro(Scale, ScaleType);
 
   itkSetMacro(NumberOfLevels, size_t);
   itkGetMacro(NumberOfLevels, size_t);
@@ -149,8 +146,7 @@ protected:
   std::vector<double> m_FinalMetricValue;
 
   size_t m_NumberOfLevels;
-  itk::Array<double> m_FixedPointSetScale;
-  itk::Array<double> m_MovingPointSetScale;
+  ScaleType m_Scale;
 
 private:
   GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;

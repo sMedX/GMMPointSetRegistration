@@ -88,16 +88,12 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   // setup the transform
   m_Transform->SetParameters(m_InitialTransformParameters);
 
-  if (m_FixedPointSetScale.size() != m_MovingPointSetScale.size()) {
-    itkExceptionMacro(<< "Sizes of m_FixedPointSetScale and m_MovingPointSetScale are mismatched");
-  }
-
-  if (m_NumberOfLevels > m_FixedPointSetScale.size()) {
+  if (m_NumberOfLevels > m_Scale.size()) {
     itkExceptionMacro(<< "The number of levels is too large");
   }
 
   if (m_NumberOfLevels == 0) {
-    m_NumberOfLevels = m_FixedPointSetScale.Size();
+    m_NumberOfLevels = m_Scale.Size();
   }
 
   m_InitialMetricValue.clear();
@@ -291,8 +287,8 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   m_Optimizer->SetCostFunction(m_Metric);
 
   for (size_t level = 0; level < m_NumberOfLevels; ++level) {
-    m_Metric->SetFixedPointSetScale(m_FixedPointSetScale[level]);
-    m_Metric->SetMovingPointSetScale(m_MovingPointSetScale[level]);
+    m_Metric->SetFixedPointSetScale(m_Scale[level]);
+    m_Metric->SetMovingPointSetScale(m_Scale[level]);
 
     m_InitialMetricValue;
     m_Optimizer->SetInitialPosition(m_Transform->GetParameters());
