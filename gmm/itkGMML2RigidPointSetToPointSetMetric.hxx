@@ -30,7 +30,7 @@ typename GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetLocalNeighborhoodValue(const MovingPointType & point) const
 {
-  const double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
+  const double scale = this->m_Scale * this->m_Scale;
 
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
@@ -48,7 +48,7 @@ void
 GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetLocalNeighborhoodValueAndDerivative(const MovingPointType & point, MeasureType & value, LocalDerivativeType & derivative) const
 {
-  const double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
+  const double scale = this->m_Scale * this->m_Scale;
 
   value = NumericTraits<MeasureType>::ZeroValue();
 

@@ -67,7 +67,7 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
 {
   this->InitializeForIteration(parameters);
 
-  double scale = 0.5 * (this->m_FixedPointSetScale*this->m_FixedPointSetScale + this->m_MovingPointSetScale*this->m_MovingPointSetScale);
+  double scale = this->m_Scale * this->m_Scale;
 
   value = NumericTraits<MeasureType>::ZeroValue();
 

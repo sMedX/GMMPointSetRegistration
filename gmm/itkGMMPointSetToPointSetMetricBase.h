@@ -104,11 +104,8 @@ public:
   typedef Superclass::ParametersType ParametersType;
 
   /** Get/Set the scale.  */
-  itkSetMacro(FixedPointSetScale, double);
-  itkGetMacro(FixedPointSetScale, double);
-
-  itkSetMacro(MovingPointSetScale, double);
-  itkGetMacro(MovingPointSetScale, double);
+  itkSetMacro(Scale, double);
+  itkGetMacro(Scale, double);
 
   /** Get/Set the Fixed point set.  */
   itkSetConstObjectMacro(FixedPointSet, FixedPointSetType);
@@ -174,8 +171,7 @@ protected:
   mutable TransformJacobianType m_Jacobian;
   mutable TransformJacobianType m_JacobianCache;
 
-  double m_FixedPointSetScale;
-  double m_MovingPointSetScale;
+  double m_Scale;
 
   size_t m_NumberOfFixedPoints;
   size_t m_NumberOfMovingPoints;

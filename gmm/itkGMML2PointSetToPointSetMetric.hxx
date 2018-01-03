@@ -32,16 +32,14 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 {
   const double factor1 = this->m_TransformedPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
   const double factor2 = this->m_TransformedPointSet->GetNumberOfPoints() * this->m_TransformedPointSet->GetNumberOfPoints();
-
-  const double scale1 = 0.5 * (this->m_FixedPointSetScale * this->m_FixedPointSetScale + this->m_MovingPointSetScale * this->m_MovingPointSetScale);
-  const double scale2 = this->m_MovingPointSetScale * this->m_MovingPointSetScale;
+  const double scale = this->m_Scale * this->m_Scale;
 
   // compute value for the first sum
   double value1 = 0;
  
   for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {
     const double distance = point.SquaredEuclideanDistanceTo(it.Value());
-    const double expval = std::exp(-distance / scale1);
+    const double expval = std::exp(-distance / scale);
     value1 += expval;
   }
 
@@ -50,7 +48,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
  
   for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
     const double distance = point.SquaredEuclideanDistanceTo(it.Value());
-    const double expval = std::exp(-distance / scale2);
+    const double expval = std::exp(-distance / scale);
     value2 += expval;
   }
 
@@ -67,9 +65,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 {
   const double factor1 = this->m_FixedPointSet->GetNumberOfPoints();
   const double factor2 = this->m_TransformedPointSet->GetNumberOfPoints();
-
-  const double scale1 = 0.5 * (this->m_FixedPointSetScale * this->m_FixedPointSetScale + this->m_MovingPointSetScale * this->m_MovingPointSetScale);
-  const double scale2 = this->m_MovingPointSetScale * this->m_MovingPointSetScale;
+  const double scale = this->m_Scale * this->m_Scale;
 
   // compute value and derivative gradient for the first sum
   double value1 = 0;
@@ -79,7 +75,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {
     const typename FixedPointSetType::PointType fixedPoint = it.Value();
     const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
-    const double expval = std::exp(-distance / scale1);
+    const double expval = std::exp(-distance / scale);
     value1 += expval;
 
     for (size_t dim = 0; dim < this->PointDimension; ++dim) {
@@ -95,7 +91,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
     const typename MovingPointSetType::PointType transformedPoint = it.Value();
     const double distance = point.SquaredEuclideanDistanceTo(transformedPoint);
-    const double expval = std::exp(-distance / scale2);
+    const double expval = std::exp(-distance / scale);
     value2 += expval;
 
     for (size_t dim = 0; dim < this->PointDimension; ++dim) {
@@ -108,7 +104,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   // local derivatives
   for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-    derivative[dim] = -2.0 * (derivative2[dim] / (scale2 * factor2) - 2.0 * derivative1[dim] / (scale1 * factor1));
+    derivative[dim] = -2.0 * (derivative2[dim] / (scale * factor2) - 2.0 * derivative1[dim] / (scale * factor1));
   }
 }
 }

@@ -258,8 +258,7 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   m_Optimizer->SetCostFunction(m_Metric);
 
   for (size_t level = 0; level < m_NumberOfLevels; ++level) {
-    m_Metric->SetFixedPointSetScale(m_Scale[level]);
-    m_Metric->SetMovingPointSetScale(m_Scale[level]);
+    m_Metric->SetScale(m_Scale[level]);
 
     m_InitialMetricValues;
     m_Optimizer->SetInitialPosition(m_Transform->GetParameters());
