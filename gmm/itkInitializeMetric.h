@@ -56,6 +56,10 @@ namespace itk
         m_Metric = GMMKCMetricType::New();
         break;
       }
+      default: {
+        itkExceptionMacro(<< "Unknown type of metric");
+        return;
+      }
       }
 
       if (m_Metric == nullptr) {
