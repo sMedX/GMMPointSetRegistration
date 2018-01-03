@@ -25,7 +25,7 @@ GMMKCPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 
   this->m_NormalizingValueFactor = -factor / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
 
-  this->m_NormalizingDerivativeFactor = -4.0 * this->m_NormalizingValueFactor * factor;
+  this->m_NormalizingDerivativeFactor = -4.0 * factor * this->m_NormalizingValueFactor;
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
