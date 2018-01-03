@@ -54,7 +54,7 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   value = NumericTraits<MeasureType>::ZeroValue();
 
-  derivative.Fill(NumericTraits<LocalDerivativeValueType>::ZeroValue());
+  derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
   for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {
     const typename FixedPointSetType::PointType & fixedPoint = it.Value();

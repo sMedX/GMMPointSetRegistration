@@ -98,7 +98,7 @@ public:
   typedef Superclass::DerivativeType                       DerivativeType;
   typedef DerivativeType::ValueType                        DerivativeValueType;
   typedef FixedArray<DerivativeValueType, PointDimension>  LocalDerivativeType;
-  typedef typename LocalDerivativeType::ValueType          LocalDerivativeValueType;
+  //typedef typename LocalDerivativeType::ValueType          LocalDerivativeValueType;
 
   /**  Type of the parameters. */
   typedef Superclass::ParametersType ParametersType;

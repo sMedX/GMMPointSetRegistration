@@ -35,7 +35,6 @@ public:
   typedef typename Superclass::MeasureType               MeasureType;
   typedef typename Superclass::MovingPointType           MovingPointType;
   typedef typename Superclass::LocalDerivativeType       LocalDerivativeType;
-  typedef typename Superclass::LocalDerivativeValueType  LocalDerivativeValueType;
   typedef typename Superclass::FixedPointIterator        FixedPointIterator;
 
   /** Calculates the local metric value for a single point.*/

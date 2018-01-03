@@ -72,7 +72,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   // compute value and derivative gradient for the first sum
   double value1 = 0;
   LocalDerivativeType derivative1;
-  derivative1.Fill(NumericTraits<LocalDerivativeValueType>::ZeroValue());
+  derivative1.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
   for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {
     const typename FixedPointSetType::PointType fixedPoint = it.Value();
@@ -88,7 +88,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   // compute derivatives for the second part
   double value2 = 0;
   LocalDerivativeType derivative2;
-  derivative2.Fill(NumericTraits<LocalDerivativeValueType>::ZeroValue());
+  derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
   for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
     const typename MovingPointSetType::PointType transformedPoint = it.Value();
