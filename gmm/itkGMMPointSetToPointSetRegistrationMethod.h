@@ -42,6 +42,7 @@ public:
   /**  Type of the metric. */
   typedef GMMPointSetToPointSetMetricBase<FixedPointSetType, TMovingPointSet> MetricType;
   typedef typename MetricType::Pointer                                        MetricPointer;
+  typedef itk::Array<typename MetricType::MeasureType>                        MetricValuesType;
   typedef itk::Array<double>                                                  ScaleType;
 
   /**  Type of the Transform . */
@@ -119,10 +120,12 @@ public:
   itkSetMacro(NumberOfLevels, size_t);
   itkGetMacro(NumberOfLevels, size_t);
 
+  itkGetMacro(InitialMetricValues, MetricValuesType);
+  itkGetMacro(FinalMetricValues, MetricValuesType);
+
 protected:
   GMMPointSetToPointSetRegistrationMethod();
   virtual ~GMMPointSetToPointSetRegistrationMethod() {};
-  virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
   /** Method invoked by the pipeline in order to trigger the computation of the registration. */
   virtual void GenerateData() ITK_OVERRIDE;
@@ -142,8 +145,8 @@ protected:
   ParametersType m_InitialTransformParameters;
   ParametersType m_FinalTransformParameters;
 
-  std::vector<double> m_InitialMetricValue;
-  std::vector<double> m_FinalMetricValue;
+  MetricValuesType m_InitialMetricValues;
+  MetricValuesType m_FinalMetricValues;
 
   size_t m_NumberOfLevels;
   ScaleType m_Scale;
