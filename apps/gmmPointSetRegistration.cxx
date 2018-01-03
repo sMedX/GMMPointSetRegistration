@@ -69,7 +69,6 @@ int main(int argc, char** argv) {
 
   std::string fixedFileName = args::get(argFixedFileName);
   std::string movingFileName = args::get(argMovingFileName);
-  std::vector<double> scale = args::get(argScale);
   size_t numberOfIterations = args::get(argNumberOfIterations);
   size_t typeOfTransform = args::get(argTypeOfTransform);
   size_t typeOfMetric = args::get(argTypeOfMetric);
@@ -106,15 +105,6 @@ int main(int argc, char** argv) {
 
   //--------------------------------------------------------------------
   // initialize scales
-  size_t numberOfLevels = scale.size();
-  itk::Array<double> fixedPointSetScale(scale.size());
-  itk::Array<double> movingPointSetScale(scale.size());
-
-  for (size_t n = 0; n < scale.size(); ++n) {
-    fixedPointSetScale[n] = scale[n];
-    movingPointSetScale[n] = scale[n];
-  }
-
   typedef itk::PointSetPropertiesCalculator<PointSetType> PointSetPropertiesCalculatorType;
   PointSetPropertiesCalculatorType::Pointer fixedPointSetCalculator = PointSetPropertiesCalculatorType::New();
   fixedPointSetCalculator->SetPointSet(fixedPointSet);
@@ -130,12 +120,9 @@ int main(int argc, char** argv) {
   InitialTransformType::Pointer fixedInitialTransform;
   InitialTransformType::Pointer movingInitialTransform;
 
+  itk::Array<double> scale(args::get(argScale).size());
   for (size_t n = 0; n < scale.size(); ++n) {
-    fixedPointSetScale[n] *= fixedPointSetCalculator->GetScale();
-  }
-
-  for (size_t n = 0; n < scale.size(); ++n) {
-    movingPointSetScale[n] *= fixedPointSetCalculator->GetScale();
+    scale[n] = args::get(argScale)[n] * movingPointSetCalculator->GetScale();
   }
 
   // initialize transform
@@ -145,7 +132,6 @@ int main(int argc, char** argv) {
   transformInitializer->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
   transformInitializer->SetTypeOfTransform(typeOfTransform);
   transformInitializer->Update();
-  transformInitializer->PrintReport();
   TransformType::Pointer transform = transformInitializer->GetTransform();
 
   //--------------------------------------------------------------------
@@ -169,7 +155,6 @@ int main(int argc, char** argv) {
     std::cerr << excep << std::endl;
     return EXIT_FAILURE;
   }
-  metricInitializer->PrintReport();
 
   //--------------------------------------------------------------------
   // perform registration
@@ -179,8 +164,7 @@ int main(int argc, char** argv) {
   registration->SetFixedInitialTransform(fixedInitialTransform);
   registration->SetMovingPointSet(movingPointSet);
   registration->SetMovingInitialTransform(movingInitialTransform);
-  registration->SetFixedPointSetScale(fixedPointSetScale);
-  registration->SetMovingPointSetScale(movingPointSetScale);
+  registration->SetScale(scale);
   registration->SetOptimizer(optimizer);
   registration->SetMetric(metricInitializer->GetMetric());
   registration->SetTransform(transform);
@@ -193,11 +177,16 @@ int main(int argc, char** argv) {
   }
 
   std::cout << std::endl;
-  std::cout << registration->GetMetric()->GetNameOfClass() << std::endl;
-  std::cout << optimizer->GetStopConditionDescription() << std::endl;
-  std::cout << "initial parameters " << registration->GetInitialTransformParameters() << std::endl;
-  std::cout << "  final parameters " << optimizer->GetCurrentPosition() << std::endl;
-  std::cout << "             value " << optimizer->GetValue() << std::endl;
+  std::cout << "optimizer " << registration->GetOptimizer()->GetNameOfClass() << std::endl;
+  std::cout << "   scales " << registration->GetOptimizer()->GetScales() << std::endl;
+  std::cout << std::endl;
+  std::cout << "transform " << registration->GetTransform()->GetNameOfClass() << std::endl;
+  std::cout << "Initial transform parameters " << registration->GetInitialTransformParameters() << std::endl;
+  std::cout << "  Final transform parameters " << registration->GetFinalTransformParameters() << std::endl;
+  std::cout << std::endl;
+  std::cout << "metric " << registration->GetMetric()->GetNameOfClass() << std::endl;
+  std::cout << "   Initial metric parameters " << registration->GetInitialMetricValues() << std::endl;
+  std::cout << "     Final metric parameters " << registration->GetFinalMetricValues() << std::endl;
   std::cout << std::endl;
 
   // transform moving mesh
