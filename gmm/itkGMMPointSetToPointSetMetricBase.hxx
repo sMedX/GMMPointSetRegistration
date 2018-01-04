@@ -154,11 +154,10 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 ::Initialize(void)
 throw ( ExceptionObject )
 {
-  if (!m_Transform) {
+  if (!m_Transform) 
+    {
     itkExceptionMacro(<< "Transform is not present");
-  }
-
-  m_NumberOfParameters = m_Transform->GetNumberOfParameters();
+    }
 
   if ( !m_MovingPointSet )
     {
@@ -182,6 +181,7 @@ throw ( ExceptionObject )
 	  m_MovingPointSet->GetSource()->Update();
     }
 
+  m_NumberOfParameters = m_Transform->GetNumberOfParameters();
   m_NumberOfFixedPoints = m_FixedPointSet->GetNumberOfPoints();
   m_NumberOfMovingPoints = m_MovingPointSet->GetNumberOfPoints();
 }
