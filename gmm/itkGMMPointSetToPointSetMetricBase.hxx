@@ -114,7 +114,7 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetDeriva
   itkExceptionMacro(<< "not implemented");
 }
 
-/** Set the parameters that define a unique transform */
+/** Initialize data for current iteration with the input parameters */
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
@@ -122,10 +122,15 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 {
   this->SetTransformParameters(parameters);
 
-  m_TransformedMovingPointSet = MovingPointSetType::New();
+  if (!m_TransformedMovingPointSet) {
+    m_TransformedMovingPointSet = MovingPointSetType::New();
+    m_TransformedMovingPointSet->GetPoints()->resize(m_MovingPointSet->GetNumberOfPoints());
+  }
+
+  typename MovingPointSetType::PointsContainer::Pointer points = m_TransformedMovingPointSet->GetPoints();
 
   for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
-    m_TransformedMovingPointSet->SetPoint(it.Index(), m_Transform->TransformPoint(it.Value()));
+    points->SetElement(it.Index(), m_Transform->TransformPoint(it.Value()));
   }
 }
 
