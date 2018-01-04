@@ -217,8 +217,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  PointSetType::Pointer outputPointSet = PointSetType::New();
-  outputPointSet->SetPoints(transformMesh->GetOutput()->GetPoints());
+  PointSetType::Pointer outputPointSet = transformMesh->GetOutput();
 
   // compute metrics
   typedef itk::PointSetToPointSetMetrics<PointSetType> PointSetToPointSetMetricsType;
