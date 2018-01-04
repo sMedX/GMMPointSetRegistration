@@ -36,6 +36,7 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 
   m_NormalizingValueFactor = 1;
   m_NormalizingDerivativeFactor = 1;
+  m_Scale = 1;
 
   m_UseKdTree = true;
 }
