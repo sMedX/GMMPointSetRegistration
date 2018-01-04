@@ -69,17 +69,14 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
 {
   this->InitializeForIteration(parameters);
 
-  double scale = this->m_Scale * this->m_Scale;
-
   value = NumericTraits<MeasureType>::ZeroValue();
+  MeasureType localValue;
 
   if (derivative.size() != this->m_NumberOfParameters) {
     derivative.set_size(this->m_NumberOfParameters);
   }
-  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
 
-  MeasureType localValue;
-
+  derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
   LocalDerivativeType localDerivative;
 
   for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
@@ -101,7 +98,7 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
 
   value *= m_NormalizingValueFactor;
 
-  for (size_t par = 0; par < this->m_NumberOfParameters; par++) {
+  for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
     derivative[par] *= m_NormalizingDerivativeFactor;
   }
 }
@@ -125,8 +122,8 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 
   this->m_TransformedPointSet = MovingPointSetType::New();
 
-  for (MovingPointIterator iter = this->m_MovingPointSet->GetPoints()->Begin(); iter != this->m_MovingPointSet->GetPoints()->End(); ++iter) {
-    this->m_TransformedPointSet->SetPoint(iter.Index(), this->m_Transform->TransformPoint(iter.Value()));
+  for (MovingPointIterator it = this->m_MovingPointSet->GetPoints()->Begin(); it != this->m_MovingPointSet->GetPoints()->End(); ++it) {
+    this->m_TransformedPointSet->SetPoint(it.Index(), this->m_Transform->TransformPoint(it.Value()));
   }
 }
 
