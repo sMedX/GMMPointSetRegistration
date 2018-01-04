@@ -162,7 +162,7 @@ protected:
 
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
-  mutable typename MovingPointSetType::Pointer m_TransformedPointSet;
+  mutable typename MovingPointSetType::Pointer m_TransformedMovingPointSet;
 
   mutable TransformPointer m_Transform;
   size_t m_NumberOfParameters;

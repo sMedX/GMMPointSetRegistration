@@ -31,6 +31,8 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_MovingPointSet = ITK_NULLPTR;    // has to be provided by the user.
   m_Transform      = ITK_NULLPTR;    // has to be provided by the user.
 
+  m_TransformedMovingPointSet = ITK_NULLPTR;
+
   m_Jacobian.set_size(MovingPointSetDimension, m_NumberOfParameters);
   m_JacobianCache.set_size(MovingPointSetDimension, MovingPointSetDimension);
 
@@ -52,7 +54,7 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const
 
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
-  for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
+  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
     value += GetLocalNeighborhoodValue(it.Value());
   }
 
@@ -79,7 +81,7 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValueA
   derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
   LocalDerivativeType localDerivative;
 
-  for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
+  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
 
     // compute local value and derivatives
     this->GetLocalNeighborhoodValueAndDerivative(it.Value(), localValue, localDerivative);
@@ -120,10 +122,10 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 {
   this->SetTransformParameters(parameters);
 
-  this->m_TransformedPointSet = MovingPointSetType::New();
+  m_TransformedMovingPointSet = MovingPointSetType::New();
 
-  for (MovingPointIterator it = this->m_MovingPointSet->GetPoints()->Begin(); it != this->m_MovingPointSet->GetPoints()->End(); ++it) {
-    this->m_TransformedPointSet->SetPoint(it.Index(), this->m_Transform->TransformPoint(it.Value()));
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
+    m_TransformedMovingPointSet->SetPoint(it.Index(), m_Transform->TransformPoint(it.Value()));
   }
 }
 

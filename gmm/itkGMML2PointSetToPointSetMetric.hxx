@@ -32,8 +32,8 @@ typename GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetLocalNeighborhoodValue(const MovingPointType & point) const
 {
-  const double factor1 = this->m_TransformedPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
-  const double factor2 = this->m_TransformedPointSet->GetNumberOfPoints() * this->m_TransformedPointSet->GetNumberOfPoints();
+  const double factor1 = this->m_TransformedMovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
+  const double factor2 = this->m_TransformedMovingPointSet->GetNumberOfPoints() * this->m_TransformedMovingPointSet->GetNumberOfPoints();
   const double scale = this->m_Scale * this->m_Scale;
 
   // compute value for the first sum
@@ -48,7 +48,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   // compute value for the second sum
   double value2 = 0;
  
-  for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
+  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
     const double distance = point.SquaredEuclideanDistanceTo(it.Value());
     const double expval = std::exp(-distance / scale);
     value2 += expval;
@@ -66,7 +66,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetLocalNeighborhoodValueAndDerivative(const MovingPointType & point, MeasureType & value, LocalDerivativeType & derivative) const
 {
   const double factor1 = this->m_FixedPointSet->GetNumberOfPoints();
-  const double factor2 = this->m_TransformedPointSet->GetNumberOfPoints();
+  const double factor2 = this->m_TransformedMovingPointSet->GetNumberOfPoints();
   const double scale = this->m_Scale * this->m_Scale;
 
   // compute value and derivative gradient for the first sum
@@ -90,7 +90,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   LocalDerivativeType derivative2;
   derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
-  for (MovingPointIterator it = this->m_TransformedPointSet->GetPoints()->Begin(); it != this->m_TransformedPointSet->GetPoints()->End(); ++it) {
+  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
     const typename MovingPointSetType::PointType transformedPoint = it.Value();
     const double distance = point.SquaredEuclideanDistanceTo(transformedPoint);
     const double expval = std::exp(-distance / scale);
