@@ -60,12 +60,12 @@ public:
   /**  Type of the moving Pointset. */
   typedef TMovingPointSet                           MovingPointSetType;
   typedef typename MovingPointSetType::PointType    MovingPointType;
-  typedef typename TMovingPointSet::PixelType       MovingPointSetPixelType;
   typedef typename MovingPointSetType::ConstPointer MovingPointSetConstPointer;
 
   /**  Type of the fixed Pointset. */
-  typedef TFixedPointSet                           FixedPointSetType;
-  typedef typename FixedPointSetType::ConstPointer FixedPointSetConstPointer;
+  typedef TFixedPointSet                            FixedPointSetType;
+  typedef typename FixedPointSetType::PointType     FixedPointType;
+  typedef typename FixedPointSetType::ConstPointer  FixedPointSetConstPointer;
 
   /** Constants for the pointset dimensions */
   itkStaticConstMacro(MovingPointSetDimension, unsigned int, TMovingPointSet::PointDimension);

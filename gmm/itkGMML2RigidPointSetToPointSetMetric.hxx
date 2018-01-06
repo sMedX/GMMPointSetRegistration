@@ -57,7 +57,7 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
   for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {
-    const typename FixedPointSetType::PointType & fixedPoint = it.Value();
+    const FixedPointType & fixedPoint = it.Value();
     const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
     const double expval = std::exp(-distance / scale);
     value += expval;

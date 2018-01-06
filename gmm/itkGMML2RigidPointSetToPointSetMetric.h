@@ -37,6 +37,7 @@ public:
   typedef typename Superclass::DerivativeValueType       DerivativeValueType;
   typedef typename Superclass::LocalDerivativeType       LocalDerivativeType;
   typedef typename Superclass::FixedPointIterator        FixedPointIterator;
+  typedef typename Superclass::FixedPointType            FixedPointType;
 
   /** Calculates the local metric value for a single point.*/
   virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const ITK_OVERRIDE;
