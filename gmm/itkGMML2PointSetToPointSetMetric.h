@@ -34,6 +34,7 @@ public:
   /** Types transferred from the base class */
   typedef typename Superclass::MeasureType               MeasureType;
   typedef typename Superclass::MovingPointType           MovingPointType;
+  typedef typename Superclass::DerivativeValueType       DerivativeValueType;
   typedef typename Superclass::LocalDerivativeType       LocalDerivativeType;
   typedef typename Superclass::FixedPointIterator        FixedPointIterator;
 
