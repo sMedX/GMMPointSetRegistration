@@ -33,11 +33,12 @@ public:
 
   /** Types transferred from the base class */
   typedef typename Superclass::MeasureType               MeasureType;
+  typedef typename Superclass::FixedPointType            FixedPointType;
+  typedef typename Superclass::FixedPointIterator        FixedPointIterator;
   typedef typename Superclass::MovingPointType           MovingPointType;
+  typedef typename Superclass::MovingPointIterator       MovingPointIterator;
   typedef typename Superclass::DerivativeValueType       DerivativeValueType;
   typedef typename Superclass::LocalDerivativeType       LocalDerivativeType;
-  typedef typename Superclass::FixedPointIterator        FixedPointIterator;
-  typedef typename Superclass::FixedPointType            FixedPointType;
 
   /** Calculates the local metric value for a single point.*/
   virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const ITK_OVERRIDE;
