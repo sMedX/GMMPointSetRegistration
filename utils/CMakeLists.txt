@@ -2,8 +2,7 @@ set(_name GMMUtils)
 project(${_name})
 
 set(HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/agtkIO.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/agtkCommandIterationUpdate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/itkIOutils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/argsCustomParsers.h
 )
 
