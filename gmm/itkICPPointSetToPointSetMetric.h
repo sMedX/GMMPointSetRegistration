@@ -31,44 +31,25 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ICPPointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
+  itkTypeMacro(GMMKCPointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
 
   /** Types transferred from the base class */
-  typedef typename Superclass::TransformType              TransformType;
-  typedef typename Superclass::TransformPointer           TransformPointer;
-  typedef typename Superclass::TransformParametersType    TransformParametersType;
-  typedef typename Superclass::TransformJacobianType      TransformJacobianType;
-  typedef typename Superclass::InputPointType             InputPointType;
-  typedef typename Superclass::OutputPointType            OutputPointType;
-  typedef typename Superclass::MeasureType                MeasureType;
-  typedef typename Superclass::DerivativeType             DerivativeType;
-  typedef typename Superclass::FixedPointSetType          FixedPointSetType;
-  typedef typename Superclass::MovingPointSetType         MovingPointSetType;
-  typedef typename Superclass::FixedPointsContainer       FixedPointsContainer;
-  typedef typename Superclass::MovingPointsContainer      MovingPointsContainer;
-  typedef typename Superclass::FixedPointSetConstPointer  FixedPointSetConstPointer;
-  typedef typename Superclass::MovingPointSetConstPointer MovingPointSetConstPointer;
-  typedef typename Superclass::FixedPointIterator         FixedPointIterator;
-  typedef typename Superclass::MovingPointIterator        MovingPointIterator;
-
-  typedef typename Superclass::LocalDerivativeType        LocalDerivativeType;
-  typedef typename Superclass::GradientType               GradientType;
+  typedef typename Superclass::MeasureType               MeasureType;
+  typedef typename Superclass::MovingPointType           MovingPointType;
+  typedef typename Superclass::LocalDerivativeType       LocalDerivativeType;
+  typedef typename Superclass::LocalDerivativeValueType  LocalDerivativeValueType;
+  typedef typename Superclass::FixedPointIterator        FixedPointIterator;
 
   typedef itk::PointsLocator<typename FixedPointSetType::PointsContainer>  FixedPointsLocatorType;
-  typedef itk::PointsLocator<typename MovingPointSetType::PointsContainer> MovingPointsLocatorType;
 
-  /** Get the derivatives of the match measure. */
-  void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
+  /** Calculates the local metric value for a single point.*/
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const ITK_OVERRIDE;
 
-  /**  Get the value for single valued optimizers. */
-  MeasureType GetValue(const TransformParametersType & parameters) const ITK_OVERRIDE;
+  /** Calculates the local value/derivative for a single point.*/
+  virtual void GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
 
-  /**  Get value and derivatives for multiple valued optimizers. */
-  void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
-
-  /** Initialize the Metric by making sure that all the components
-  *  are present and plugged together correctly     */
-  virtual void Initialize() throw (ExceptionObject) ITK_OVERRIDE;
+  /** Initialize the Metric by making sure that all the components are present and plugged together correctly.*/
+  virtual void Initialize() throw (ExceptionObject)ITK_OVERRIDE;
 
 protected:
   ICPPointSetToPointSetMetric();

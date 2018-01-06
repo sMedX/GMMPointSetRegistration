@@ -20,10 +20,10 @@ class GMML2RigidPointSetToPointSetMetric : public GMMPointSetToPointSetMetricBas
 {
 public:
   /** Standard class typedefs. */
-  typedef GMML2RigidPointSetToPointSetMetric                                   Self;
-  typedef GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet > Superclass;
-  typedef SmartPointer< Self >                                               Pointer;
-  typedef SmartPointer< const Self >                                         ConstPointer;
+  typedef GMML2RigidPointSetToPointSetMetric                                  Self;
+  typedef GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >  Superclass;
+  typedef SmartPointer< Self >                                                Pointer;
+  typedef SmartPointer< const Self >                                          ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -32,34 +32,21 @@ public:
   itkTypeMacro(GMML2RigidPointSetToPointSetMetric, GMMPointSetToPointSetMetricBase);
 
   /** Types transferred from the base class */
-  typedef typename Superclass::TransformType              TransformType;
-  typedef typename Superclass::TransformPointer           TransformPointer;
-  typedef typename Superclass::TransformParametersType    TransformParametersType;
-  typedef typename Superclass::TransformJacobianType      TransformJacobianType;
-  typedef typename Superclass::InputPointType             InputPointType;
-  typedef typename Superclass::OutputPointType            OutputPointType;
-  typedef typename Superclass::MeasureType                MeasureType;
-  typedef typename Superclass::DerivativeType             DerivativeType;
-  typedef typename Superclass::FixedPointSetType          FixedPointSetType;
-  typedef typename Superclass::MovingPointSetType         MovingPointSetType;
-  typedef typename Superclass::FixedPointSetConstPointer  FixedPointSetConstPointer;
-  typedef typename Superclass::MovingPointSetConstPointer MovingPointSetConstPointer;
-  typedef typename Superclass::FixedPointIterator         FixedPointIterator;
-  typedef typename Superclass::MovingPointIterator        MovingPointIterator;
+  typedef typename Superclass::MeasureType               MeasureType;
+  typedef typename Superclass::FixedPointType            FixedPointType;
+  typedef typename Superclass::FixedPointIterator        FixedPointIterator;
+  typedef typename Superclass::MovingPointType           MovingPointType;
+  typedef typename Superclass::MovingPointIterator       MovingPointIterator;
+  typedef typename Superclass::DerivativeValueType       DerivativeValueType;
+  typedef typename Superclass::LocalDerivativeType       LocalDerivativeType;
 
-  typedef typename Superclass::GradientType               GradientType;
+  /** Calculates the local metric value for a single point.*/
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const ITK_OVERRIDE;
 
-  /** Get the derivatives of the match measure. */
-  void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
+  /** Calculates the local value/derivative for a single point.*/
+  virtual void GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
 
-  /**  Get the value for single valued optimizers. */
-  MeasureType GetValue(const TransformParametersType & parameters) const ITK_OVERRIDE;
-
-  /**  Get value and derivatives for multiple valued optimizers. */
-  void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
-
-  /** Initialize the Metric by making sure that all the components
-  *  are present and plugged together correctly     */
+  /** Initialize the Metric by making sure that all the components are present and plugged together correctly.*/
   virtual void Initialize() throw (ExceptionObject) ITK_OVERRIDE;
 
 protected:

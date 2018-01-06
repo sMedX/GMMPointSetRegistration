@@ -11,7 +11,7 @@ namespace itk
 template< typename TFixedPointSet, typename TMovingPointSet >
 GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >::GMMPointSetToPointSetRegistrationMethod()
 {
-  this->SetNumberOfRequiredOutputs(1);    // for the Transform
+  this->SetNumberOfRequiredOutputs(1);    // for the transform
 
   m_FixedPointSet = ITK_NULLPTR;
   m_FixedTransformedPointSet = ITK_NULLPTR;
@@ -23,6 +23,8 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >::GMMP
   m_Transform = ITK_NULLPTR;
   m_Metric = ITK_NULLPTR;
   m_Optimizer = ITK_NULLPTR;
+
+  m_NumberOfLevels = 0;
 
   m_InitialTransformParameters = ParametersType(1);
   m_FinalTransformParameters = ParametersType(1);
@@ -86,20 +88,21 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   // setup the transform
   m_Transform->SetParameters(m_InitialTransformParameters);
 
-  if (m_FixedPointSetScale.size() != m_MovingPointSetScale.size()) {
-    itkExceptionMacro(<< "Sizes of m_FixedPointSetScale and m_MovingPointSetScale are mismatched");
-  }
-
-  if (m_NumberOfLevels > m_FixedPointSetScale.size()) {
+  if (m_NumberOfLevels > m_Scale.size()) {
     itkExceptionMacro(<< "The number of levels is too large");
   }
 
   if (m_NumberOfLevels == 0) {
-    m_NumberOfLevels = m_FixedPointSetScale.Size();
+    m_NumberOfLevels = m_Scale.Size();
   }
 
-  m_InitialMetricValue.clear();
-  m_FinalMetricValue.clear();
+  m_InitialMetricValues.clear();
+  m_InitialMetricValues.set_size(m_NumberOfLevels);
+  m_InitialMetricValues.Fill(NAN);
+
+  m_FinalMetricValues.clear();
+  m_FinalMetricValues.set_size(m_NumberOfLevels);
+  m_FinalMetricValues.Fill(NAN);
 }
 
 template< typename TFixedPointSet, typename TMovingPointSet >
@@ -129,40 +132,6 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     }
 
     m_MovingTransformedPointSet->SetPoints(points);
-  }
-}
-
-/**
- * PrintSelf
- */
-template< typename TFixedPointSet, typename TMovingPointSet >
-void
-GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
-::PrintSelf(std::ostream & os, Indent indent) const
-{
-  Superclass::PrintSelf(os, indent);
-  os << indent << "Metric: " << m_Metric.GetPointer() << std::endl;
-  os << indent << "Optimizer: " << m_Optimizer.GetPointer() << std::endl;
-  os << indent << "Transform: " << m_Transform.GetPointer() << std::endl;
-  os << indent << " Fixed PointSet: " << m_FixedPointSet.GetPointer() << std::endl;
-  os << indent << "Moving PointSet: " << m_MovingPointSet.GetPointer() << std::endl;
-  os << indent << "Initial Transform Parameters: " << m_InitialTransformParameters << std::endl;
-  os << indent << "  Final Transform Parameters: " << m_FinalTransformParameters << std::endl;
-
-  if (m_InitialMetricValue.size() > 0) {
-    os << indent << "Initial metric values ";
-    for (size_t n = 0; n < m_InitialMetricValue.size(); ++n) {
-      os << m_InitialMetricValue[n] << " ";
-    }
-    os << std::endl;
-  }
-
-  if (m_FinalMetricValue.size() > 0) {
-    os << indent << "  Final metric values ";
-    for (size_t n = 0; n < m_FinalMetricValue.size(); ++n) {
-      os << m_FinalMetricValue[n] << " ";
-    }
-    os << std::endl;
   }
 }
 
@@ -283,18 +252,15 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   }
 
   m_Metric->SetTransform(m_Transform);
-  m_Metric->Initialize();
 
   // setup the optimizer
   m_Optimizer->SetCostFunction(m_Metric);
 
   for (size_t level = 0; level < m_NumberOfLevels; ++level) {
-    m_Metric->SetFixedPointSetScale(m_FixedPointSetScale[level]);
-    m_Metric->SetMovingPointSetScale(m_MovingPointSetScale[level]);
+    m_Metric->SetScale(m_Scale[level]);
+    m_Metric->Initialize();
 
-    m_InitialMetricValue;
     m_Optimizer->SetInitialPosition(m_Transform->GetParameters());
-
     try {
       m_Optimizer->StartOptimization();
     }
@@ -306,8 +272,8 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     m_FinalTransformParameters = m_Optimizer->GetCurrentPosition();
     m_Transform->SetParameters(m_FinalTransformParameters);
 
-    m_InitialMetricValue.push_back(m_Metric->GetValue(m_Optimizer->GetInitialPosition()));
-    m_FinalMetricValue.push_back(m_Metric->GetValue(m_Optimizer->GetCurrentPosition()));
+    m_InitialMetricValues[level] = m_Metric->GetValue(m_Optimizer->GetInitialPosition());
+    m_FinalMetricValues[level] = m_Metric->GetValue(m_Optimizer->GetCurrentPosition());
   }
 }
 } // end namespace itk

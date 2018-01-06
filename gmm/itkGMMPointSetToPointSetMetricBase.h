@@ -19,7 +19,7 @@
 #define itkGMMPointSetToPointSetMetricBase_h
 
 #include "itkTransform.h"
-#include "itkCovariantVector.h"
+#include "itkPointSet.h"
 #include "itkSingleValuedCostFunction.h"
 #include "itkMacro.h"
 
@@ -59,12 +59,13 @@ public:
 
   /**  Type of the moving Pointset. */
   typedef TMovingPointSet                           MovingPointSetType;
-  typedef typename TMovingPointSet::PixelType       MovingPointSetPixelType;
+  typedef typename MovingPointSetType::PointType    MovingPointType;
   typedef typename MovingPointSetType::ConstPointer MovingPointSetConstPointer;
 
   /**  Type of the fixed Pointset. */
-  typedef TFixedPointSet                           FixedPointSetType;
-  typedef typename FixedPointSetType::ConstPointer FixedPointSetConstPointer;
+  typedef TFixedPointSet                            FixedPointSetType;
+  typedef typename FixedPointSetType::PointType     FixedPointType;
+  typedef typename FixedPointSetType::ConstPointer  FixedPointSetConstPointer;
 
   /** Constants for the pointset dimensions */
   itkStaticConstMacro(MovingPointSetDimension, unsigned int, TMovingPointSet::PointDimension);
@@ -78,8 +79,6 @@ public:
   typedef typename MovingPointSetType::PointsContainer                   MovingPointsContainer;
   typedef typename MovingPointsContainer::ConstIterator                  MovingPointIterator;
   typedef typename MovingPointSetType::PointDataContainer::ConstIterator MovingPointDataIterator;
-
-  typedef itk::CovariantVector<double, PointDimension> GradientType;
 
   /**  Type of the Transform Base class */
   typedef Transform< CoordinateRepresentationType,
@@ -96,32 +95,53 @@ public:
   typedef Superclass::MeasureType MeasureType;
 
   /**  Type of the derivative. */
-  typedef Superclass::DerivativeType DerivativeType;
-  typedef Array<double>              LocalDerivativeType;
+  typedef Superclass::DerivativeType                       DerivativeType;
+  typedef DerivativeType::ValueType                        DerivativeValueType;
+  typedef FixedArray<DerivativeValueType, PointDimension>  LocalDerivativeType;
 
   /**  Type of the parameters. */
   typedef Superclass::ParametersType ParametersType;
 
   /** Get/Set the scale.  */
-  itkSetMacro(FixedPointSetScale, double);
-  itkGetMacro(FixedPointSetScale, double);
+  itkSetMacro(Scale, double);
+  itkGetMacro(Scale, double);
 
-  itkSetMacro(MovingPointSetScale, double);
-  itkGetMacro(MovingPointSetScale, double);
-
-  /** Get/Set the Fixed Pointset.  */
+  /** Get/Set the Fixed point set.  */
   itkSetConstObjectMacro(FixedPointSet, FixedPointSetType);
   itkGetConstObjectMacro(FixedPointSet, FixedPointSetType);
 
-  /** Get/Set the Moving Pointset.  */
+  /** Get/Set the Moving point set.  */
   itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
   itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
+
+  /** Get/Set boolean flag  the Moving PointSet.  */
+  itkSetMacro(UseKdTree, bool);
+  itkGetMacro(UseKdTree, bool);
 
   /** Connect the Transform. */
   itkSetObjectMacro(Transform, TransformType);
 
   /** Get a pointer to the Transform.  */
   itkGetModifiableObjectMacro(Transform, TransformType);
+
+  /** Get the value for single valued optimizers. */
+  MeasureType GetValue(const TransformParametersType & parameters) const ITK_OVERRIDE;
+
+  /** Get the derivatives of the match measure. */
+  void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
+
+  /**  Get value and derivatives for multiple valued optimizers. */
+  void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
+
+  /** Calculates the local metric value for a single point. */
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const = 0;
+
+  /** Calculates the local value/derivative for a single point.*/
+  virtual void GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const = 0;
+
+  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize()
+  * which is a one-time initialization. */
+  virtual void InitializeForIteration(const ParametersType & parameters) const;
 
   /** Set the parameters defining the Transform. */
   void SetTransformParameters(const ParametersType & parameters) const;
@@ -142,7 +162,7 @@ protected:
 
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
-  mutable typename MovingPointSetType::Pointer m_TransformedPointSet;
+  mutable typename MovingPointSetType::Pointer m_TransformedMovingPointSet;
 
   mutable TransformPointer m_Transform;
   size_t m_NumberOfParameters;
@@ -150,11 +170,15 @@ protected:
   mutable TransformJacobianType m_Jacobian;
   mutable TransformJacobianType m_JacobianCache;
 
-  double m_FixedPointSetScale;
-  double m_MovingPointSetScale;
+  double m_Scale;
 
   size_t m_NumberOfFixedPoints;
   size_t m_NumberOfMovingPoints;
+
+  double m_NormalizingValueFactor;
+  double m_NormalizingDerivativeFactor;
+
+  bool m_UseKdTree;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;

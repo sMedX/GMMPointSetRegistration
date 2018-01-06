@@ -42,6 +42,8 @@ public:
   /**  Type of the metric. */
   typedef GMMPointSetToPointSetMetricBase<FixedPointSetType, TMovingPointSet> MetricType;
   typedef typename MetricType::Pointer                                        MetricPointer;
+  typedef itk::Array<typename MetricType::MeasureType>                        MetricValuesType;
+  typedef itk::Array<double>                                                  ScaleType;
 
   /**  Type of the Transform . */
   typedef typename MetricType::TransformType TransformType;
@@ -109,23 +111,21 @@ public:
   using Superclass::MakeOutput;
   virtual DataObjectPointer MakeOutput(DataObjectPointerArraySizeType idx) ITK_OVERRIDE;
 
-  /** Method to return the latest modified time of this object or
-   * any of its cached ivars */
+  /** Method to return the latest modified time of this object or any of its cached ivars */
   virtual ModifiedTimeType GetMTime() const ITK_OVERRIDE;
 
-  itkSetMacro(FixedPointSetScale, itk::Array<double>);
-  itkGetMacro(FixedPointSetScale, itk::Array<double>);
-
-  itkSetMacro(MovingPointSetScale, itk::Array<double>);
-  itkGetMacro(MovingPointSetScale, itk::Array<double>);
+  itkSetMacro(Scale, ScaleType);
+  itkGetMacro(Scale, ScaleType);
 
   itkSetMacro(NumberOfLevels, size_t);
   itkGetMacro(NumberOfLevels, size_t);
 
+  itkGetMacro(InitialMetricValues, MetricValuesType);
+  itkGetMacro(FinalMetricValues, MetricValuesType);
+
 protected:
   GMMPointSetToPointSetRegistrationMethod();
   virtual ~GMMPointSetToPointSetRegistrationMethod() {};
-  virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
   /** Method invoked by the pipeline in order to trigger the computation of the registration. */
   virtual void GenerateData() ITK_OVERRIDE;
@@ -145,16 +145,15 @@ protected:
   ParametersType m_InitialTransformParameters;
   ParametersType m_FinalTransformParameters;
 
-  std::vector<double> m_InitialMetricValue;
-  std::vector<double> m_FinalMetricValue;
+  MetricValuesType m_InitialMetricValues;
+  MetricValuesType m_FinalMetricValues;
+
+  size_t m_NumberOfLevels;
+  ScaleType m_Scale;
 
 private:
   GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;
-
-  size_t m_NumberOfLevels;
-  itk::Array<double> m_FixedPointSetScale;
-  itk::Array<double> m_MovingPointSetScale;
 };
 } // end namespace itk
 

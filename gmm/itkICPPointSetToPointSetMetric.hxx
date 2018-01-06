@@ -26,72 +26,38 @@ ICPPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
   m_FixedPointsLocator = FixedPointsLocatorType::New();
   m_FixedPointsLocator->SetPoints(const_cast<typename FixedPointSetType::PointsContainer*> (fixedPointContainer.GetPointer()));
   m_FixedPointsLocator->Initialize();
+
+  this->m_NormalizingValueFactor = 1.0 / this->m_MovingPointSet->GetNumberOfPoints();
 }
 
-/**
- * Get the match Measure
- */
-template <typename TFixedPointSet, typename TMovingPointSet>
-typename ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::MeasureType
-ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
+template<typename TFixedPointSet, typename TMovingPointSet>
+typename ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::MeasureType
+ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::GetLocalNeighborhoodValue(const MovingPointType & point) const
 {
-  itkExceptionMacro(<< "not implemented");
-}
-/**
- * Get the Derivative Measure
- */
-template <typename TFixedPointSet, typename TMovingPointSet>
-void ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
-{
-  itkExceptionMacro(<< "not implemented");
+  // find closest point
+  size_t idx = m_FixedPointsLocator->FindClosestPoint(point);
+  const typename FixedPointSetType::PointType fixedPoint = this->m_FixedPointSet->GetPoint(idx);
+
+  return point.SquaredEuclideanDistanceTo(fixedPoint);
 }
 
-/*
- * Get both the match Measure and theDerivative Measure
- */
-template <typename TFixedPointSet, typename TMovingPointSet>
-void ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
+template<typename TFixedPointSet, typename TMovingPointSet>
+void
+ICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::GetLocalNeighborhoodValueAndDerivative(const MovingPointType & point, MeasureType & value, LocalDerivativeType & derivative) const
 {
-  this->m_Transform->SetParameters(parameters);
+  // find closest point
+  size_t idx = m_FixedPointsLocator->FindClosestPoint(point);
+  const typename FixedPointSetType::PointType fixedPoint = this->m_FixedPointSet->GetPoint(idx);
 
-  if (derivative.size() != this->m_NumberOfParameters) {
-    derivative.set_size(this->m_NumberOfParameters);
-  }
+  // compute value
+  value = point.SquaredEuclideanDistanceTo(fixedPoint);
 
-  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
-  value = NumericTraits<MeasureType>::ZeroValue();
-  GradientType gradient;
-
-  for (MovingPointIterator movingIter = this->m_MovingPointSet->GetPoints()->Begin(); movingIter != this->m_MovingPointSet->GetPoints()->End(); ++movingIter) {
-    const typename MovingPointSetType::PointType movingPoint = movingIter.Value();
-    const typename MovingPointSetType::PointType transformedPoint = this->m_Transform->TransformPoint(movingPoint);
-
-    // find closest point
-    size_t idx = m_FixedPointsLocator->FindClosestPoint(transformedPoint);
-    const typename FixedPointSetType::PointType fixedPoint = this->m_FixedPointSet->GetPoint(idx);
-
-    // compute value
-    value += transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
-
-    // compute gradient for the current moving point
-    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-      gradient[dim] = 2.0 * (transformedPoint[dim] - fixedPoint[dim]);
-    }
-
-    // compute derivatives
-    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(movingPoint, this->m_Jacobian, this->m_JacobianCache);
-
-    for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
-      for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-        derivative[par] += this->m_Jacobian(dim, par) * gradient[dim];
-      }
-    }
-  }
-
-  value /= this->m_MovingPointSet->GetNumberOfPoints();
-
-  for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
-    derivative[par] /= this->m_MovingPointSet->GetNumberOfPoints();
+  // compute gradient for the current moving point
+  for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+    derivative[dim] = 2.0 * (point[dim] - fixedPoint[dim]);
   }
 }
 }

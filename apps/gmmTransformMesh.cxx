@@ -4,7 +4,7 @@
 
 #include "args.hxx"
 #include "argsCustomParsers.h"
-#include "agtkIO.h"
+#include "itkIOutils.h"
 
 typedef itk::Mesh<float, 3U> MeshType;
 typedef itk::Euler3DTransform <double> TransformType;
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
   std::vector<double> options = args::get(argTransform);
 
   MeshType::Pointer model = MeshType::New();
-  if (!agtk::readMesh<MeshType>(model, inputFile)) {
+  if (!readMesh<MeshType>(model, inputFile)) {
     return EXIT_FAILURE;
   }
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
   transformMeshFilter->Update();
 
   std::cout << "output mesh " << inputFile << std::endl;
-  if (!agtk::writeMesh<MeshType>(transformMeshFilter->GetOutput(), outputFile)) {
+  if (!writeMesh<MeshType>(transformMeshFilter->GetOutput(), outputFile)) {
     return EXIT_FAILURE;
   }
 
