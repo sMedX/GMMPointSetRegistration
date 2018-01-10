@@ -43,7 +43,7 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
     this->m_FixedPointsLocator->Search(point, this->m_Radius * this->m_Scale, idx);
 
     for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-      const double distance = point.SquaredEuclideanDistanceTo(m_FixedPointSet->GetPoint(*it));
+      const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
       const double expval = std::exp(-distance / scale);
       value += expval;
     }
