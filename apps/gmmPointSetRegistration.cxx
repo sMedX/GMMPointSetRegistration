@@ -190,8 +190,8 @@ int main(int argc, char** argv) {
   std::cout << "  Final transform parameters " << registration->GetFinalTransformParameters() << std::endl;
   std::cout << std::endl;
   std::cout << "metric " << registration->GetMetric()->GetNameOfClass() << std::endl;
-  std::cout << "   Initial metric parameters " << registration->GetInitialMetricValues() << std::endl;
-  std::cout << "     Final metric parameters " << registration->GetFinalMetricValues() << std::endl;
+  std::cout << "   Initial metric values " << registration->GetInitialMetricValues() << std::endl;
+  std::cout << "     Final metric values " << registration->GetFinalMetricValues() << std::endl;
   std::cout << std::endl;
 
   // transform moving mesh
