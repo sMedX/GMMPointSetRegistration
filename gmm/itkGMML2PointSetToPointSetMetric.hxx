@@ -93,7 +93,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
     this->m_FixedPointsLocator->Search(point, this->m_Radius * this->m_Scale, idx);
 
     for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-      const FixedPointType & fixedPoint = m_FixedPointSet->GetPoint(*it);
+      const FixedPointType & fixedPoint = this->m_FixedPointSet->GetPoint(*it);
       const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
       const double expval = std::exp(-distance / scale);
       value1 += expval;
