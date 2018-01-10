@@ -79,6 +79,7 @@ public:
   typedef typename FixedPointSetType::PointDataContainer::ConstIterator   FixedPointDataIterator;
   typedef itk::PointsLocator<FixedPointsContainer>                        FixedPointsLocatorType;
   typedef typename FixedPointsLocatorType::NeighborsIdentifierType        FixedNeighborsIdentifierType;
+  typedef typename FixedNeighborsIdentifierType::const_iterator           FixedNeighborsIteratorType;
 
   typedef typename MovingPointSetType::PointsContainer                    MovingPointsContainer;
   typedef typename MovingPointSetType::PointsContainer::Pointer           MovingPointsPointer;
@@ -86,6 +87,7 @@ public:
   typedef typename MovingPointSetType::PointDataContainer::ConstIterator  MovingPointDataIterator;
   typedef itk::PointsLocator<MovingPointsContainer>                       MovingPointsLocatorType;
   typedef typename MovingPointsLocatorType::NeighborsIdentifierType       MovingNeighborsIdentifierType;
+  typedef typename MovingNeighborsIdentifierType::const_iterator          MovingNeighborsIteratorType;
 
   /**  Type of the Transform Base class */
   typedef Transform< CoordinateRepresentationType,
@@ -128,8 +130,8 @@ public:
   itkSetMacro(UseMovingPointSetKdTree, bool);
   itkGetMacro(UseMovingPointSetKdTree, bool);
 
-  itkSetMacro(BucketSize, unsigned int);
-  itkGetMacro(BucketSize, unsigned int);
+  itkSetMacro(Radius, double);
+  itkGetMacro(Radius, double);
 
   /** Connect the Transform. */
   itkSetObjectMacro(Transform, TransformType);
@@ -197,7 +199,7 @@ protected:
   typename MovingPointsLocatorType::Pointer  m_MovingPointsLocator;
   bool m_UseFixedPointSetKdTree;
   bool m_UseMovingPointSetKdTree;
-  unsigned int m_BucketSize;
+  double m_Radius;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;
