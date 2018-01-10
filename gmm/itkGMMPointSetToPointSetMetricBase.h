@@ -18,10 +18,12 @@
 #ifndef itkGMMPointSetToPointSetMetricBase_h
 #define itkGMMPointSetToPointSetMetricBase_h
 
+#include "itkSingleValuedCostFunction.h"
 #include "itkTransform.h"
 #include "itkPointSet.h"
-#include "itkSingleValuedCostFunction.h"
 #include "itkMacro.h"
+#include "itkKdTree.h"
+#include "itkVectorContainerToListSampleAdaptor.h"
 
 namespace itk
 {
@@ -73,12 +75,19 @@ public:
   itkStaticConstMacro(PointDimension, unsigned int, TMovingPointSet::PointDimension);
 
   typedef typename FixedPointSetType::PointsContainer                    FixedPointsContainer;
+  typedef typename FixedPointSetType::PointsContainer::Pointer           FixedPointsPointer;
   typedef typename FixedPointsContainer::ConstIterator                   FixedPointIterator;
   typedef typename FixedPointSetType::PointDataContainer::ConstIterator  FixedPointDataIterator;
 
   typedef typename MovingPointSetType::PointsContainer                   MovingPointsContainer;
+  typedef typename MovingPointSetType::PointsContainer::Pointer          MovingPointsPointer;
   typedef typename MovingPointsContainer::ConstIterator                  MovingPointIterator;
   typedef typename MovingPointSetType::PointDataContainer::ConstIterator MovingPointDataIterator;
+
+  typedef itk::Statistics::VectorContainerToListSampleAdaptor<FixedPointsContainer>   FixedAdaptorType;
+  typedef itk::Statistics::KdTree<FixedAdaptorType>                                   FixedTreeType;
+  typedef itk::Statistics::VectorContainerToListSampleAdaptor<MovingPointsContainer>  MovingAdaptorType;
+  typedef itk::Statistics::KdTree<MovingAdaptorType>                                  MovingTreeType;
 
   /**  Type of the Transform Base class */
   typedef Transform< CoordinateRepresentationType,
@@ -114,9 +123,15 @@ public:
   itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
   itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
 
-  /** Get/Set boolean flag  the Moving PointSet.  */
-  itkSetMacro(UseKdTree, bool);
-  itkGetMacro(UseKdTree, bool);
+  /** Get/Set boolean flag to initialize KdTree.  */
+  itkSetMacro(UseFixedPointSetKdTree, bool);
+  itkGetMacro(UseFixedPointSetKdTree, bool);
+
+  itkSetMacro(UseMovingPointSetKdTree, bool);
+  itkGetMacro(UseMovingPointSetKdTree, bool);
+
+  itkSetMacro(BucketSize, unsigned int);
+  itkGetMacro(BucketSize, unsigned int);
 
   /** Connect the Transform. */
   itkSetObjectMacro(Transform, TransformType);
@@ -178,7 +193,11 @@ protected:
   double m_NormalizingValueFactor;
   double m_NormalizingDerivativeFactor;
 
-  bool m_UseKdTree;
+  typename FixedTreeType::Pointer   m_FixedTree;
+  typename MovingTreeType::Pointer  m_MovingTree;
+  bool m_UseFixedPointSetKdTree;
+  bool m_UseMovingPointSetKdTree;
+  unsigned int m_BucketSize;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;
