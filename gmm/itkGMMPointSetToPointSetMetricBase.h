@@ -18,10 +18,11 @@
 #ifndef itkGMMPointSetToPointSetMetricBase_h
 #define itkGMMPointSetToPointSetMetricBase_h
 
+#include "itkSingleValuedCostFunction.h"
 #include "itkTransform.h"
 #include "itkPointSet.h"
-#include "itkSingleValuedCostFunction.h"
 #include "itkMacro.h"
+#include "itkPointsLocator.h"
 
 namespace itk
 {
@@ -72,13 +73,21 @@ public:
   itkStaticConstMacro(FixedPointSetDimension, unsigned int, TFixedPointSet::PointDimension);
   itkStaticConstMacro(PointDimension, unsigned int, TMovingPointSet::PointDimension);
 
-  typedef typename FixedPointSetType::PointsContainer                    FixedPointsContainer;
-  typedef typename FixedPointsContainer::ConstIterator                   FixedPointIterator;
-  typedef typename FixedPointSetType::PointDataContainer::ConstIterator  FixedPointDataIterator;
+  typedef typename FixedPointSetType::PointsContainer                     FixedPointsContainer;
+  typedef typename FixedPointSetType::PointsContainer::Pointer            FixedPointsPointer;
+  typedef typename FixedPointsContainer::ConstIterator                    FixedPointIterator;
+  typedef typename FixedPointSetType::PointDataContainer::ConstIterator   FixedPointDataIterator;
+  typedef itk::PointsLocator<FixedPointsContainer>                        FixedPointsLocatorType;
+  typedef typename FixedPointsLocatorType::NeighborsIdentifierType        FixedNeighborsIdentifierType;
+  typedef typename FixedNeighborsIdentifierType::const_iterator           FixedNeighborsIteratorType;
 
-  typedef typename MovingPointSetType::PointsContainer                   MovingPointsContainer;
-  typedef typename MovingPointsContainer::ConstIterator                  MovingPointIterator;
-  typedef typename MovingPointSetType::PointDataContainer::ConstIterator MovingPointDataIterator;
+  typedef typename MovingPointSetType::PointsContainer                    MovingPointsContainer;
+  typedef typename MovingPointSetType::PointsContainer::Pointer           MovingPointsPointer;
+  typedef typename MovingPointsContainer::ConstIterator                   MovingPointIterator;
+  typedef typename MovingPointSetType::PointDataContainer::ConstIterator  MovingPointDataIterator;
+  typedef itk::PointsLocator<MovingPointsContainer>                       MovingPointsLocatorType;
+  typedef typename MovingPointsLocatorType::NeighborsIdentifierType       MovingNeighborsIdentifierType;
+  typedef typename MovingNeighborsIdentifierType::const_iterator          MovingNeighborsIteratorType;
 
   /**  Type of the Transform Base class */
   typedef Transform< CoordinateRepresentationType,
@@ -114,9 +123,15 @@ public:
   itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
   itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
 
-  /** Get/Set boolean flag  the Moving PointSet.  */
-  itkSetMacro(UseKdTree, bool);
-  itkGetMacro(UseKdTree, bool);
+  /** Get/Set boolean flag to initialize KdTree.  */
+  itkSetMacro(UseFixedPointSetKdTree, bool);
+  itkGetMacro(UseFixedPointSetKdTree, bool);
+
+  itkSetMacro(UseMovingPointSetKdTree, bool);
+  itkGetMacro(UseMovingPointSetKdTree, bool);
+
+  itkSetMacro(Radius, double);
+  itkGetMacro(Radius, double);
 
   /** Connect the Transform. */
   itkSetObjectMacro(Transform, TransformType);
@@ -158,6 +173,8 @@ public:
 protected:
   GMMPointSetToPointSetMetricBase();
   virtual ~GMMPointSetToPointSetMetricBase() {}
+  void InitializeFixedTree();
+  void InitializeMovingTree();
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
   FixedPointSetConstPointer m_FixedPointSet;
@@ -178,7 +195,11 @@ protected:
   double m_NormalizingValueFactor;
   double m_NormalizingDerivativeFactor;
 
-  bool m_UseKdTree;
+  typename FixedPointsLocatorType::Pointer   m_FixedPointsLocator;
+  typename MovingPointsLocatorType::Pointer  m_MovingPointsLocator;
+  bool m_UseFixedPointSetKdTree;
+  bool m_UseMovingPointSetKdTree;
+  double m_Radius;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;
