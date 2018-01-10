@@ -22,8 +22,7 @@
 #include "itkTransform.h"
 #include "itkPointSet.h"
 #include "itkMacro.h"
-#include "itkKdTree.h"
-#include "itkVectorContainerToListSampleAdaptor.h"
+#include "itkPointsLocator.h"
 
 namespace itk
 {
@@ -74,20 +73,19 @@ public:
   itkStaticConstMacro(FixedPointSetDimension, unsigned int, TFixedPointSet::PointDimension);
   itkStaticConstMacro(PointDimension, unsigned int, TMovingPointSet::PointDimension);
 
-  typedef typename FixedPointSetType::PointsContainer                    FixedPointsContainer;
-  typedef typename FixedPointSetType::PointsContainer::Pointer           FixedPointsPointer;
-  typedef typename FixedPointsContainer::ConstIterator                   FixedPointIterator;
-  typedef typename FixedPointSetType::PointDataContainer::ConstIterator  FixedPointDataIterator;
+  typedef typename FixedPointSetType::PointsContainer                     FixedPointsContainer;
+  typedef typename FixedPointSetType::PointsContainer::Pointer            FixedPointsPointer;
+  typedef typename FixedPointsContainer::ConstIterator                    FixedPointIterator;
+  typedef typename FixedPointSetType::PointDataContainer::ConstIterator   FixedPointDataIterator;
+  typedef itk::PointsLocator<FixedPointsContainer>                        FixedPointsLocatorType;
+  typedef typename FixedPointsLocatorType::NeighborsIdentifierType        FixedNeighborsIdentifierType;
 
-  typedef typename MovingPointSetType::PointsContainer                   MovingPointsContainer;
-  typedef typename MovingPointSetType::PointsContainer::Pointer          MovingPointsPointer;
-  typedef typename MovingPointsContainer::ConstIterator                  MovingPointIterator;
-  typedef typename MovingPointSetType::PointDataContainer::ConstIterator MovingPointDataIterator;
-
-  typedef itk::Statistics::VectorContainerToListSampleAdaptor<FixedPointsContainer>   FixedAdaptorType;
-  typedef itk::Statistics::KdTree<FixedAdaptorType>                                   FixedTreeType;
-  typedef itk::Statistics::VectorContainerToListSampleAdaptor<MovingPointsContainer>  MovingAdaptorType;
-  typedef itk::Statistics::KdTree<MovingAdaptorType>                                  MovingTreeType;
+  typedef typename MovingPointSetType::PointsContainer                    MovingPointsContainer;
+  typedef typename MovingPointSetType::PointsContainer::Pointer           MovingPointsPointer;
+  typedef typename MovingPointsContainer::ConstIterator                   MovingPointIterator;
+  typedef typename MovingPointSetType::PointDataContainer::ConstIterator  MovingPointDataIterator;
+  typedef itk::PointsLocator<MovingPointsContainer>                       MovingPointsLocatorType;
+  typedef typename MovingPointsLocatorType::NeighborsIdentifierType       MovingNeighborsIdentifierType;
 
   /**  Type of the Transform Base class */
   typedef Transform< CoordinateRepresentationType,
@@ -195,10 +193,8 @@ protected:
   double m_NormalizingValueFactor;
   double m_NormalizingDerivativeFactor;
 
-  typename FixedTreeType::Pointer     m_FixedTree;
-  typename FixedAdaptorType::Pointer  m_FixedAdaptor;
-  typename MovingTreeType::Pointer    m_MovingTree;
-  typename MovingAdaptorType::Pointer m_MovingAdaptor;
+  typename FixedPointsLocatorType::Pointer   m_FixedPointsLocator;
+  typename MovingPointsLocatorType::Pointer  m_MovingPointsLocator;
   bool m_UseFixedPointSetKdTree;
   bool m_UseMovingPointSetKdTree;
   unsigned int m_BucketSize;
