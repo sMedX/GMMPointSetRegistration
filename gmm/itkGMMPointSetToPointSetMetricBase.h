@@ -173,6 +173,8 @@ public:
 protected:
   GMMPointSetToPointSetMetricBase();
   virtual ~GMMPointSetToPointSetMetricBase() {}
+  void InitializeFixedTree();
+  void InitializeMovingTree();
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
   FixedPointSetConstPointer m_FixedPointSet;

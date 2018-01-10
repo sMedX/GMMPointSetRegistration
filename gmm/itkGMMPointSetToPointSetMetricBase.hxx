@@ -201,35 +201,53 @@ throw ( ExceptionObject )
   // initialize KdTrees 
   if (m_UseFixedPointSetKdTree) 
     {
-    typename FixedAdaptorType::Pointer adaptor = FixedAdaptorType::New();
-    adaptor->SetMeasurementVectorSize(typename FixedPointSetType::PointDimension);
-    adaptor->SetVectorContainer(const_cast<FixedPointsContainer *>(m_FixedPointSet->GetPoints()));
-
-    typedef itk::Statistics::KdTreeGenerator<FixedAdaptorType>  TreeGeneratorType;
-    typename TreeGeneratorType::Pointer generator = TreeGeneratorType::New();
-    generator->SetSample(adaptor);
-    generator->SetBucketSize(m_BucketSize);
-    generator->Update();
-    m_FixedTree = generator->GetOutput();
+    InitializeFixedTree();
     }
 
   if (m_UseMovingPointSetKdTree) 
     {
-    typename MovingAdaptorType::Pointer adaptor = MovingAdaptorType::New();
-    adaptor->SetMeasurementVectorSize(typename MovingPointSetType::PointDimension);
-    adaptor->SetVectorContainer(const_cast<MovingPointsContainer *>(m_MovingPointSet->GetPoints()));
-
-    typedef itk::Statistics::KdTreeGenerator<MovingAdaptorType>  TreeGeneratorType;
-    typename TreeGeneratorType::Pointer generator = TreeGeneratorType::New();
-    generator->SetSample(adaptor);
-    generator->SetBucketSize(m_BucketSize);
-    generator->Update();
-    m_MovingTree = generator->GetOutput();
+    InitializeMovingTree();
   }
 
   m_NumberOfParameters = m_Transform->GetNumberOfParameters();
   m_NumberOfFixedPoints = m_FixedPointSet->GetNumberOfPoints();
   m_NumberOfMovingPoints = m_MovingPointSet->GetNumberOfPoints();
+}
+
+/** Initialize KdTree for FixedPointSet */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::InitializeFixedTree()
+{
+  typename FixedAdaptorType::Pointer adaptor = FixedAdaptorType::New();
+  adaptor->SetMeasurementVectorSize(typename FixedPointSetType::PointDimension);
+  adaptor->SetVectorContainer(const_cast<FixedPointsContainer *>(m_FixedPointSet->GetPoints()));
+
+  typedef itk::Statistics::KdTreeGenerator<FixedAdaptorType>  TreeGeneratorType;
+  typename TreeGeneratorType::Pointer generator = TreeGeneratorType::New();
+  generator->SetSample(adaptor);
+  generator->SetBucketSize(m_BucketSize);
+  generator->Update();
+  m_FixedTree = generator->GetOutput();
+}
+
+/** Initialize KdTree for MovingPointSet */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::InitializeMovingTree()
+{
+  typename MovingAdaptorType::Pointer adaptor = MovingAdaptorType::New();
+  adaptor->SetMeasurementVectorSize(typename MovingPointSetType::PointDimension);
+  adaptor->SetVectorContainer(const_cast<MovingPointsContainer *>(m_MovingPointSet->GetPoints()));
+
+  typedef itk::Statistics::KdTreeGenerator<MovingAdaptorType>  TreeGeneratorType;
+  typename TreeGeneratorType::Pointer generator = TreeGeneratorType::New();
+  generator->SetSample(adaptor);
+  generator->SetBucketSize(m_BucketSize);
+  generator->Update();
+  m_MovingTree = generator->GetOutput();
 }
 
 /** PrintSelf */
