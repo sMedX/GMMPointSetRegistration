@@ -42,7 +42,11 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_Scale = 1;
 
   m_UseFixedPointSetKdTree = false;
+  m_FixedTree = ITK_NULLPTR;
+
   m_UseMovingPointSetKdTree = false;
+  m_MovingTree = ITK_NULLPTR;
+
   m_BucketSize = 16;
 }
 
