@@ -195,8 +195,10 @@ protected:
   double m_NormalizingValueFactor;
   double m_NormalizingDerivativeFactor;
 
-  typename FixedTreeType::Pointer   m_FixedTree;
-  typename MovingTreeType::Pointer  m_MovingTree;
+  typename FixedTreeType::Pointer     m_FixedTree;
+  typename FixedAdaptorType::Pointer  m_FixedAdaptor;
+  typename MovingTreeType::Pointer    m_MovingTree;
+  typename MovingAdaptorType::Pointer m_MovingAdaptor;
   bool m_UseFixedPointSetKdTree;
   bool m_UseMovingPointSetKdTree;
   unsigned int m_BucketSize;
