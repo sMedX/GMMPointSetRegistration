@@ -58,20 +58,26 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(GMMPointSetToPointSetMetricBase, SingleValuedCostFunction);
 
-  /**  Type of the moving Pointset. */
+  /**  Type of the moving point set. */
   typedef TMovingPointSet                           MovingPointSetType;
   typedef typename MovingPointSetType::PointType    MovingPointType;
   typedef typename MovingPointSetType::ConstPointer MovingPointSetConstPointer;
 
-  /**  Type of the fixed Pointset. */
+  /**  Type of the fixed point set. */
   typedef TFixedPointSet                            FixedPointSetType;
   typedef typename FixedPointSetType::PointType     FixedPointType;
   typedef typename FixedPointSetType::ConstPointer  FixedPointSetConstPointer;
 
-  /** Constants for the pointset dimensions */
+  /** Constants for the point set dimensions */
   itkStaticConstMacro(MovingPointSetDimension, unsigned int, TMovingPointSet::PointDimension);
   itkStaticConstMacro(FixedPointSetDimension, unsigned int, TFixedPointSet::PointDimension);
   itkStaticConstMacro(PointDimension, unsigned int, TMovingPointSet::PointDimension);
+
+//#ifdef ITK_USE_CONCEPT_CHECKING
+  // Begin concept checking
+  itkConceptMacro(SameDimensionCheck, (itk::Concept::SameDimension< FixedPointSetDimension, MovingPointSetDimension >));
+  // End concept checking
+//#endif
 
   typedef typename FixedPointSetType::PointsContainer                     FixedPointsContainer;
   typedef typename FixedPointSetType::PointsContainer::Pointer            FixedPointsPointer;
