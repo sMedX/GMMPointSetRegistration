@@ -41,7 +41,7 @@ namespace itk
  * \ingroup ITKRegistrationCommon
  */
 
-template< typename TFixedPointSet,  typename TMovingPointSet >
+template< typename TFixedPointSet,  typename TMovingPointSet = TFixedPointSet >
 class GMMPointSetToPointSetMetricBase :public SingleValuedCostFunction
 {
 public:
