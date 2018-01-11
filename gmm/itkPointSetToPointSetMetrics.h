@@ -72,10 +72,10 @@ namespace itk
     void Compute()
     {
       std::vector<MeasureType> movingToFixedMetrics;
-      this->ComputeMetrics(movingToFixedMetrics, m_MovingPointSet, m_FixedPointSet);
+      this->ComputeMetrics<MovingPointSetType, FixedPointSetType>(movingToFixedMetrics, m_MovingPointSet, m_FixedPointSet);
 
       std::vector<MeasureType> fixedToMovingMetrics;
-      this->ComputeMetrics(fixedToMovingMetrics, m_FixedPointSet, m_MovingPointSet);
+      this->ComputeMetrics<FixedPointSetType, MovingPointSetType>(fixedToMovingMetrics, m_FixedPointSet, m_MovingPointSet);
 
       m_MeanValue = 0.5 * (movingToFixedMetrics[0] + fixedToMovingMetrics[0]);
       m_RMSEValue = 0.5 * (movingToFixedMetrics[1] + fixedToMovingMetrics[1]);
@@ -104,7 +104,8 @@ namespace itk
     MeasureType m_QuantileValue;
     MeasureType m_MaximalValue;
 
-    void ComputeMetrics(std::vector<MeasureType> & metrics, typename MovingPointSetType::ConstPointer movingPointSet, typename FixedPointSetType::ConstPointer fixedPointSet)
+    template <typename FixedPointSetType, typename MovingPointSetType>
+    void ComputeMetrics(std::vector<MeasureType> & metrics, typename FixedPointSetType::ConstPointer fixedPointSet, typename MovingPointSetType::ConstPointer movingPointSet)
     {
       typename FixedPointSetType::PointsContainer::ConstPointer fixedContainer = fixedPointSet->GetPoints();
       typename MovingPointSetType::PointsContainer::ConstPointer movingContainer = movingPointSet->GetPoints();
