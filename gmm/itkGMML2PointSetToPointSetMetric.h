@@ -15,7 +15,7 @@ namespace itk
  * Spatial correspondence between both images is established through a
  * Transform.
  */
-template< typename TFixedPointSet, typename TMovingPointSet >
+template< typename TFixedPointSet, typename TMovingPointSet = TFixedPointSet >
 class GMML2PointSetToPointSetMetric : public GMMPointSetToPointSetMetricBase < TFixedPointSet, TMovingPointSet >
 {
 public:

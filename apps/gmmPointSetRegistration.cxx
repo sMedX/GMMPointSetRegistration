@@ -12,9 +12,11 @@
 #include "argsCustomParsers.h"
 
 const unsigned int Dimension = 3;
-typedef itk::Mesh<float, Dimension> MeshType;
-typedef itk::PointSet<MeshType::PixelType, MeshType::PointDimension> PointSetType;
-typedef itk::Transform <double, MeshType::PointDimension, MeshType::PointDimension> TransformType;
+typedef itk::Mesh<float, Dimension> FixedMeshType;
+typedef itk::PointSet<FixedMeshType::PixelType, Dimension> FixedPointSetType;
+typedef itk::Mesh<float, Dimension> MovingMeshType;
+typedef itk::PointSet<MovingMeshType::PixelType, Dimension> MovingPointSetType;
+typedef itk::Transform <double, Dimension, Dimension> TransformType;
 
 int main(int argc, char** argv) {
 
@@ -79,8 +81,8 @@ int main(int argc, char** argv) {
 
   //--------------------------------------------------------------------
   // read meshes
-  MeshType::Pointer fixedMesh = MeshType::New();
-  if (!readMesh<MeshType>(fixedMesh, fixedFileName)) {
+  FixedMeshType::Pointer fixedMesh = FixedMeshType::New();
+  if (!readMesh<FixedMeshType>(fixedMesh, fixedFileName)) {
     return EXIT_FAILURE;
   }
 
@@ -88,8 +90,8 @@ int main(int argc, char** argv) {
   std::cout << "number of points " << fixedMesh->GetNumberOfPoints() << std::endl;
   std::cout << std::endl;
 
-  MeshType::Pointer movingMesh = MeshType::New();
-  if (!readMesh<MeshType>(movingMesh, movingFileName)) {
+  MovingMeshType::Pointer movingMesh = MovingMeshType::New();
+  if (!readMesh<MovingMeshType>(movingMesh, movingFileName)) {
     return EXIT_FAILURE;
   }
 
@@ -97,21 +99,22 @@ int main(int argc, char** argv) {
   std::cout << "number of points " << movingMesh->GetNumberOfPoints() << std::endl;
   std::cout << std::endl;
 
-  PointSetType::Pointer fixedPointSet = PointSetType::New();
+  FixedPointSetType::Pointer fixedPointSet = FixedPointSetType::New();
   fixedPointSet->SetPoints(fixedMesh->GetPoints());
 
-  PointSetType::Pointer movingPointSet = PointSetType::New();
+  MovingPointSetType::Pointer movingPointSet = MovingPointSetType::New();
   movingPointSet->SetPoints(movingMesh->GetPoints());
 
   //--------------------------------------------------------------------
   // initialize scales
-  typedef itk::PointSetPropertiesCalculator<PointSetType> PointSetPropertiesCalculatorType;
-  PointSetPropertiesCalculatorType::Pointer fixedPointSetCalculator = PointSetPropertiesCalculatorType::New();
+  typedef itk::PointSetPropertiesCalculator<FixedPointSetType> FixedPointSetPropertiesCalculatorType;
+  FixedPointSetPropertiesCalculatorType::Pointer fixedPointSetCalculator = FixedPointSetPropertiesCalculatorType::New();
   fixedPointSetCalculator->SetPointSet(fixedPointSet);
   fixedPointSetCalculator->Compute();
   fixedPointSetCalculator->PrintReport(std::cout);
 
-  PointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = PointSetPropertiesCalculatorType::New();
+  typedef itk::PointSetPropertiesCalculator<MovingPointSetType> MovingPointSetPropertiesCalculatorType;
+  MovingPointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = MovingPointSetPropertiesCalculatorType::New();
   movingPointSetCalculator->SetPointSet(movingPointSet);
   movingPointSetCalculator->Compute();
   movingPointSetCalculator->PrintReport(std::cout);
@@ -150,7 +153,7 @@ int main(int argc, char** argv) {
 
   //--------------------------------------------------------------------
   // metric
-  typedef itk::InitializeMetric<PointSetType, PointSetType> InitializeMetricType;
+  typedef itk::InitializeMetric<FixedPointSetType, MovingPointSetType> InitializeMetricType;
   InitializeMetricType::Pointer metricInitializer = InitializeMetricType::New();
   metricInitializer->SetTypeOfMetric(typeOfMetric);
   try {
@@ -163,7 +166,7 @@ int main(int argc, char** argv) {
 
   //--------------------------------------------------------------------
   // perform registration
-  typedef itk::GMMPointSetToPointSetRegistrationMethod<PointSetType, PointSetType> GMMPointSetToPointSetRegistrationMethodType;
+  typedef itk::GMMPointSetToPointSetRegistrationMethod<FixedPointSetType, MovingPointSetType> GMMPointSetToPointSetRegistrationMethodType;
   GMMPointSetToPointSetRegistrationMethodType::Pointer registration = GMMPointSetToPointSetRegistrationMethodType::New();
   registration->SetFixedPointSet(fixedPointSet);
   registration->SetFixedInitialTransform(fixedInitialTransform);
@@ -195,7 +198,7 @@ int main(int argc, char** argv) {
   std::cout << std::endl;
 
   // transform moving mesh
-  typedef itk::TransformMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType;
+  typedef itk::TransformMeshFilter<MovingMeshType, MovingMeshType, TransformType> TransformMeshFilterType;
   TransformMeshFilterType::Pointer transformMesh = TransformMeshFilterType::New();
   transformMesh->SetInput(movingMesh);
   transformMesh->SetTransform(transform);
@@ -212,15 +215,13 @@ int main(int argc, char** argv) {
     std::cout << "write output mesh to the file " << fileName << std::endl;
     std::cout << std::endl;
 
-    if (!writeMesh<MeshType>(transformMesh->GetOutput(), fileName)) {
+    if (!writeMesh<MovingMeshType>(transformMesh->GetOutput(), fileName)) {
       return EXIT_FAILURE;
     }
   }
 
-  PointSetType::Pointer outputPointSet = transformMesh->GetOutput();
-
   // compute metrics
-  typedef itk::PointSetToPointSetMetrics<PointSetType> PointSetToPointSetMetricsType;
+  typedef itk::PointSetToPointSetMetrics<FixedPointSetType, MovingPointSetType> PointSetToPointSetMetricsType;
   PointSetToPointSetMetricsType::Pointer metrics = PointSetToPointSetMetricsType::New();
   metrics->SetFixedPointSet(fixedPointSet);
   metrics->SetMovingPointSet(movingPointSet);
@@ -228,7 +229,7 @@ int main(int argc, char** argv) {
   metrics->PrintReport(std::cout);
 
   metrics->SetFixedPointSet(fixedPointSet);
-  metrics->SetMovingPointSet(outputPointSet);
+  metrics->SetMovingPointSet(transformMesh->GetOutput());
   metrics->Compute();
   metrics->PrintReport(std::cout);
 

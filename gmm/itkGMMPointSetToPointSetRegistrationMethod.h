@@ -9,7 +9,7 @@
 
 namespace itk
 {
-template< typename TFixedPointSet, typename TMovingPointSet >
+template< typename TFixedPointSet, typename TMovingPointSet = TFixedPointSet >
 class GMMPointSetToPointSetRegistrationMethod : public ProcessObject
 {
 public:
@@ -26,11 +26,11 @@ public:
   itkTypeMacro(GMMPointSetToPointSetRegistrationMethod, ProcessObject);
 
   /**  Type of the Fixed PointSet. */
-  typedef          TFixedPointSet                          FixedPointSetType;
-  typedef typename FixedPointSetType::Pointer              FixedPointSetPointer;
-  typedef typename FixedPointSetType::ConstPointer         FixedPointSetConstPointer;
-  typedef typename FixedPointSetType::PointsContainer      FixedPointsContainerType;
-  typedef typename FixedPointsContainerType::ConstIterator FixedPointConstIterator;
+  typedef          TFixedPointSet                           FixedPointSetType;
+  typedef typename FixedPointSetType::Pointer               FixedPointSetPointer;
+  typedef typename FixedPointSetType::ConstPointer          FixedPointSetConstPointer;
+  typedef typename FixedPointSetType::PointsContainer       FixedPointsContainerType;
+  typedef typename FixedPointsContainerType::ConstIterator  FixedPointConstIterator;
 
   /**  Type of the Moving PointSet. */
   typedef          TMovingPointSet                          MovingPointSetType;
@@ -40,10 +40,10 @@ public:
   typedef typename MovingPointsContainerType::ConstIterator MovingPointConstIterator;
 
   /**  Type of the metric. */
-  typedef GMMPointSetToPointSetMetricBase<FixedPointSetType, TMovingPointSet> MetricType;
-  typedef typename MetricType::Pointer                                        MetricPointer;
-  typedef itk::Array<typename MetricType::MeasureType>                        MetricValuesType;
-  typedef itk::Array<double>                                                  ScaleType;
+  typedef GMMPointSetToPointSetMetricBase<FixedPointSetType, MovingPointSetType>  MetricType;
+  typedef typename MetricType::Pointer                                            MetricPointer;
+  typedef itk::Array<typename MetricType::MeasureType>                            MetricValuesType;
+  typedef itk::Array<double>                                                      ScaleType;
 
   /**  Type of the Transform . */
   typedef typename MetricType::TransformType TransformType;
@@ -131,9 +131,9 @@ protected:
   virtual void GenerateData() ITK_OVERRIDE;
 
   FixedPointSetConstPointer  m_FixedPointSet;
-  FixedPointSetPointer       m_FixedTransformedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
-  FixedPointSetPointer       m_MovingTransformedPointSet;
+  FixedPointSetPointer       m_FixedTransformedPointSet;
+  MovingPointSetPointer      m_MovingTransformedPointSet;
 
   MetricPointer m_Metric;
   OptimizerPointer m_Optimizer;

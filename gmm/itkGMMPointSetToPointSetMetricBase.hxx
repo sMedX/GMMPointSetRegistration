@@ -141,11 +141,9 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
     m_TransformedMovingPointSet->GetPoints()->resize(m_MovingPointSet->GetNumberOfPoints());
   }
 
-  typename MovingPointSetType::PointsContainer::Pointer points = m_TransformedMovingPointSet->GetPoints();
-
   for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
   {
-    points->SetElement(it.Index(), m_Transform->TransformPoint(it.Value()));
+    m_TransformedMovingPointSet->GetPoints()->SetElement(it.Index(), m_Transform->TransformPoint(it.Value()));
   }
 }
 
