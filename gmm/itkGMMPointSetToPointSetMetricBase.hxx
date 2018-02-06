@@ -97,6 +97,9 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
     this->GetLocalNeighborhoodValueAndDerivative(it.Value(), localValue, localDerivative);
 
     value += localValue;
+    //std::cout << it.Index() << it.Value() << std::endl;
+    //std::cout << localValue << std::endl;
+    //std::cout << localDerivative << std::endl;
 
     // compute derivatives
     this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(m_MovingPointSet->GetPoint(it.Index()), m_Jacobian, m_JacobianCache);
@@ -110,12 +113,24 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
     }
   }
 
+  std::cout << "-------------" << std::endl;
+  std::cout << value << std::endl;
+  std::cout << derivative << std::endl;
+  std::cout << std::endl;
+
   value *= m_NormalizingValueFactor;
 
   for (size_t par = 0; par < m_NumberOfParameters; ++par) 
   {
     derivative[par] *= m_NormalizingDerivativeFactor;
   }
+
+  std::cout << value << std::endl;
+  std::cout << derivative << std::endl;
+  std::cout << std::endl;
+  std::cout << m_NormalizingValueFactor << std::endl;
+  std::cout << m_NormalizingDerivativeFactor << std::endl;
+  std::cout << std::endl;
 }
 
 /**

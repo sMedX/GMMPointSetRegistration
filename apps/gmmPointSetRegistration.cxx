@@ -140,8 +140,11 @@ int main(int argc, char** argv) {
   transformInitializer->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
   transformInitializer->SetTypeOfTransform(typeOfTransform);
   transformInitializer->Update();
+  transformInitializer->PrintReport();
   TransformType::Pointer transform = transformInitializer->GetTransform();
-
+  std::cout << " fixed " << fixedPointSetCalculator->GetCenter() << std::endl;
+  std::cout << "moving " << movingPointSetCalculator->GetCenter() << std::endl;
+  std::cout << " scale " << scale << std::endl;
   //--------------------------------------------------------------------
   // initialize optimizer
   typedef itk::LBFGSOptimizer OptimizerType;
@@ -163,7 +166,7 @@ int main(int argc, char** argv) {
     std::cerr << excep << std::endl;
     return EXIT_FAILURE;
   }
-
+  metricInitializer->PrintReport();
   //--------------------------------------------------------------------
   // perform registration
   typedef itk::GMMPointSetToPointSetRegistrationMethod<FixedPointSetType, MovingPointSetType> GMMPointSetToPointSetRegistrationMethodType;

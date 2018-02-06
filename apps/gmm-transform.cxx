@@ -11,14 +11,12 @@ typedef itk::Euler3DTransform <double> TransformType;
 
 int main(int argc, char** argv) {
 
-  args::ArgumentParser parser("GMM Transform Mesh", "");
+  args::ArgumentParser parser("Application to transform mesh", "");
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
-  
   args::Group allRequired(parser, "Required arguments:", args::Group::Validators::All);
-
-  args::ValueFlag<std::string> argInputFile(allRequired, "input", "The input mesh filename", {'i', "input"});
-  args::ValueFlag<std::string> argOutputFile(allRequired, "output", "The output mesh filename", {'o', "output"});
-  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argTransform(allRequired, "transform", "The transform vector", {'t', "transform"});
+  args::ValueFlag<std::string> argInputFile(allRequired, "input", "The input mesh file name", {'i', "input"});
+  args::ValueFlag<std::string> argOutputFile(allRequired, "output", "The output mesh file name", {'o', "output"});
+  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argParameters(allRequired, "parameters", "The parameters to transform mesh", {'p', "parameters"});
 
   try {
     parser.ParseCLI(argc, argv);
@@ -40,38 +38,56 @@ int main(int argc, char** argv) {
 
   std::string inputFile = args::get(argInputFile);
   std::string outputFile = args::get(argOutputFile);
-  std::vector<double> options = args::get(argTransform);
 
-  MeshType::Pointer model = MeshType::New();
-  if (!readMesh<MeshType>(model, inputFile)) {
+  MeshType::Pointer mesh = MeshType::New();
+  if (!readMesh<MeshType>(mesh, inputFile)) {
     return EXIT_FAILURE;
   }
 
   std::cout << "input mesh " << inputFile << std::endl;
-  std::cout << "number of points " << model->GetNumberOfPoints() << std::endl;
+  std::cout << "number of points " << mesh->GetNumberOfPoints() << std::endl;
+  std::cout << "number of cells  " << mesh->GetNumberOfCells() << std::endl;
   std::cout << std::endl;
 
   //--------------------------------------------------------------------
   // initialize transform
   TransformType::Pointer transform = TransformType::New();
   transform->SetIdentity();
-  transform->SetCenter(model->GetBoundingBox()->GetCenter());
+  transform->SetCenter(mesh->GetBoundingBox()->GetCenter());
+
+  if (args::get(argParameters).size() < transform->GetNumberOfParameters()) {
+    std::cout << "The number of parameters to transform input mesh must be equal to " << transform->GetNumberOfParameters() << std::endl;
+    return EXIT_FAILURE;
+  }
 
   TransformType::ParametersType parameters;
+  parameters.set_size(transform->GetNumberOfParameters());
+
   for (int n = 0; n < transform->GetNumberOfParameters(); ++n) {
-    parameters[n] = options[n];
+    parameters[n] = args::get(argParameters)[n];
   }
 
   transform->SetParameters(parameters);
 
+  std::cout << "transform  " << transform->GetNameOfClass() << std::endl;
+  std::cout << "center     " << transform->GetCenter() << std::endl;
+  std::cout << "parameters " << transform->GetParameters() << std::endl;
+  std::cout << std::endl;
+
   typedef itk::TransformMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType;
   TransformMeshFilterType::Pointer transformMeshFilter = TransformMeshFilterType::New();
-
-  transformMeshFilter->SetInput(model);
+  transformMeshFilter->SetInput(mesh);
   transformMeshFilter->SetTransform(transform);
-  transformMeshFilter->Update();
+  try {
+    transformMeshFilter->Update();
+  }
+  catch (itk::ExceptionObject& excep) {
+    std::cerr << excep << std::endl;
+    return EXIT_FAILURE;
+  }
 
-  std::cout << "output mesh " << inputFile << std::endl;
+  std::cout << "output mesh " << outputFile << std::endl;
+  std::cout << std::endl;
   if (!writeMesh<MeshType>(transformMeshFilter->GetOutput(), outputFile)) {
     return EXIT_FAILURE;
   }
