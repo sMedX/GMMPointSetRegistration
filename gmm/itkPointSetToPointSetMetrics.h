@@ -88,6 +88,14 @@ namespace itk
     /** Compute metrics. */
     void Compute()
     {
+      if (!m_FixedPointSet) {
+        itkExceptionMacro(<< "The fixed point set is not presented.");
+      }
+
+      if (!m_MovingPointSet) {
+        itkExceptionMacro(<< "The moving point set is not presented.");
+      }
+
       std::vector<MeasureType> movingToFixedMetrics;
       this->ComputeMetrics<MovingPointSetType, FixedPointSetType>(movingToFixedMetrics, m_MovingPointSet, m_FixedPointSet);
 
@@ -99,7 +107,13 @@ namespace itk
       m_QuantileValue = 0.5 * (movingToFixedMetrics[2] + fixedToMovingMetrics[2]);
       m_MaximalValue = 0.5 * (movingToFixedMetrics[3] + fixedToMovingMetrics[3]);
 
-      this->ComputeTargetMetrics();
+      if (m_TargetPointSet) {
+        if (m_MovingPointSet->GetNumberOfPoints() != m_TargetPointSet->GetNumberOfPoints()) {
+          itkExceptionMacro(<< "The numbers of moving points and target points are not match to each other");
+        }
+
+        this->ComputeTargetMetrics();
+      }
     }
 
   protected:
@@ -128,6 +142,7 @@ namespace itk
     MeasureType m_QuantileValue;
     MeasureType m_MaximalValue;
 
+    bool m_TargetMetrics;
     MeasureType m_TargetMeanValue;
     MeasureType m_TargetRMSEValue;
     MeasureType m_TargetQuantileValue;
@@ -191,10 +206,6 @@ namespace itk
 
     void ComputeTargetMetrics()
     {
-      if (!m_TargetPointSet) {
-        return;
-      }
-
       typename MovingPointSetType::PointsContainer::ConstPointer movingContainer = m_MovingPointSet->GetPoints();
       typename MovingPointSetType::PointsContainerConstIterator moving = movingContainer->Begin();
 

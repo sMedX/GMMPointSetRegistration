@@ -24,13 +24,14 @@ int main(int argc, char** argv) {
   args::ArgumentParser parser("GMM-based point set to point set registration.", "");
   args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 
-  args::Group allRequired(parser, "Required arguments:", args::Group::Validators::All);
+  args::Group required(parser, "Required arguments:", args::Group::Validators::All);
 
-  args::ValueFlag<std::string> argFixedFileName(allRequired, "fixed", "The fixed mesh (point-set) filename", {'f', "fixed"});
-  args::ValueFlag<std::string> argMovingFileName(allRequired, "moving", "The moving mesh (point-set) filename", {'m', "moving"});
-  args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh (point-set) filename", {'o', "output"});
+  args::ValueFlag<std::string> argFixedFileName(required, "fixed", "The fixed mesh (point-set) file name", {'f', "fixed"});
+  args::ValueFlag<std::string> argMovingFileName(required, "moving", "The moving mesh (point-set) file name", {'m', "moving"});
+  args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh (point-set) file name", {'o', "output"});
+  args::ValueFlag<std::string> argTargetFileName(parser, "target", "The target mesh (point-set) file name", {'t', "target"});
 
-  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(allRequired, "scale", "The scale levels", {"scale"});
+  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(required, "scale", "The scale levels", {"scale"});
   args::ValueFlag<size_t> argNumberOfIterations(parser, "iterations", "The number of iterations", {"iterations"}, 1000);
   args::Flag trace(parser, "trace", "Optimizer iterations tracing", {"trace"});
 
@@ -41,7 +42,7 @@ int main(int argc, char** argv) {
     "  2 : Similarity\n"
     "  3 : ScaleSkewVersor3D\n";
 
-  args::ValueFlag<size_t> argTypeOfTransform(parser, "transform", transformDescription, {'t', "transform"}, 0);
+  args::ValueFlag<size_t> argTypeOfTransform(parser, "transform", transformDescription, {"transform"}, 0);
   
   const std::string metricDescription =
     "The type of metric (That is number):\n"
@@ -49,7 +50,7 @@ int main(int argc, char** argv) {
     "  1 : L2\n"
     "  2 : KC\n";
 
-  args::ValueFlag<size_t> argTypeOfMetric(parser, "metric", metricDescription, {'M', "metric"}, 0);
+  args::ValueFlag<size_t> argTypeOfMetric(parser, "metric", metricDescription, {"metric"}, 0);
 
   try {
     parser.ParseCLI(argc, argv);
@@ -71,12 +72,15 @@ int main(int argc, char** argv) {
 
   std::string fixedFileName = args::get(argFixedFileName);
   std::string movingFileName = args::get(argMovingFileName);
+  std::string targetFileName = args::get(argTargetFileName);
   size_t numberOfIterations = args::get(argNumberOfIterations);
   size_t typeOfTransform = args::get(argTypeOfTransform);
   size_t typeOfMetric = args::get(argTypeOfMetric);
 
   std::cout << "options" << std::endl;
   std::cout << "number of iterations " << numberOfIterations << std::endl;
+  std::cout << "transform " << typeOfTransform << std::endl;
+  std::cout << "metric    " << typeOfMetric << std::endl;
   std::cout << std::endl;
 
   //--------------------------------------------------------------------
@@ -86,7 +90,10 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  std::cout << fixedFileName << std::endl;
+  FixedPointSetType::Pointer fixedPointSet = FixedPointSetType::New();
+  fixedPointSet->SetPoints(fixedMesh->GetPoints());
+
+  std::cout << "fixed mesh " << fixedFileName << std::endl;
   std::cout << "number of points " << fixedMesh->GetNumberOfPoints() << std::endl;
   std::cout << std::endl;
 
@@ -95,15 +102,28 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  std::cout << movingFileName << std::endl;
+  MovingPointSetType::Pointer movingPointSet = MovingPointSetType::New();
+  movingPointSet->SetPoints(movingMesh->GetPoints());
+
+  std::cout << "moving mesh " << movingFileName << std::endl;
   std::cout << "number of points " << movingMesh->GetNumberOfPoints() << std::endl;
   std::cout << std::endl;
 
-  FixedPointSetType::Pointer fixedPointSet = FixedPointSetType::New();
-  fixedPointSet->SetPoints(fixedMesh->GetPoints());
+  FixedMeshType::Pointer targetMesh = nullptr;
+  FixedPointSetType::Pointer targetPointSet = nullptr;
+  if (argTargetFileName) {
+    targetMesh = FixedMeshType::New();
+    if (!readMesh<FixedMeshType>(targetMesh, targetFileName)) {
+      return EXIT_FAILURE;
+    }
 
-  MovingPointSetType::Pointer movingPointSet = MovingPointSetType::New();
-  movingPointSet->SetPoints(movingMesh->GetPoints());
+    targetPointSet = FixedPointSetType::New();
+    targetPointSet->SetPoints(targetMesh->GetPoints());
+
+    std::cout << "target mesh " << targetFileName << std::endl;
+    std::cout << "number of points " << targetMesh->GetNumberOfPoints() << std::endl;
+    std::cout << std::endl;
+  }
 
   //--------------------------------------------------------------------
   // initialize scales
@@ -141,6 +161,7 @@ int main(int argc, char** argv) {
   transformInitializer->SetTypeOfTransform(typeOfTransform);
   transformInitializer->Update();
   transformInitializer->PrintReport();
+
   TransformType::Pointer transform = transformInitializer->GetTransform();
   std::cout << " fixed " << fixedPointSetCalculator->GetCenter() << std::endl;
   std::cout << "moving " << movingPointSetCalculator->GetCenter() << std::endl;
@@ -167,6 +188,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   metricInitializer->PrintReport();
+
   //--------------------------------------------------------------------
   // perform registration
   typedef itk::GMMPointSetToPointSetRegistrationMethod<FixedPointSetType, MovingPointSetType> GMMPointSetToPointSetRegistrationMethodType;
@@ -233,6 +255,7 @@ int main(int argc, char** argv) {
 
   metrics->SetFixedPointSet(fixedPointSet);
   metrics->SetMovingPointSet(transformMesh->GetOutput());
+  metrics->SetTargetPointSet(targetMesh);
   metrics->Compute();
   metrics->PrintReport(std::cout);
 
