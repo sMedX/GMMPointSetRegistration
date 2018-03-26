@@ -106,12 +106,12 @@ int main(int argc, char** argv) {
   PointSetPropertiesCalculatorType::Pointer fixedPointSetCalculator = PointSetPropertiesCalculatorType::New();
   fixedPointSetCalculator->SetPointSet(fixedPointSet);
   fixedPointSetCalculator->Compute();
-  fixedPointSetCalculator->PrintReport(std::cout);
+  fixedPointSetCalculator->Print(std::cout);
 
   PointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = PointSetPropertiesCalculatorType::New();
   movingPointSetCalculator->SetPointSet(movingPointSet);
   movingPointSetCalculator->Compute();
-  movingPointSetCalculator->PrintReport(std::cout);
+  movingPointSetCalculator->Print(std::cout);
 
   typedef itk::Similarity3DTransform<double> InitialTransformType;
   InitialTransformType::Pointer fixedInitialTransform;
@@ -123,8 +123,8 @@ int main(int argc, char** argv) {
   transformInitializer->SetMovingLandmark(movingPointSetCalculator->GetCenter());
   transformInitializer->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
   transformInitializer->SetTypeOfTransform(typeOfTransform);
-  transformInitializer->Update();
-  transformInitializer->PrintReport();
+  transformInitializer->Initialize();
+  transformInitializer->Print(std::cout);
   TransformType::Pointer transform = transformInitializer->GetTransform();
 
   //--------------------------------------------------------------------

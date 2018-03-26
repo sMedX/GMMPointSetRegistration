@@ -130,14 +130,26 @@ int main(int argc, char** argv) {
   typedef itk::PointSetPropertiesCalculator<FixedPointSetType> FixedPointSetPropertiesCalculatorType;
   FixedPointSetPropertiesCalculatorType::Pointer fixedPointSetCalculator = FixedPointSetPropertiesCalculatorType::New();
   fixedPointSetCalculator->SetPointSet(fixedPointSet);
-  fixedPointSetCalculator->Compute();
-  fixedPointSetCalculator->PrintReport(std::cout);
+  try {
+    fixedPointSetCalculator->Compute();
+  }
+  catch (itk::ExceptionObject& excep) {
+    std::cerr << excep << std::endl;
+    return EXIT_FAILURE;
+  }
+  fixedPointSetCalculator->Print(std::cout);
 
   typedef itk::PointSetPropertiesCalculator<MovingPointSetType> MovingPointSetPropertiesCalculatorType;
   MovingPointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = MovingPointSetPropertiesCalculatorType::New();
   movingPointSetCalculator->SetPointSet(movingPointSet);
-  movingPointSetCalculator->Compute();
-  movingPointSetCalculator->PrintReport(std::cout);
+  try {
+    movingPointSetCalculator->Compute();
+  }
+  catch (itk::ExceptionObject& excep) {
+    std::cerr << excep << std::endl;
+    return EXIT_FAILURE;
+  }
+  movingPointSetCalculator->Print(std::cout);
 
   itk::Array<double> scale(args::get(argScale).size());
   for (size_t n = 0; n < scale.size(); ++n) {
@@ -145,61 +157,57 @@ int main(int argc, char** argv) {
   }
 
   // initialize transform
-  typedef itk::VersorRigid3DTransform<double> InitialTransformType;
-  InitialTransformType::Pointer fixedInitialTransform = InitialTransformType::New();
-  fixedInitialTransform->SetCenter(fixedPointSetCalculator->GetCenter());
-  fixedInitialTransform->SetIdentity();
-
-  InitialTransformType::Pointer movingInitialTransform = InitialTransformType::New();
-  movingInitialTransform->SetCenter(movingPointSetCalculator->GetCenter());
-  movingInitialTransform->SetIdentity();
-
   typedef itk::InitializeTransform<double> TransformInitializerType;
-  TransformInitializerType::Pointer transformInitializer = TransformInitializerType::New();
-  transformInitializer->SetMovingLandmark(movingPointSetCalculator->GetCenter());
-  transformInitializer->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
-  transformInitializer->SetTypeOfTransform(typeOfTransform);
-  transformInitializer->Update();
-  transformInitializer->PrintReport();
+  TransformInitializerType::Pointer initializerTransform = TransformInitializerType::New();
+  initializerTransform->SetMovingLandmark(movingPointSetCalculator->GetCenter());
+  initializerTransform->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
+  initializerTransform->SetTypeOfTransform(typeOfTransform);
+  try {
+    initializerTransform->Initialize();
+  }
+  catch (itk::ExceptionObject& excep) {
+    std::cerr << excep << std::endl;
+    return EXIT_FAILURE;
+  }
+  initializerTransform->Print(std::cout);
 
-  TransformType::Pointer transform = transformInitializer->GetTransform();
+  TransformType::Pointer transform = initializerTransform->GetTransform();
   std::cout << " fixed " << fixedPointSetCalculator->GetCenter() << std::endl;
   std::cout << "moving " << movingPointSetCalculator->GetCenter() << std::endl;
   std::cout << " scale " << scale << std::endl;
+
   //--------------------------------------------------------------------
   // initialize optimizer
   typedef itk::LBFGSOptimizer OptimizerType;
   OptimizerType::Pointer optimizer = OptimizerType::New();
   optimizer->SetMaximumNumberOfFunctionEvaluations(numberOfIterations);
-  optimizer->SetScales(transformInitializer->GetScales());
+  optimizer->SetScales(initializerTransform->GetScales());
   optimizer->SetTrace(trace);
   optimizer->MinimizeOn();
 
   //--------------------------------------------------------------------
   // metric
   typedef itk::InitializeMetric<FixedPointSetType, MovingPointSetType> InitializeMetricType;
-  InitializeMetricType::Pointer metricInitializer = InitializeMetricType::New();
-  metricInitializer->SetTypeOfMetric(typeOfMetric);
+  InitializeMetricType::Pointer initializerMetric = InitializeMetricType::New();
+  initializerMetric->SetTypeOfMetric(typeOfMetric);
   try {
-    metricInitializer->Initialize();
+    initializerMetric->Initialize();
   }
   catch (itk::ExceptionObject& excep) {
     std::cerr << excep << std::endl;
     return EXIT_FAILURE;
   }
-  metricInitializer->PrintReport();
+  initializerMetric->Print(std::cout);
 
   //--------------------------------------------------------------------
   // perform registration
   typedef itk::GMMPointSetToPointSetRegistrationMethod<FixedPointSetType, MovingPointSetType> GMMPointSetToPointSetRegistrationMethodType;
   GMMPointSetToPointSetRegistrationMethodType::Pointer registration = GMMPointSetToPointSetRegistrationMethodType::New();
   registration->SetFixedPointSet(fixedPointSet);
-  registration->SetFixedInitialTransform(fixedInitialTransform);
   registration->SetMovingPointSet(movingPointSet);
-  registration->SetMovingInitialTransform(movingInitialTransform);
   registration->SetScale(scale);
   registration->SetOptimizer(optimizer);
-  registration->SetMetric(metricInitializer->GetMetric());
+  registration->SetMetric(initializerMetric->GetMetric());
   registration->SetTransform(transform);
   try {
     registration->Update();

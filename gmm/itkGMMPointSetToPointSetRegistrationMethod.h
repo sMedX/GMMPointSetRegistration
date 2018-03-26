@@ -85,8 +85,6 @@ public:
   /** Set/Get the Transform. */
   itkSetObjectMacro(Transform, TransformType);
   itkGetModifiableObjectMacro(Transform, TransformType);
-  itkSetObjectMacro(FixedInitialTransform, TransformType);
-  itkSetObjectMacro(MovingInitialTransform, TransformType);
 
   /** Set/Get the initial transformation parameters. */
   virtual void SetInitialTransformParameters(const ParametersType & param);
@@ -99,14 +97,10 @@ public:
   /** Initialize by setting the interconnects between the components. */
   void Initialize() throw (ExceptionObject);
 
-  /** preprocessing of the fixed and moving point sets */
-  virtual void Preprocessing() throw (ExceptionObject);
-
   /** Returns the transform resulting from the registration process  */
   const TransformOutputType * GetOutput() const;
 
-  /** Make a DataObject of the correct type to be used as the specified
-   * output. */
+  /** Make a DataObject of the correct type to be used as the specified output. */
   typedef ProcessObject::DataObjectPointerArraySizeType DataObjectPointerArraySizeType;
   using Superclass::MakeOutput;
   virtual DataObjectPointer MakeOutput(DataObjectPointerArraySizeType idx) ITK_OVERRIDE;
@@ -132,16 +126,10 @@ protected:
 
   FixedPointSetConstPointer  m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
-  FixedPointSetPointer       m_FixedTransformedPointSet;
-  MovingPointSetPointer      m_MovingTransformedPointSet;
-
   MetricPointer m_Metric;
   OptimizerPointer m_Optimizer;
 
   TransformPointer m_Transform;
-  TransformPointer m_FixedInitialTransform;
-  TransformPointer m_MovingInitialTransform;
-
   ParametersType m_InitialTransformParameters;
   ParametersType m_FinalTransformParameters;
 

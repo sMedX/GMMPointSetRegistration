@@ -14,11 +14,7 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >::GMMP
   this->SetNumberOfRequiredOutputs(1);    // for the transform
 
   m_FixedPointSet = ITK_NULLPTR;
-  m_FixedTransformedPointSet = ITK_NULLPTR;
-  m_FixedInitialTransform = ITK_NULLPTR;
   m_MovingPointSet = ITK_NULLPTR;
-  m_MovingTransformedPointSet = ITK_NULLPTR;
-  m_MovingInitialTransform = ITK_NULLPTR;
 
   m_Transform = ITK_NULLPTR;
   m_Metric = ITK_NULLPTR;
@@ -103,36 +99,6 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   m_FinalMetricValues.clear();
   m_FinalMetricValues.set_size(m_NumberOfLevels);
   m_FinalMetricValues.Fill(NAN);
-}
-
-template< typename TFixedPointSet, typename TMovingPointSet >
-void
-GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
-::Preprocessing() throw (ExceptionObject)
-{
-  if ( m_FixedInitialTransform )
-  {
-    typename FixedPointsContainerType::Pointer points = FixedPointsContainerType::New();
-    m_FixedTransformedPointSet = FixedPointSetType::New();
-
-    for (FixedPointConstIterator it = m_FixedPointSet->GetPoints()->Begin(); it != m_FixedPointSet->GetPoints()->End(); ++it) {
-      points->InsertElement(it.Index(), m_FixedInitialTransform->TransformPoint(it.Value()));
-    }
-
-    m_FixedTransformedPointSet->SetPoints(points);
-  }
-
-  if ( m_MovingInitialTransform ) 
-  {
-    typename MovingPointsContainerType::Pointer points = MovingPointsContainerType::New();
-    m_MovingTransformedPointSet = MovingPointSetType::New();
-
-    for (MovingPointConstIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
-      points->InsertElement(it.Index(), m_MovingInitialTransform->TransformPoint(it.Value()));
-    }
-
-    m_MovingTransformedPointSet->SetPoints(points);
-  }
 }
 
 /**
@@ -227,30 +193,9 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     throw excep;
   }
 
-  try {
-    // perform preprocessing of fixed and point sets
-    this->Preprocessing();
-  }
-  catch (ExceptionObject & excep) {
-    // pass exception to caller
-    throw excep;
-  }
-
   // setup the metric
-  if (m_FixedTransformedPointSet) {
-    m_Metric->SetFixedPointSet(m_FixedTransformedPointSet);
-  }
-  else {
-    m_Metric->SetFixedPointSet(m_FixedPointSet);
-  }
-
-  if (m_MovingTransformedPointSet) {
-    m_Metric->SetMovingPointSet(m_MovingTransformedPointSet);
-  }
-  else {
-    m_Metric->SetMovingPointSet(m_MovingPointSet);
-  }
-
+  m_Metric->SetFixedPointSet(m_FixedPointSet);
+  m_Metric->SetMovingPointSet(m_MovingPointSet);
   m_Metric->SetTransform(m_Transform);
 
   // setup the optimizer
