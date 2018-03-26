@@ -74,21 +74,24 @@ namespace itk
       }
     }
 
-    void PrintReport() const
-    {
-      std::cout << "class name " << this->GetNameOfClass() << std::endl;
-      std::cout << "metric     " << m_Metric->GetNameOfClass() << std::endl;
-      std::cout << std::endl;
-    }
-
   protected:
-    Metric m_TypeOfMetric;
-    typename MetricType::Pointer m_Metric;
-
-    InitializeMetric() 
+    InitializeMetric()
     {
       m_Metric = nullptr;
     }
     ~InitializeMetric() {}
+
+    virtual void PrintSelf(std::ostream & os, itk::Indent indent) const ITK_OVERRIDE
+    {
+      Superclass::PrintSelf(os, indent);
+      os << std::endl;
+
+      os << indent << "Metric " << m_Metric->GetNameOfClass() << std::endl;
+      os << std::endl;
+    }
+
+    Metric m_TypeOfMetric;
+    typename MetricType::Pointer m_Metric;
+
   };
 }

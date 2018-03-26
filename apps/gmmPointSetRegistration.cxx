@@ -170,11 +170,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   initializerTransform->Print(std::cout);
-
   TransformType::Pointer transform = initializerTransform->GetTransform();
-  std::cout << " fixed " << fixedPointSetCalculator->GetCenter() << std::endl;
-  std::cout << "moving " << movingPointSetCalculator->GetCenter() << std::endl;
-  std::cout << " scale " << scale << std::endl;
 
   //--------------------------------------------------------------------
   // initialize optimizer
