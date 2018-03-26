@@ -46,7 +46,7 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_UseMovingPointSetKdTree = false;
   m_MovingPointsLocator = ITK_NULLPTR;
 
-  m_Radius = 3;
+  m_SearchRadius = 3;
 }
 
 /**

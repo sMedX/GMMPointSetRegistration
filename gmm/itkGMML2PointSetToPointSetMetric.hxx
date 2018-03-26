@@ -43,7 +43,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   if (this->m_UseFixedPointSetKdTree) {
     FixedNeighborsIdentifierType idx;
-    this->m_FixedPointsLocator->Search(point, this->m_Radius * this->m_Scale, idx);
+    this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
     for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
       const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
@@ -90,7 +90,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   if (this->m_UseFixedPointSetKdTree) {
     FixedNeighborsIdentifierType idx;
-    this->m_FixedPointsLocator->Search(point, this->m_Radius * this->m_Scale, idx);
+    this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
     for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
       const FixedPointType & fixedPoint = this->m_FixedPointSet->GetPoint(*it);

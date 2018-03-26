@@ -136,8 +136,8 @@ public:
   itkSetMacro(UseMovingPointSetKdTree, bool);
   itkGetMacro(UseMovingPointSetKdTree, bool);
 
-  itkSetMacro(Radius, double);
-  itkGetMacro(Radius, double);
+  itkSetMacro(SearchRadius, double);
+  itkGetMacro(SearchRadius, double);
 
   /** Connect the Transform. */
   itkSetObjectMacro(Transform, TransformType);
@@ -205,7 +205,7 @@ protected:
   typename MovingPointsLocatorType::Pointer  m_MovingPointsLocator;
   bool m_UseFixedPointSetKdTree;
   bool m_UseMovingPointSetKdTree;
-  double m_Radius;
+  double m_SearchRadius;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;
