@@ -69,7 +69,7 @@ namespace itk
       }
       }
 
-      if (m_Metric == nullptr) {
+      if (!m_Metric) {
         itkExceptionMacro(<< "metric has not been initialized.");
       }
     }
@@ -77,7 +77,7 @@ namespace itk
   protected:
     InitializeMetric()
     {
-      m_Metric = nullptr;
+      m_Metric = ITK_NULLPTR;
     }
     ~InitializeMetric() {}
 
@@ -85,13 +85,11 @@ namespace itk
     {
       Superclass::PrintSelf(os, indent);
       os << std::endl;
-
-      os << indent << "Metric " << m_Metric->GetNameOfClass() << std::endl;
+      os << "Metric " << m_Metric->GetNameOfClass() << std::endl;
       os << std::endl;
     }
 
     Metric m_TypeOfMetric;
     typename MetricType::Pointer m_Metric;
-
   };
 }
