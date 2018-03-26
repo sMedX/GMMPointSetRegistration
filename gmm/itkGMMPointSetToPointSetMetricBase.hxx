@@ -94,18 +94,19 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
   for (MovingPointIterator it = m_TransformedMovingPointSet->GetPoints()->Begin(); it != m_TransformedMovingPointSet->GetPoints()->End(); ++it) 
   {
     // compute local value and derivatives
-    this->GetLocalNeighborhoodValueAndDerivative(it.Value(), localValue, localDerivative);
-
-    value += localValue;
-
-    // compute derivatives
-    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(m_MovingPointSet->GetPoint(it.Index()), m_Jacobian, m_JacobianCache);
-
-    for (size_t dim = 0; dim < PointDimension; ++dim) 
+    if (this->GetLocalNeighborhoodValueAndDerivative(it.Value(), localValue, localDerivative)) 
     {
-      for (size_t par = 0; par < m_NumberOfParameters; ++par) 
+      value += localValue;
+
+      // compute derivatives
+      this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(m_MovingPointSet->GetPoint(it.Index()), m_Jacobian, m_JacobianCache);
+
+      for (size_t dim = 0; dim < PointDimension; ++dim) 
       {
-        derivative[par] += m_Jacobian(dim, par) * localDerivative[dim];
+        for (size_t par = 0; par < m_NumberOfParameters; ++par) 
+        {
+          derivative[par] += m_Jacobian(dim, par) * localDerivative[dim];
+        }
       }
     }
   }
@@ -133,7 +134,7 @@ void
 GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 ::InitializeForIteration(const ParametersType & parameters) const
 {
-  this->SetTransformParameters(parameters);
+  m_Transform->SetParameters(parameters);
 
   if (!m_TransformedMovingPointSet) 
   {

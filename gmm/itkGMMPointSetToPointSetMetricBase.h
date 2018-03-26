@@ -155,11 +155,7 @@ public:
   virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const = 0;
 
   /** Calculates the local value/derivative for a single point.*/
-  virtual void GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const = 0;
-
-  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize()
-  * which is a one-time initialization. */
-  virtual void InitializeForIteration(const ParametersType & parameters) const;
+  virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const = 0;
 
   /** Set the parameters defining the Transform. */
   void SetTransformParameters(const ParametersType & parameters) const;
@@ -179,6 +175,10 @@ protected:
   void InitializeFixedTree();
   void InitializeMovingTree();
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
+
+  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize()
+  * which is a one-time initialization. */
+  virtual void InitializeForIteration(const ParametersType & parameters) const;
 
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
