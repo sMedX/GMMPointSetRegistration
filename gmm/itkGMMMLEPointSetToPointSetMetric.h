@@ -48,26 +48,20 @@ public:
   typedef typename Superclass::MovingPointSetConstPointer MovingPointSetConstPointer;
   typedef typename Superclass::FixedPointIterator         FixedPointIterator;
   typedef typename Superclass::MovingPointIterator        MovingPointIterator;
-  typedef typename Superclass::GradientType               GradientType;
+  typedef typename Superclass::LocalDerivativeType        LocalDerivativeType;
 
-  /** Get the derivatives of the match measure. */
-  void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
+  /** Calculates the local metric value for a single point.*/
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const ITK_OVERRIDE;
 
-  /**  Get the value for single valued optimizers. */
-  MeasureType GetValue(const TransformParametersType & parameters) const ITK_OVERRIDE;
+  /** Calculates the local value/derivative for a single point.*/
+  virtual void GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
 
-  /**  Get value and derivatives for multiple valued optimizers. */
-  void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
-
-  /** Initialize the Metric by making sure that all the components
-  *  are present and plugged together correctly     */
-  virtual void Initialize() throw (ExceptionObject);
+  /** Initialize the Metric by making sure that all the components are present and plugged together correctly.*/
+  virtual void Initialize() throw (ExceptionObject)ITK_OVERRIDE;
 
 protected:
   GMMMLEPointSetToPointSetMetric();
   virtual ~GMMMLEPointSetToPointSetMetric() {}
-
-  mutable itk::Array<double> m_ValuesOfProbability;
 
 private:
   GMMMLEPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;

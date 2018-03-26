@@ -3,6 +3,7 @@
 #include "itkGMML2RigidPointSetToPointSetMetric.h"
 #include "itkGMML2PointSetToPointSetMetric.h"
 #include "itkGMMKCPointSetToPointSetMetric.h"
+#include "itkGMMMLEPointSetToPointSetMetric.h"
 
 namespace itk
 {
@@ -26,9 +27,10 @@ namespace itk
     // define type of metric
     enum class Metric
     {
-      GMML2Rigid,
-      GMML2,
-      GMMKC
+      GMML2Rigid = 0,
+      GMML2 = 1,
+      GMMKC = 2,
+      GMMMLE = 3
     };
 
     itkSetEnumMacro(TypeOfMetric, Metric);
@@ -42,22 +44,27 @@ namespace itk
     {
       switch (m_TypeOfMetric) {
       case Metric::GMML2Rigid: {
-        typedef itk::GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMML2RigidMetricType;
-        m_Metric = GMML2RigidMetricType::New();
+        typedef itk::GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        m_Metric = MetricType::New();
         break;
       }
       case Metric::GMML2:{
-        typedef itk::GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMML2MetricType;
-        m_Metric = GMML2MetricType::New();
+        typedef itk::GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        m_Metric = MetricType::New();
         break;
       }
       case Metric::GMMKC: {
-        typedef itk::GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMMKCMetricType;
-        m_Metric = GMMKCMetricType::New();
+        typedef itk::GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        m_Metric = MetricType::New();
+        break;
+      }
+      case Metric::GMMMLE: {
+        typedef itk::GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        m_Metric = MetricType::New();
         break;
       }
       default: {
-        itkExceptionMacro(<< "Unknown type of metric");
+        itkExceptionMacro(<< "Unknown type of the metric to initialize");
         return;
       }
       }
