@@ -240,9 +240,19 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 ::PrintSelf(std::ostream & os, Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-  os << indent << "Moving PointSet: " << m_MovingPointSet.GetPointer()  << std::endl;
-  os << indent << "Fixed  PointSet: " << m_FixedPointSet.GetPointer()   << std::endl;
-  os << indent << "Transform:       " << m_Transform.GetPointer()    << std::endl;
+  os << std::endl;
+
+  os << "Transform " << m_Transform.GetPointer() << std::endl;
+  os << indent << m_Transform->GetNameOfClass() << std::endl;
+  os << std::endl;
+
+  os << "Fixed point set  " << m_FixedPointSet.GetPointer() << std::endl;
+  os << indent << "Use KdTree  " << m_UseFixedPointSetKdTree << std::endl;
+  os << std::endl;
+
+  os << "Moving point set " << m_MovingPointSet.GetPointer() << std::endl;
+  os << indent << "Use KdTree  " << m_UseMovingPointSetKdTree << std::endl;
+  os << std::endl;
 }
 } // end namespace itk
 

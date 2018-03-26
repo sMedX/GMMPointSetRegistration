@@ -225,6 +225,8 @@ int main(int argc, char** argv) {
   std::cout << "   Initial metric values " << registration->GetInitialMetricValues() << std::endl;
   std::cout << "     Final metric values " << registration->GetFinalMetricValues() << std::endl;
   std::cout << std::endl;
+  registration->GetMetric()->Print(std::cout);
+  std::cout << std::endl;
 
   // transform moving mesh
   typedef itk::TransformMeshFilter<MovingMeshType, MovingMeshType, TransformType> TransformMeshFilterType;
