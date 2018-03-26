@@ -11,6 +11,8 @@ namespace itk
 template <typename TFixedPointSet, typename TMovingPointSet>
 GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMMLEPointSetToPointSetMetric()
 {
+  this->SetUseFixedPointSetKdTree(true);
+  this->SetUseMovingPointSetKdTree(false);
 }
 
 /** Initialize the metric */
@@ -20,7 +22,10 @@ GMMMLEPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 ::Initialize() throw (ExceptionObject)
 {
   Superclass::Initialize();
-  this->SetUseFixedPointSetKdTree(true);
+
+  this->m_NormalizingValueFactor = -2.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+
+  this->m_NormalizingDerivativeFactor = -2.0 * this->m_NormalizingValueFactor / (this->m_Scale * this->m_Scale);
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
@@ -33,13 +38,22 @@ GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
-  FixedNeighborsIdentifierType idx;
-  this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
+  if (this->m_UseFixedPointSetKdTree) {
+    FixedNeighborsIdentifierType idx;
+    this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
-  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-    const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
-    const double expval = std::exp(-distance / scale);
-    value += expval;
+    for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
+      const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
+      const double expval = std::exp(-distance / scale);
+      value += expval;
+    }
+  }
+  else {
+    for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {
+      const double distance = point.SquaredEuclideanDistanceTo(it.Value());
+      const double expval = std::exp(-distance / scale);
+      value += expval;
+    }
   }
 
   return value;
