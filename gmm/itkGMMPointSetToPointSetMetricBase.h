@@ -129,11 +129,8 @@ public:
   itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
   itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
 
-  /** Get/Set boolean flag to initialize KdTree.  */
-  itkSetMacro(UseFixedPointSetKdTree, bool);
+  /** Get boolean flag to use KdTree. */
   itkGetMacro(UseFixedPointSetKdTree, bool);
-
-  itkSetMacro(UseMovingPointSetKdTree, bool);
   itkGetMacro(UseMovingPointSetKdTree, bool);
 
   itkSetMacro(SearchRadius, double);

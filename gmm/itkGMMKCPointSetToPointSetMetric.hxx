@@ -11,8 +11,7 @@ namespace itk
 template <typename TFixedPointSet, typename TMovingPointSet>
 GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMKCPointSetToPointSetMetric()
 {
-  this->SetUseFixedPointSetKdTree(true);
-  this->SetUseMovingPointSetKdTree(false);
+  this->m_UseFixedPointSetKdTree = true;
 }
 
 /** Initialize the metric */
