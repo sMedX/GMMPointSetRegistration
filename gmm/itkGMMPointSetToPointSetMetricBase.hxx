@@ -60,7 +60,7 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const
 
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
-  for (MovingPointIterator it = m_TransformedMovingPointSet->GetPoints()->Begin(); it != m_TransformedMovingPointSet->GetPoints()->End(); ++it) 
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
   {
     value += GetLocalNeighborhoodValue(it.Value());
   }
@@ -91,7 +91,7 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
   derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
   LocalDerivativeType localDerivative;
 
-  for (MovingPointIterator it = m_TransformedMovingPointSet->GetPoints()->Begin(); it != m_TransformedMovingPointSet->GetPoints()->End(); ++it) 
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
   {
     // compute local value and derivatives
     if (this->GetLocalNeighborhoodValueAndDerivative(it.Value(), localValue, localDerivative)) 
@@ -135,17 +135,6 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 ::InitializeForIteration(const ParametersType & parameters) const
 {
   m_Transform->SetParameters(parameters);
-
-  if (!m_TransformedMovingPointSet) 
-  {
-    m_TransformedMovingPointSet = MovingPointSetType::New();
-    m_TransformedMovingPointSet->GetPoints()->resize(m_MovingPointSet->GetNumberOfPoints());
-  }
-
-  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
-  {
-    m_TransformedMovingPointSet->GetPoints()->SetElement(it.Index(), m_Transform->TransformPoint(it.Value()));
-  }
 }
 
 /** Set the parameters that define a unique transform */
