@@ -151,18 +151,14 @@ public:
   /**  Get value and derivatives for multiple valued optimizers. */
   void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
 
-  /** Calculates the local metric value for a single point. */
-  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const = 0;
-
-  /** Calculates the local value/derivative for a single point.*/
-  virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const = 0;
-
   /** Set the parameters defining the Transform. */
   void SetTransformParameters(const ParametersType & parameters) const;
 
   /** Return the number of parameters required by the Transform */
   virtual unsigned int GetNumberOfParameters(void) const ITK_OVERRIDE
-  { return m_Transform->GetNumberOfParameters(); }
+  { 
+    return m_Transform->GetNumberOfParameters(); 
+  }
 
   /** Initialize the Metric by making sure that all the components
    *  are present and plugged together correctly     */
@@ -174,6 +170,14 @@ protected:
   virtual ~GMMPointSetToPointSetMetricBase() {}
   void InitializeFixedTree();
   void InitializeMovingTree();
+  void InitializeTransformedMovingPointSet();
+
+  /** Calculates the local metric value for a single point. */
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const = 0;
+
+  /** Calculates the local value/derivative for a single point.*/
+  virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator &, MeasureType &, LocalDerivativeType &) const = 0;
+
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
   /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize()
@@ -182,7 +186,7 @@ protected:
 
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
-  mutable typename MovingPointSetType::Pointer m_TransformedMovingPointSet;
+  mutable typename FixedPointSetType::Pointer m_TransformedMovingPointSet;
 
   mutable TransformPointer m_Transform;
   size_t m_NumberOfParameters;

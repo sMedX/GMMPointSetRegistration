@@ -44,18 +44,18 @@ public:
   typedef typename Superclass::FixedNeighborsIteratorType     FixedNeighborsIteratorType;
   typedef typename Superclass::MovingNeighborsIteratorType    MovingNeighborsIteratorType;
 
-  /** Calculates the local metric value for a single point.*/
-  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const ITK_OVERRIDE;
-
-  /** Calculates the local value/derivative for a single point.*/
-  virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
-
   /** Initialize the Metric by making sure that all the components are present and plugged together correctly.*/
   virtual void Initialize() throw (ExceptionObject) ITK_OVERRIDE;
 
 protected:
   GMML2RigidPointSetToPointSetMetric();
   virtual ~GMML2RigidPointSetToPointSetMetric() {}
+
+  /** Calculates the local metric value for a single point.*/
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const ITK_OVERRIDE;
+
+  /** Calculates the local value/derivative for a single point.*/
+  virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
 
 private:
   GMML2RigidPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;

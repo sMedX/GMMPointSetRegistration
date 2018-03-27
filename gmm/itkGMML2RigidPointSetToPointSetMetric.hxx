@@ -31,9 +31,9 @@ template<typename TFixedPointSet, typename TMovingPointSet>
 typename GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::MeasureType
 GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
-::GetLocalNeighborhoodValue(const MovingPointType & movingPoint) const
+::GetLocalNeighborhoodValue(const MovingPointIterator & it) const
 {
-  const FixedPointType point = this->m_Transform->TransformPoint(movingPoint);
+  const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
 
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
@@ -60,9 +60,9 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 template<typename TFixedPointSet, typename TMovingPointSet>
 bool
 GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
-::GetLocalNeighborhoodValueAndDerivative(const MovingPointType & movingPoint, MeasureType & value, LocalDerivativeType & derivative) const
+::GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator & it, MeasureType & value, LocalDerivativeType & derivative) const
 {
-  const FixedPointType point = this->m_Transform->TransformPoint(movingPoint);
+  const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
 
   FixedNeighborsIdentifierType idx;
   this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);

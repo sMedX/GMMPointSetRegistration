@@ -62,7 +62,7 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const
 
   for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
   {
-    value += GetLocalNeighborhoodValue(it.Value());
+    value += GetLocalNeighborhoodValue(it);
   }
 
   value *= m_NormalizingValueFactor;
@@ -94,12 +94,12 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
   for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
   {
     // compute local value and derivatives
-    if (this->GetLocalNeighborhoodValueAndDerivative(it.Value(), localValue, localDerivative)) 
+    if (this->GetLocalNeighborhoodValueAndDerivative(it, localValue, localDerivative))
     {
       value += localValue;
 
       // compute derivatives
-      this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(m_MovingPointSet->GetPoint(it.Index()), m_Jacobian, m_JacobianCache);
+      this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), m_Jacobian, m_JacobianCache);
 
       for (size_t dim = 0; dim < PointDimension; ++dim) 
       {
@@ -221,6 +221,16 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_MovingPointsLocator = MovingPointsLocatorType::New();
   m_MovingPointsLocator->SetPoints(const_cast<MovingPointsContainer*> (m_MovingPointSet->GetPoints()));
   m_MovingPointsLocator->Initialize();
+}
+
+/** Initialize transformed point set*/
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::InitializeTransformedMovingPointSet()
+{
+  m_TransformedMovingPointSet = FixedPointSetType::New();
+  m_TransformedMovingPointSet->GetPoints()->resize(m_MovingPointSet->GetNumberOfPoints());
 }
 
 /** PrintSelf */
