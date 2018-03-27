@@ -22,64 +22,74 @@ GMML2PointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 {
   Superclass::Initialize();
 
-  this->m_NormalizingValueFactor = 1.0 / this->m_MovingPointSet->GetNumberOfPoints();
+  this->InitializeTransformedMovingPointSet();
 
-  this->m_NormalizingDerivativeFactor = -2.0 * this->m_NormalizingValueFactor / (this->m_Scale * this->m_Scale);
+  this->m_NormalizingValueFactor = 1.0 / this->m_TransformedMovingPointSet->GetNumberOfPoints();
+
+  this->m_NormalizingDerivativeFactor = -2.0 / (this->m_TransformedMovingPointSet->GetNumberOfPoints() * this->m_Scale * this->m_Scale);
+}
+
+/** Initialize data for current iteration with the input parameters */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMML2PointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
+::InitializeForIteration(const ParametersType & parameters) const
+{
+  this->m_Transform->SetParameters(parameters);
+
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
+  {
+    m_TransformedMovingPointSet->GetPoints()->SetElement(it.Index(), m_Transform->TransformPoint(it.Value()));
+  }
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
 typename GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::MeasureType
 GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
-::GetLocalNeighborhoodValue(const MovingPointType & point) const
+::GetLocalNeighborhoodValue(const MovingPointIterator & it) const
 {
-  const double factor1 = this->m_TransformedMovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints();
-  const double factor2 = this->m_TransformedMovingPointSet->GetNumberOfPoints() * this->m_TransformedMovingPointSet->GetNumberOfPoints();
+  const FixedPointType point = this->m_TransformedMovingPointSet->GetPoints()->at(it.Index());
+
   const double scale = this->m_Scale * this->m_Scale;
 
   // compute value for the first sum
   double value1 = 0;
 
-  if (this->m_UseFixedPointSetKdTree) {
-    FixedNeighborsIdentifierType idx;
-    this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
+  FixedNeighborsIdentifierType idx;
+  this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
-    for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-      const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
-      const double expval = std::exp(-distance / scale);
-      value1 += expval;
-    }
-  }
-  else {
-    for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {
-      const double distance = point.SquaredEuclideanDistanceTo(it.Value());
-      const double expval = std::exp(-distance / scale);
-      value1 += expval;
-    }
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
+    const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
+    const double expval = std::exp(-distance / scale);
+    value1 += expval;
   }
 
   // compute value for the second sum
   double value2 = 0;
  
-  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
+  for (FixedPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
     const double distance = point.SquaredEuclideanDistanceTo(it.Value());
     const double expval = std::exp(-distance / scale);
     value2 += expval;
   }
 
   // local value
-  const double value = value2 / factor2 - 2.0 * value1 / factor1;
+  const double factor1 = this->m_FixedPointSet->GetNumberOfPoints();
+  const double factor2 = this->m_MovingPointSet->GetNumberOfPoints();
+
+  const double value = -2.0 * value1 / factor1 + value2 / factor2;
 
   return value;
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
-void
+bool
 GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
-::GetLocalNeighborhoodValueAndDerivative(const MovingPointType & point, MeasureType & value, LocalDerivativeType & derivative) const
+::GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator & it, MeasureType & value, LocalDerivativeType & derivative) const
 {
-  const double factor1 = this->m_FixedPointSet->GetNumberOfPoints();
-  const double factor2 = this->m_TransformedMovingPointSet->GetNumberOfPoints();
+  const FixedPointType point = this->m_TransformedMovingPointSet->GetPoints()->at(it.Index());
+
   const double scale = this->m_Scale * this->m_Scale;
 
   // compute value and derivative gradient for the first sum
@@ -87,31 +97,17 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   LocalDerivativeType derivative1;
   derivative1.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
-  if (this->m_UseFixedPointSetKdTree) {
-    FixedNeighborsIdentifierType idx;
-    this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
+  FixedNeighborsIdentifierType idx;
+  this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
-    for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-      const FixedPointType & fixedPoint = this->m_FixedPointSet->GetPoint(*it);
-      const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
-      const double expval = std::exp(-distance / scale);
-      value1 += expval;
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
+    const FixedPointType fixedPoint = this->m_FixedPointSet->GetPoint(*it);
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
+    const double expval = std::exp(-distance / scale);
+    value1 += expval;
 
-      for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-        derivative1[dim] += expval * (point[dim] - fixedPoint[dim]);
-      }
-    }
-  }
-  else {
-    for (FixedPointIterator it = this->m_FixedPointSet->GetPoints()->Begin(); it != this->m_FixedPointSet->GetPoints()->End(); ++it) {
-      const FixedPointType & fixedPoint = it.Value();
-      const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
-      const double expval = std::exp(-distance / scale);
-      value1 += expval;
-
-      for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-        derivative1[dim] += expval * (point[dim] - fixedPoint[dim]);
-      }
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+      derivative1[dim] += expval * (point[dim] - fixedPoint[dim]);
     }
   }
 
@@ -120,8 +116,8 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   LocalDerivativeType derivative2;
   derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
-  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
-    const MovingPointType & transformedPoint = it.Value();
+  for (FixedPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
+    const FixedPointType transformedPoint = it.Value();
     const double distance = point.SquaredEuclideanDistanceTo(transformedPoint);
     const double expval = std::exp(-distance / scale);
     value2 += expval;
@@ -132,12 +128,17 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   }
 
   // local value
-  value = value2 / factor2 - 2.0 * value1 / factor1;
+  const double factor1 = this->m_FixedPointSet->GetNumberOfPoints();
+  const double factor2 = this->m_TransformedMovingPointSet->GetNumberOfPoints();
+
+  value = -2.0 * value1 / factor1 + value2 / factor2;
 
   // local derivatives
   for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-    derivative[dim] = (derivative2[dim] / factor2 - 2.0 * derivative1[dim] / factor1);
+    derivative[dim] = -2.0 * derivative1[dim] / factor1 + derivative2[dim] / factor2;
   }
+
+  return true;
 }
 }
 

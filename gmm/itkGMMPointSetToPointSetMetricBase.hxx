@@ -197,8 +197,6 @@ throw ( ExceptionObject )
   }
 
   m_NumberOfParameters = m_Transform->GetNumberOfParameters();
-  m_NumberOfFixedPoints = m_FixedPointSet->GetNumberOfPoints();
-  m_NumberOfMovingPoints = m_MovingPointSet->GetNumberOfPoints();
 }
 
 /** Initialize KdTree for FixedPointSet */

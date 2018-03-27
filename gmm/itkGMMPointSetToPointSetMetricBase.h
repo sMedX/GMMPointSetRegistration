@@ -195,9 +195,6 @@ protected:
 
   double m_Scale;
 
-  size_t m_NumberOfFixedPoints;
-  size_t m_NumberOfMovingPoints;
-
   double m_NormalizingValueFactor;
   double m_NormalizingDerivativeFactor;
 
