@@ -180,8 +180,7 @@ protected:
 
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
-  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize()
-  * which is a one-time initialization. */
+  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize() which is a one-time initialization. */
   virtual void InitializeForIteration(const ParametersType & parameters) const;
 
   FixedPointSetConstPointer m_FixedPointSet;
