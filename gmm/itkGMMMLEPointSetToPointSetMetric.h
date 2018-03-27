@@ -50,18 +50,21 @@ public:
   typedef typename Superclass::MovingPointIterator        MovingPointIterator;
   typedef typename Superclass::LocalDerivativeType        LocalDerivativeType;
 
-  /** Calculates the local metric value for a single point.*/
-  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const ITK_OVERRIDE;
-
-  /** Calculates the local value/derivative for a single point.*/
-  virtual void GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
-
   /** Initialize the Metric by making sure that all the components are present and plugged together correctly.*/
   virtual void Initialize() throw (ExceptionObject)ITK_OVERRIDE;
 
 protected:
   GMMMLEPointSetToPointSetMetric();
   virtual ~GMMMLEPointSetToPointSetMetric() {}
+
+  /** Calculates the local metric value for a single point.*/
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const ITK_OVERRIDE;
+
+  /** Calculates the local value/derivative for a single point.*/
+  virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
+
+  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. */
+  virtual void InitializeForIteration(const ParametersType & parameters) const;
 
 private:
   GMMMLEPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
