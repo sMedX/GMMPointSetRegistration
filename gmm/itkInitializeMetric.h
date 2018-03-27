@@ -49,8 +49,8 @@ namespace itk
         break;
       }
       case Metric::GMML2:{
-        //typedef itk::GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
-        //m_Metric = MetricType::New();
+        typedef itk::GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        m_Metric = MetricType::New();
         break;
       }
       case Metric::GMMKC: {
