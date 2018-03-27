@@ -129,7 +129,7 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   // local value
   const double factor1 = this->m_FixedPointSet->GetNumberOfPoints();
-  const double factor2 = this->m_TransformedMovingPointSet->GetNumberOfPoints();
+  const double factor2 = this->m_MovingPointSet->GetNumberOfPoints();
 
   value = -2.0 * value1 / factor1 + value2 / factor2;
 
