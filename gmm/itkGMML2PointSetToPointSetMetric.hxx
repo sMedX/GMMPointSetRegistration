@@ -49,7 +49,7 @@ typename GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetLocalNeighborhoodValue(const MovingPointIterator & it) const
 {
-  const MovingPointType point = this->m_TransformedMovingPointSet->GetPoints()->at(it.Index());
+  const MovingPointType point = this->GetTransformedMovingPoint(it.Index());
 
   const double scale = this->m_Scale * this->m_Scale;
 
@@ -92,7 +92,7 @@ bool
 GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator & it, MeasureType & value, LocalDerivativeType & derivative) const
 {
-  const MovingPointType point = this->m_TransformedMovingPointSet->GetPoints()->at(it.Index());
+  const MovingPointType point = this->GetTransformedMovingPoint(it.Index());
 
   const double scale = this->m_Scale * this->m_Scale;
 
