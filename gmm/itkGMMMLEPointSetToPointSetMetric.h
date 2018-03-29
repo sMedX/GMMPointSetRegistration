@@ -63,9 +63,6 @@ protected:
   /** Calculates the local value/derivative for a single point.*/
   virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
 
-  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. */
-  virtual void InitializeForIteration(const ParametersType & parameters) const;
-
 private:
   GMMMLEPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;
