@@ -196,6 +196,11 @@ protected:
     return this->m_MovingPointSet->GetPoints()->at(pointIdentifier);
   }
 
+  virtual MovingPointType GetTransformedMovingPoint(const MovingPointIdentifier & pointIdentifier) const
+  {
+    return this->m_TransformedMovingPointSet->GetPoints()->at(pointIdentifier);
+  }
+
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
   mutable typename MovingPointSetType::Pointer m_TransformedMovingPointSet;
