@@ -59,7 +59,7 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   double value1 = 0;
 
   FixedNeighborsIdentifierType idx;
-  this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
+  this->SearchFixedPoints(point, idx);
 
   for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
   {
@@ -102,7 +102,7 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   derivative1.Fill(0);
 
   FixedNeighborsIdentifierType idx;
-  this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
+  this->SearchFixedPoints(point, idx);
 
   for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
   {

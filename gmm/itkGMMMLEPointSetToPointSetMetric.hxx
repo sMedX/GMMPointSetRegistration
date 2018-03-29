@@ -42,7 +42,7 @@ GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
   FixedNeighborsIdentifierType idx;
-  this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
+  this->SearchFixedPoints(point, idx);
 
   for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
   {
@@ -64,9 +64,7 @@ GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
 
   FixedNeighborsIdentifierType idx;
-  this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
-
-  if (idx.size() == 0) 
+  if (!this->SearchFixedPoints(point, idx)) 
   {
     return false;
   }

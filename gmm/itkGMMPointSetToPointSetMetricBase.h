@@ -201,6 +201,13 @@ protected:
     return this->m_TransformedMovingPointSet->GetPoints()->at(pointIdentifier);
   }
 
+  virtual size_t SearchFixedPoints(const FixedPointType & point, FixedNeighborsIdentifierType & idx  ) const
+  {
+    this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
+
+    return idx.size();
+  }
+
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
   mutable typename MovingPointSetType::Pointer m_TransformedMovingPointSet;
