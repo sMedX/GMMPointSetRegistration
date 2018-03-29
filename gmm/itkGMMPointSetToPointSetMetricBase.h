@@ -58,15 +58,17 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(GMMPointSetToPointSetMetricBase, SingleValuedCostFunction);
 
-  /**  Type of the moving point set. */
-  typedef TMovingPointSet                           MovingPointSetType;
-  typedef typename MovingPointSetType::PointType    MovingPointType;
-  typedef typename MovingPointSetType::ConstPointer MovingPointSetConstPointer;
-
   /**  Type of the fixed point set. */
-  typedef TFixedPointSet                            FixedPointSetType;
-  typedef typename FixedPointSetType::PointType     FixedPointType;
-  typedef typename FixedPointSetType::ConstPointer  FixedPointSetConstPointer;
+  typedef TFixedPointSet                               FixedPointSetType;
+  typedef typename FixedPointSetType::PointType        FixedPointType;
+  typedef typename FixedPointSetType::PointIdentifier  FixedPointIdentifier;
+  typedef typename FixedPointSetType::ConstPointer     FixedPointSetConstPointer;
+
+  /**  Type of the moving point set. */
+  typedef TMovingPointSet                              MovingPointSetType;
+  typedef typename MovingPointSetType::PointType       MovingPointType;
+  typedef typename MovingPointSetType::PointIdentifier MovingPointIdentifier;
+  typedef typename MovingPointSetType::ConstPointer    MovingPointSetConstPointer;
 
   /** Constants for the point set dimensions */
   itkStaticConstMacro(MovingPointSetDimension, unsigned int, TMovingPointSet::PointDimension);
@@ -182,6 +184,17 @@ protected:
 
   /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize() which is a one-time initialization. */
   virtual void InitializeForIteration(const ParametersType & parameters) const;
+
+  /** Get point from point sets. */
+  virtual FixedPointType GetFixedPoint(const FixedPointIdentifier & pointIdentidier) const
+  {
+    return this->m_FixedPointSet->GetPoints()->at(pointIdentidier);
+  }
+
+  virtual MovingPointType GetMovingPoint(const MovingPointIdentifier & pointIdentidier) const
+  {
+    return this->m_MovingPointSet->GetPoints()->at(pointIdentidier);
+  }
 
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
