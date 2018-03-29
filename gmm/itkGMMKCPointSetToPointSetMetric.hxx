@@ -39,7 +39,8 @@ GMMKCPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 {
   this->m_Transform->SetParameters(parameters);
 
-  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
+  {
     m_TransformedMovingPointSet->GetPoints()->SetElement(it.Index(), m_Transform->TransformPoint(it.Value()));
   }
 }
@@ -60,8 +61,11 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   FixedNeighborsIdentifierType idx;
   this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
-  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-    const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
+  {
+    const FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
     const double expval = std::exp(-distance / scale);
     value1 += expval;
   }
@@ -69,7 +73,8 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   // compute value for the second sum
   double value2 = 0;
 
-  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
+  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) 
+  {
     const double distance = point.SquaredEuclideanDistanceTo(it.Value());
     const double expval = std::exp(-distance / scale);
     value2 += expval;
@@ -99,8 +104,10 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   FixedNeighborsIdentifierType idx;
   this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
-  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-    const FixedPointType & fixedPoint = this->m_FixedPointSet->GetPoint(*it);
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
+  {
+    const FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
     const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
     const double expval = std::exp(-distance / scale);
     value1 += expval;
@@ -115,8 +122,10 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   LocalDerivativeType derivative2;
   derivative2.Fill(0);
 
-  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
-    const MovingPointType & transformedPoint = it.Value();
+  for (MovingPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) 
+  {
+    const MovingPointType transformedPoint = it.Value();
+
     const double distance = point.SquaredEuclideanDistanceTo(transformedPoint);
     const double expval = std::exp(-distance / scale);
     value2 += expval;
@@ -131,7 +140,8 @@ GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   value = value1 * ratio;
 
   // compute local derivatives
-  for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+  for (size_t dim = 0; dim < this->PointDimension; ++dim) 
+  {
     derivative[dim] = (derivative1[dim] - derivative2[dim] * ratio) * ratio;
   }
 

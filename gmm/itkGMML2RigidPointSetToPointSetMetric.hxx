@@ -49,7 +49,9 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
   {
-    const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
+    FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
     const double expval = std::exp(-distance / scale);
     value += expval;
   }
@@ -79,7 +81,8 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
   {
-    const FixedPointType & fixedPoint = this->m_FixedPointSet->GetPoint(*it);
+    FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
     const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
     const double expval = std::exp(-distance / scale);
     value += expval;

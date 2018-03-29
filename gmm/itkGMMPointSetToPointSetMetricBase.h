@@ -186,14 +186,14 @@ protected:
   virtual void InitializeForIteration(const ParametersType & parameters) const;
 
   /** Get point from point sets. */
-  virtual FixedPointType GetFixedPoint(const FixedPointIdentifier & pointIdentidier) const
+  virtual FixedPointType GetFixedPoint(const FixedPointIdentifier & pointIdentifier) const
   {
-    return this->m_FixedPointSet->GetPoints()->at(pointIdentidier);
+    return this->m_FixedPointSet->GetPoints()->at(pointIdentifier);
   }
 
-  virtual MovingPointType GetMovingPoint(const MovingPointIdentifier & pointIdentidier) const
+  virtual MovingPointType GetMovingPoint(const MovingPointIdentifier & pointIdentifier) const
   {
-    return this->m_MovingPointSet->GetPoints()->at(pointIdentidier);
+    return this->m_MovingPointSet->GetPoints()->at(pointIdentifier);
   }
 
   FixedPointSetConstPointer m_FixedPointSet;

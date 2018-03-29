@@ -37,7 +37,8 @@ GMMMLEPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 {
   this->m_Transform->SetParameters(parameters);
 
-  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
+  {
     m_TransformedMovingPointSet->GetPoints()->SetElement(it.Index(), m_Transform->TransformPoint(it.Value()));
   }
 }
@@ -57,8 +58,11 @@ GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   FixedNeighborsIdentifierType idx;
   this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
-  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-    const double distance = point.SquaredEuclideanDistanceTo(this->m_FixedPointSet->GetPoint(*it));
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
+  {
+    const FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
     const double expval = std::exp(-distance / scale);
     value += expval;
   }
@@ -76,7 +80,8 @@ GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   FixedNeighborsIdentifierType idx;
   this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
 
-  if (idx.size() == 0) {
+  if (idx.size() == 0) 
+  {
     return false;
   }
 
@@ -86,13 +91,16 @@ GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
-  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
-    const FixedPointType & fixedPoint = this->m_FixedPointSet->GetPoint(*it);
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
+  {
+    const FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
     const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
     const double expval = std::exp(-distance / scale);
     value += expval;
 
-    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) 
+    {
       derivative[dim] += expval * (point[dim] - fixedPoint[dim]);
     }
   }
