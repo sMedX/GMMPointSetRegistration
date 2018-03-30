@@ -22,9 +22,8 @@ GMML2RigidPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 {
   Superclass::Initialize();
 
-  this->m_NormalizingValueFactor = -2.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints());
-
-  this->m_NormalizingDerivativeFactor = 4.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints() * this->m_Scale * this->m_Scale);
+  this->m_NormalizingValueFactor = -1.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints());
+  this->m_NormalizingDerivativeFactor = -2.0 * this->m_NormalizingValueFactor / this->m_Variance;
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
@@ -40,14 +39,12 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   FixedNeighborsIdentifierType idx;
   this->SearchFixedPoints(point, idx);
 
-  const double scale = this->m_Scale * this->m_Scale;
-
   for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
   {
     FixedPointType fixedPoint = this->GetFixedPoint(*it);
 
     const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
-    const double expval = std::exp(-distance / scale);
+    const double expval = std::exp(-distance / this->m_Variance);
     value += expval;
   }
 
@@ -67,8 +64,6 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
     return false;
   }
 
-  const double scale = this->m_Scale * this->m_Scale;
-
   value = NumericTraits<MeasureType>::ZeroValue();
   derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
@@ -77,7 +72,7 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
     FixedPointType fixedPoint = this->GetFixedPoint(*it);
 
     const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
-    const double expval = std::exp(-distance / scale);
+    const double expval = std::exp(-distance / this->m_Variance);
     value += expval;
 
     for (size_t dim = 0; dim < this->PointDimension; ++dim) 
