@@ -128,6 +128,16 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetDeriva
   itkExceptionMacro(<< "not implemented");
 }
 
+/** Set sigma */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::SetScale(const double & sigma)
+{
+  this->m_Scale = sigma; 
+  this->m_Variance = sigma * sigma;
+}
+
 /** Initialize data for current iteration with the input parameters */
 template< typename TFixedPointSet, typename TMovingPointSet >
 void

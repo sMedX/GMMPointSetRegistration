@@ -119,8 +119,8 @@ public:
   /**  Type of the parameters. */
   typedef Superclass::ParametersType ParametersType;
 
-  /** Get/Set the scale.  */
-  itkSetMacro(Scale, double);
+  /** Get/Set the sigma. */
+  virtual void SetScale(const double &);
   itkGetMacro(Scale, double);
 
   /** Get/Set the Fixed point set.  */
@@ -219,6 +219,7 @@ protected:
   mutable TransformJacobianType m_JacobianCache;
 
   double m_Scale;
+  double m_Variance;
 
   double m_NormalizingValueFactor;
   double m_NormalizingDerivativeFactor;
