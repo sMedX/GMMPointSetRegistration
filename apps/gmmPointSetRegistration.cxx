@@ -151,11 +151,6 @@ int main(int argc, char** argv) {
   }
   movingPointSetCalculator->Print(std::cout);
 
-  itk::Array<double> scale(args::get(argScale).size());
-  for (size_t n = 0; n < scale.size(); ++n) {
-    scale[n] = args::get(argScale)[n] * movingPointSetCalculator->GetScale();
-  }
-
   // initialize transform
   typedef itk::InitializeTransform<double> TransformInitializerType;
   TransformInitializerType::Pointer initializerTransform = TransformInitializerType::New();
@@ -171,6 +166,26 @@ int main(int argc, char** argv) {
   }
   initializerTransform->Print(std::cout);
   TransformType::Pointer transform = initializerTransform->GetTransform();
+
+  typedef typename FixedPointSetType::PointsContainer::ConstIterator     FixedPointIterator;
+  typedef typename MovingPointSetType::PointsContainer::ConstIterator    MovingPointIterator;
+
+  double distance = 0;
+
+  for (MovingPointIterator movingIt = movingPointSet->GetPoints()->Begin(); movingIt != movingPointSet->GetPoints()->End(); ++movingIt) {
+    MovingPointSetType::PointType movingPoint = transform->TransformPoint(movingIt.Value());
+
+    for (FixedPointIterator fixedIt = fixedPointSet->GetPoints()->Begin(); fixedIt != fixedPointSet->GetPoints()->End(); ++fixedIt) {
+      distance += movingPoint.EuclideanDistanceTo(fixedIt.Value());
+    }
+  }
+
+  distance /= movingPointSet->GetNumberOfPoints() * fixedPointSet->GetNumberOfPoints();
+
+  itk::Array<double> scale(args::get(argScale).size());
+  for (size_t n = 0; n < scale.size(); ++n) {
+    scale[n] = args::get(argScale)[n] * distance;
+  }
 
   //--------------------------------------------------------------------
   // initialize optimizer
