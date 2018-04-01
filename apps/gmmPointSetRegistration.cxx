@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
   args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh (point-set) file name", {'o', "output"});
   args::ValueFlag<std::string> argTargetFileName(parser, "target", "The target mesh (point-set) file name", {'t', "target"});
 
-  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(required, "scale", "The scale levels", {"scale"});
+  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(parser, "scale", "The scale levels", {"scale"} );
   args::ValueFlag<size_t> argNumberOfIterations(parser, "iterations", "The number of iterations", {"iterations"}, 1000);
   args::Flag trace(parser, "trace", "Optimizer iterations tracing", {"trace"});
 
@@ -181,11 +181,16 @@ int main(int argc, char** argv) {
   }
 
   distance /= movingPointSet->GetNumberOfPoints() * fixedPointSet->GetNumberOfPoints();
+  itk::Array<double> scale(std::max((int)1, (int)args::get(argScale).size()));
+  scale[0] = distance;
 
-  itk::Array<double> scale(args::get(argScale).size());
-  for (size_t n = 0; n < scale.size(); ++n) {
+  for (size_t n = 0; n < args::get(argScale).size(); ++n) {
     scale[n] = args::get(argScale)[n] * distance;
   }
+
+  std::cout << "sigma values" << std::endl;
+  std::cout << scale << std::endl;
+  std::cout << std::endl;
 
   //--------------------------------------------------------------------
   // initialize optimizer
