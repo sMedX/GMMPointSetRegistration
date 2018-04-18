@@ -83,6 +83,34 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   return true;
 }
+
+template<typename TFixedPointSet, typename TMovingPointSet>
+bool
+GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::GetLocalNeighborhoodDerivative(const MovingPointIterator & it, LocalDerivativeType & derivative) const
+{
+  const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
+
+  FixedNeighborsIdentifierType idx;
+  if (!this->SearchFixedPoints(point, idx)) {
+    return false;
+  }
+
+  derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
+    FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
+    const double expval = std::exp(-distance / this->m_Variance);
+
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+      derivative[dim] += expval * (point[dim] - fixedPoint[dim]);
+    }
+  }
+
+  return true;
+}
 }
 
 #endif
