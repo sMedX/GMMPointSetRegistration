@@ -125,7 +125,33 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
 template <typename TFixedPointSet, typename TMovingPointSet>
 void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
 {
-  itkExceptionMacro(<< "not implemented");
+  this->InitializeForIteration(parameters);
+
+  if (derivative.size() != this->m_NumberOfParameters) {
+    derivative.set_size(this->m_NumberOfParameters);
+  }
+
+  derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+  LocalDerivativeType localDerivative;
+
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
+    // compute local value and derivatives
+    if (this->GetLocalNeighborhoodDerivative(it, localDerivative)) {
+
+      // compute derivatives
+      this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), m_Jacobian, m_JacobianCache);
+
+      for (size_t dim = 0; dim < PointDimension; ++dim) {
+        for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+          derivative[par] += m_Jacobian(dim, par) * localDerivative[dim];
+        }
+      }
+    }
+  }
+
+  for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+    derivative[par] *= m_NormalizingDerivativeFactor;
+  }
 }
 
 /** Set sigma */

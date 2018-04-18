@@ -162,10 +162,8 @@ public:
     return m_Transform->GetNumberOfParameters(); 
   }
 
-  /** Initialize the Metric by making sure that all the components
-   *  are present and plugged together correctly     */
-  virtual void Initialize(void)
-  throw ( ExceptionObject );
+  /** Initialize the Metric by making sure that all the components are present and plugged together correctly     */
+  virtual void Initialize(void)  throw ( ExceptionObject );
 
 protected:
   GMMPointSetToPointSetMetricBase();
@@ -179,6 +177,9 @@ protected:
 
   /** Calculates the local value/derivative for a single point.*/
   virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator &, MeasureType &, LocalDerivativeType &) const = 0;
+
+  /** Calculates the local derivative for a single point.*/
+  virtual bool GetLocalNeighborhoodDerivative(const MovingPointIterator &, LocalDerivativeType &) const = 0;
 
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
