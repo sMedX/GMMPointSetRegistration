@@ -1,7 +1,7 @@
-#ifndef itkGMMSigmaMetric_hxx
-#define itkGMMSigmaMetric_hxx
+#ifndef itkGMMScalePointSetMetric_hxx
+#define itkGMMScalePointSetMetric_hxx
 
-#include "itkGMMSigmaMetric.h"
+#include "itkGMMScalePointSetMetric.h"
 
 namespace itk
 {
@@ -9,7 +9,7 @@ namespace itk
  * Constructor
  */
 template <typename TFixedPointSet, typename TMovingPointSet>
-GMMSigmaMetric<TFixedPointSet, TMovingPointSet>::GMMSigmaMetric()
+GMMScalePointSetMetric<TFixedPointSet, TMovingPointSet>::GMMScalePointSetMetric()
 {
   m_NumberOfParameters = 1;
 }
@@ -18,16 +18,16 @@ GMMSigmaMetric<TFixedPointSet, TMovingPointSet>::GMMSigmaMetric()
 * Get the match Measure
 */
 template <typename TFixedPointSet, typename TMovingPointSet>
-typename GMMSigmaMetric<TFixedPointSet, TMovingPointSet>::MeasureType
-GMMSigmaMetric<TFixedPointSet, TMovingPointSet>::GetValue(const ParametersType & parameters) const
+typename GMMScalePointSetMetric<TFixedPointSet, TMovingPointSet>::MeasureType
+GMMScalePointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const ParametersType & parameters) const
 {
-  typename MetricType::DerivativeType derivative;
+  typename PointSetMetricType::DerivativeType derivative;
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
-  m_Metric->SetScale(parameters[0]);
-  m_Metric->GetDerivative(m_Metric->GetTransform()->GetParameters(), derivative);
+  m_PointSetMetric->SetScale(parameters[0]);
+  m_PointSetMetric->GetDerivative(m_PointSetMetric->GetTransform()->GetParameters(), derivative);
 
-  for (size_t par = 0; par < m_Metric->GetNumberOfParameters(); ++par) 
+  for (size_t par = 0; par < m_PointSetMetric->GetNumberOfParameters(); ++par) 
   {
     value -= pow(derivative[par], 2);
   }
@@ -40,7 +40,7 @@ GMMSigmaMetric<TFixedPointSet, TMovingPointSet>::GetValue(const ParametersType &
 */
 template <typename TFixedPointSet, typename TMovingPointSet>
 void
-GMMSigmaMetric<TFixedPointSet, TMovingPointSet>
+GMMScalePointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetValueAndDerivative(const ParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
 {
   if (derivative.size() != this->m_NumberOfParameters) 
@@ -51,13 +51,13 @@ GMMSigmaMetric<TFixedPointSet, TMovingPointSet>
   value = NumericTraits<DerivativeValueType>::ZeroValue();
   derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
-  typename MetricType::DerivativeType derivative1;
-  typename MetricType::DerivativeType derivative2;
+  typename PointSetMetricType::DerivativeType derivative1;
+  typename PointSetMetricType::DerivativeType derivative2;
 
-  m_Metric->SetScale(parameters[0]);
-  m_Metric->GetDerivatives(m_Metric->GetTransform()->GetParameters(), derivative1, derivative2);
+  m_PointSetMetric->SetScale(parameters[0]);
+  m_PointSetMetric->GetDerivatives(m_PointSetMetric->GetTransform()->GetParameters(), derivative1, derivative2);
 
-  for (size_t n = 0; n < m_Metric->GetNumberOfParameters(); ++n) 
+  for (size_t n = 0; n < m_PointSetMetric->GetNumberOfParameters(); ++n) 
   {
     value -= pow(derivative1[n], 2);
     derivative[0] -= 2 * derivative1[n] * derivative2[n];
@@ -69,7 +69,7 @@ GMMSigmaMetric<TFixedPointSet, TMovingPointSet>
 */
 template <typename TFixedPointSet, typename TMovingPointSet>
 void 
-GMMSigmaMetric<TFixedPointSet, TMovingPointSet>
+GMMScalePointSetMetric<TFixedPointSet, TMovingPointSet>
 ::GetDerivative(const ParametersType & parameters, DerivativeType & derivative) const
 {
   itkExceptionMacro(<< "not implemented");

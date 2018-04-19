@@ -1,5 +1,5 @@
-#ifndef itkGMMSigmaMetric_h
-#define itkGMMSigmaMetric_h
+#ifndef itkGMMScalePointSetMetric_h
+#define itkGMMScalePointSetMetric_h
 
 #include "itkSingleValuedCostFunction.h"
 
@@ -16,11 +16,11 @@ namespace itk
  * Transform.
  */
 template< typename TFixedPointSet, typename TMovingPointSet = TFixedPointSet >
-class GMMSigmaMetric : public SingleValuedCostFunction
+class GMMScalePointSetMetric : public SingleValuedCostFunction
 {
 public:
   /** Standard class typedefs. */
-  typedef GMMSigmaMetric              Self;
+  typedef GMMScalePointSetMetric              Self;
   typedef SingleValuedCostFunction    Superclass;
   typedef SmartPointer< Self >        Pointer;
   typedef SmartPointer< const Self >  ConstPointer;
@@ -29,10 +29,10 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(GMMSigmaMetric, SingleValuedCostFunction);
+  itkTypeMacro(GMMScalePointSetMetric, SingleValuedCostFunction);
 
   /**  Type of the fixed point set. */
-  typedef GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>  MetricType;
+  typedef GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>  PointSetMetricType;
   typedef typename Superclass::MeasureType                                  MeasureType;
   typedef typename Superclass::ParametersType                               ParametersType;
   typedef typename Superclass::DerivativeType                               DerivativeType;
@@ -47,8 +47,8 @@ public:
   /**  Get value and derivatives for multiple valued optimizers. */
   void GetValueAndDerivative(const ParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
 
-  itkSetObjectMacro(Metric, MetricType);
-  itkGetObjectMacro(Metric, MetricType);
+  itkSetObjectMacro(PointSetMetric, PointSetMetricType);
+  itkGetObjectMacro(PointSetMetric, PointSetMetricType);
 
   /** Return the number of parameters required by the Transform */
   virtual unsigned int GetNumberOfParameters(void) const ITK_OVERRIDE
@@ -57,20 +57,20 @@ public:
   }
 
 protected:
-  GMMSigmaMetric();
-  virtual ~GMMSigmaMetric() {}
+  GMMScalePointSetMetric();
+  virtual ~GMMScalePointSetMetric() {}
 
-  mutable typename MetricType::Pointer m_Metric;
+  mutable typename PointSetMetricType::Pointer m_PointSetMetric;
   size_t m_NumberOfParameters;
 
 private:
-  GMMSigmaMetric(const Self &) ITK_DELETE_FUNCTION;
+  GMMScalePointSetMetric(const Self &) ITK_DELETE_FUNCTION;
   void operator=(const Self &) ITK_DELETE_FUNCTION;
 };
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkGMMSigmaMetric.hxx"
+#include "itkGMMScalePointSetMetric.hxx"
 #endif
 
 #endif
