@@ -145,16 +145,19 @@ public:
   itkGetModifiableObjectMacro(Transform, TransformType);
 
   /** Get the value for single valued optimizers. */
-  MeasureType GetValue(const TransformParametersType & parameters) const ITK_OVERRIDE;
+  MeasureType GetValue(const TransformParametersType &) const ITK_OVERRIDE;
 
   /** Get the derivatives of the match measure. */
-  void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
+  void GetDerivative(const TransformParametersType &, DerivativeType &) const ITK_OVERRIDE;
 
   /**  Get value and derivatives for multiple valued optimizers. */
-  void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
+  void GetValueAndDerivative(const TransformParametersType &, MeasureType &, DerivativeType &) const ITK_OVERRIDE;
+
+  /**  Get value and derivatives for multiple valued optimizers. */
+  void GetDerivatives(const TransformParametersType &, DerivativeType &, DerivativeType &) const ITK_OVERRIDE;
 
   /** Set the parameters defining the Transform. */
-  void SetTransformParameters(const ParametersType & parameters) const;
+  void SetTransformParameters(const ParametersType &) const;
 
   /** Return the number of parameters required by the Transform */
   virtual unsigned int GetNumberOfParameters(void) const ITK_OVERRIDE
@@ -165,13 +168,6 @@ public:
   /** Initialize the Metric by making sure that all the components are present and plugged together correctly     */
   virtual void Initialize(void)  throw ( ExceptionObject );
 
-protected:
-  GMMPointSetToPointSetMetricBase();
-  virtual ~GMMPointSetToPointSetMetricBase() {}
-  void InitializeFixedTree();
-  void InitializeMovingTree();
-  void InitializeTransformedMovingPointSet();
-
   /** Calculates the local metric value for a single point. */
   virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const = 0;
 
@@ -180,6 +176,20 @@ protected:
 
   /** Calculates the local derivative for a single point.*/
   virtual bool GetLocalNeighborhoodDerivative(const MovingPointIterator &, LocalDerivativeType &) const = 0;
+
+  /** Calculates the local derivatives for a single point.*/
+  virtual bool GetLocalNeighborhoodDerivatives(const MovingPointIterator &, LocalDerivativeType &, LocalDerivativeType &) const = 0;
+
+  virtual double GetNormalizingValueFactor() const = 0;
+
+  virtual double GetNormalizingDerivativeFactor() const = 0;
+
+protected:
+  GMMPointSetToPointSetMetricBase();
+  virtual ~GMMPointSetToPointSetMetricBase() {}
+  void InitializeFixedTree();
+  void InitializeMovingTree();
+  void InitializeTransformedMovingPointSet();
 
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
@@ -221,9 +231,6 @@ protected:
 
   double m_Scale;
   double m_Variance;
-
-  double m_NormalizingValueFactor;
-  double m_NormalizingDerivativeFactor;
 
   typename FixedPointsLocatorType::Pointer   m_FixedPointsLocator;
   typename MovingPointsLocatorType::Pointer  m_MovingPointsLocator;

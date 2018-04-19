@@ -21,9 +21,6 @@ GMML2RigidPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 ::Initialize() throw (ExceptionObject)
 {
   Superclass::Initialize();
-
-  this->m_NormalizingValueFactor = -1.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints());
-  this->m_NormalizingDerivativeFactor = -2.0 * this->m_NormalizingValueFactor / this->m_Variance;
 }
 
 template<typename TFixedPointSet, typename TMovingPointSet>
@@ -108,6 +105,41 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
       derivative[dim] += expval * (point[dim] - fixedPoint[dim]);
     }
   }
+
+  return true;
+}
+
+template<typename TFixedPointSet, typename TMovingPointSet>
+bool
+GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::GetLocalNeighborhoodDerivatives(const MovingPointIterator & it, LocalDerivativeType & derivative1, LocalDerivativeType & derivative2) const
+{
+  const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
+
+  FixedNeighborsIdentifierType idx;
+  if (!this->SearchFixedPoints(point, idx)) {
+    return false;
+  }
+
+  derivative1.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+  derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
+    FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
+    const double expval = std::exp(-distance / this->m_Variance);
+
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+      derivative1[dim] += expval * (point[dim] - fixedPoint[dim]);
+      derivative2[dim] += expval * (point[dim] - fixedPoint[dim]) * (1 - distance/m_Variance);
+    }
+  }
+
+  for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+    derivative2[dim] *= -2.0 / this->m_Scale;
+  }
+
 
   return true;
 }

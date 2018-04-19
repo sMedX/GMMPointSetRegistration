@@ -47,10 +47,6 @@ public:
   /** Initialize the Metric by making sure that all the components are present and plugged together correctly.*/
   virtual void Initialize() throw (ExceptionObject) ITK_OVERRIDE;
 
-protected:
-  GMML2RigidPointSetToPointSetMetric();
-  virtual ~GMML2RigidPointSetToPointSetMetric() {}
-
   /** Calculates the local metric value for a single point.*/
   virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const ITK_OVERRIDE;
 
@@ -59,6 +55,23 @@ protected:
 
   /** Calculates the local derivative for a single point.*/
   virtual bool GetLocalNeighborhoodDerivative(const MovingPointIterator &, LocalDerivativeType &) const ITK_OVERRIDE;
+
+  /** Calculates the local derivatives for a single point.*/
+  virtual bool GetLocalNeighborhoodDerivatives(const MovingPointIterator &, LocalDerivativeType &, LocalDerivativeType &) const ITK_OVERRIDE;
+
+  virtual double GetNormalizingValueFactor() const ITK_OVERRIDE
+  {
+    return -1.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints());
+  }
+
+  virtual double GetNormalizingDerivativeFactor() const ITK_OVERRIDE
+  {
+    return 2.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints()) / (this->m_Scale * this->m_Scale);
+  }
+
+protected:
+  GMML2RigidPointSetToPointSetMetric();
+  virtual ~GMML2RigidPointSetToPointSetMetric() {}
 
 private:
   GMML2RigidPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;

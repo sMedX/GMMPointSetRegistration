@@ -36,8 +36,6 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_Jacobian.set_size(MovingPointSetDimension, m_NumberOfParameters);
   m_JacobianCache.set_size(MovingPointSetDimension, MovingPointSetDimension);
 
-  m_NormalizingValueFactor = 1;
-  m_NormalizingDerivativeFactor = 1;
   m_Scale = 1;
 
   m_UseFixedPointSetKdTree = false;
@@ -65,7 +63,9 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const
     value += GetLocalNeighborhoodValue(it);
   }
 
-  value *= m_NormalizingValueFactor;
+  double valueFactor = this->GetNormalizingValueFactor();
+
+  value *= valueFactor;
 
   return value;
 }
@@ -111,11 +111,64 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
     }
   }
 
-  value *= m_NormalizingValueFactor;
+  double valueFactor = this->GetNormalizingValueFactor();
+  double derivativeFactor = this->GetNormalizingDerivativeFactor();
+
+  value *= valueFactor;
 
   for (size_t par = 0; par < m_NumberOfParameters; ++par) 
   {
-    derivative[par] *= m_NormalizingDerivativeFactor;
+    derivative[par] *= derivativeFactor;
+  }
+}
+
+/*
+* Get both the match Measure and the Derivative Measure
+*/
+template <typename TFixedPointSet, typename TMovingPointSet>
+void
+GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
+::GetDerivatives(const TransformParametersType & parameters, DerivativeType & derivative1, DerivativeType & derivative2) const
+{
+  this->InitializeForIteration(parameters);
+
+  if (derivative1.size() != this->m_NumberOfParameters) 
+  {
+    derivative1.set_size(this->m_NumberOfParameters);
+  }
+  derivative1.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+
+  if (derivative2.size() != this->m_NumberOfParameters) 
+  {
+    derivative2.set_size(this->m_NumberOfParameters);
+  }
+  derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+
+  LocalDerivativeType localDerivative1;
+  LocalDerivativeType localDerivative2;
+
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
+
+    // compute local derivatives
+    if (this->GetLocalNeighborhoodDerivatives(it, localDerivative1, localDerivative2)) {
+
+      // compute derivatives
+      this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), m_Jacobian, m_JacobianCache);
+
+      for (size_t dim = 0; dim < PointDimension; ++dim) {
+        for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+          derivative1[par] += m_Jacobian(dim, par) * localDerivative1[dim];
+          derivative2[par] += m_Jacobian(dim, par) * localDerivative2[dim];
+        }
+      }
+    }
+  }
+
+  double derivativeFactor = this->GetNormalizingDerivativeFactor();
+
+  for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+    derivative1[par] *= derivativeFactor;
+    derivative2[par] *= derivativeFactor;
   }
 }
 
@@ -149,8 +202,10 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetDeriva
     }
   }
 
+  double derivativeFactor = this->GetNormalizingDerivativeFactor();
+
   for (size_t par = 0; par < m_NumberOfParameters; ++par) {
-    derivative[par] *= m_NormalizingDerivativeFactor;
+    derivative[par] *= derivativeFactor;
   }
 }
 
@@ -232,7 +287,7 @@ throw ( ExceptionObject )
     InitializeMovingTree();
   }
 
-  m_NumberOfParameters = m_Transform->GetNumberOfParameters();
+  m_NumberOfParameters = this->GetNumberOfParameters();
 }
 
 /** Initialize KdTree for FixedPointSet */
