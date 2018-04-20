@@ -167,31 +167,6 @@ int main(int argc, char** argv) {
   initializerTransform->Print(std::cout);
   TransformType::Pointer transform = initializerTransform->GetTransform();
 
-  typedef typename FixedPointSetType::PointsContainer::ConstIterator     FixedPointIterator;
-  typedef typename MovingPointSetType::PointsContainer::ConstIterator    MovingPointIterator;
-
-  double distance = 0;
-
-  for (MovingPointIterator movingIt = movingPointSet->GetPoints()->Begin(); movingIt != movingPointSet->GetPoints()->End(); ++movingIt) {
-    MovingPointSetType::PointType movingPoint = transform->TransformPoint(movingIt.Value());
-
-    for (FixedPointIterator fixedIt = fixedPointSet->GetPoints()->Begin(); fixedIt != fixedPointSet->GetPoints()->End(); ++fixedIt) {
-      distance += movingPoint.EuclideanDistanceTo(fixedIt.Value());
-    }
-  }
-
-  distance /= movingPointSet->GetNumberOfPoints() * fixedPointSet->GetNumberOfPoints();
-  itk::Array<double> scale(std::max((int)1, (int)args::get(argScale).size()));
-  scale[0] = distance;
-
-  for (size_t n = 0; n < args::get(argScale).size(); ++n) {
-    scale[n] = args::get(argScale)[n] * distance;
-  }
-
-  std::cout << "sigma values" << std::endl;
-  std::cout << scale << std::endl;
-  std::cout << std::endl;
-
   //--------------------------------------------------------------------
   // initialize optimizer
   typedef itk::LBFGSOptimizer OptimizerType;
@@ -199,7 +174,6 @@ int main(int argc, char** argv) {
   optimizer->SetMaximumNumberOfFunctionEvaluations(numberOfIterations);
   optimizer->SetScales(initializerTransform->GetScales());
   optimizer->SetTrace(trace);
-  optimizer->MinimizeOn();
 
   //--------------------------------------------------------------------
   // metric
@@ -214,6 +188,11 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   initializerMetric->Print(std::cout);
+  InitializeMetricType::MetricType::Pointer metric = initializerMetric->GetMetric();
+
+  typedef itk::GMMScalePointSetMetricEstimator<InitializeMetricType::MetricType> MetricEstimatorType;
+  MetricEstimatorType::Pointer estimator = MetricEstimatorType::New();
+  estimator->SetTrace(trace);
 
   //--------------------------------------------------------------------
   // perform registration
@@ -221,10 +200,11 @@ int main(int argc, char** argv) {
   GMMPointSetToPointSetRegistrationMethodType::Pointer registration = GMMPointSetToPointSetRegistrationMethodType::New();
   registration->SetFixedPointSet(fixedPointSet);
   registration->SetMovingPointSet(movingPointSet);
-  registration->SetScale(scale);
   registration->SetOptimizer(optimizer);
-  registration->SetMetric(initializerMetric->GetMetric());
+  registration->SetMetric(metric);
+  registration->SetMetricEstimator(estimator);
   registration->SetTransform(transform);
+  registration->SetNumberOfLevels(2);
   try {
     registration->Update();
   }
@@ -240,6 +220,8 @@ int main(int argc, char** argv) {
   std::cout << "transform " << registration->GetTransform()->GetNameOfClass() << std::endl;
   std::cout << "Initial transform parameters " << registration->GetInitialTransformParameters() << std::endl;
   std::cout << "  Final transform parameters " << registration->GetFinalTransformParameters() << std::endl;
+  std::cout << std::endl;
+  std::cout << "Metric parameters            " << registration->GetMetricParameters() << std::endl;
   std::cout << std::endl;
   std::cout << "metric " << registration->GetMetric()->GetNameOfClass() << std::endl;
   std::cout << "   Initial metric values " << registration->GetInitialMetricValues() << std::endl;

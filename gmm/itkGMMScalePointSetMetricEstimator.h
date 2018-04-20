@@ -2,7 +2,6 @@
 #define itkGMMScalePointSetMetricEstimator_h
 
 #include "itkObject.h"
-#include "itkGMMPointSetToPointSetMetricBase.h"
 #include "itkGMMScalePointSetMetric.h"
 
 namespace itk

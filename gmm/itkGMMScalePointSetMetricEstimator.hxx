@@ -81,6 +81,13 @@ GMMScalePointSetMetricEstimator< TMetricType >
   optimizer->StartOptimization();
 
   m_Parameters = optimizer->GetCurrentPosition();
+
+  if (m_Trace)
+  {
+    std::cout << "Initial metric parameters   " << m_InitialParameters << std::endl;
+    std::cout << "Estimated metric parameters " << m_Parameters << std::endl;
+    std::cout << std::endl;
+  }
 }
 
 /**

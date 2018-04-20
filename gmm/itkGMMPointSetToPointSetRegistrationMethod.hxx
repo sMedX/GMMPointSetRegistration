@@ -2,8 +2,6 @@
 #define itkGMMPointSetToPointSetRegistrationMethod_hxx
 
 #include "itkGMMPointSetToPointSetRegistrationMethod.h"
-#include "itkLBFGSBOptimizer.h"
-#include "itkGMMScalePointSetMetricEstimator.h"
 
 namespace itk
 {
@@ -54,23 +52,33 @@ void
 GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
 ::Initialize() throw (ExceptionObject)
 {
-  if (!m_FixedPointSet) {
+  if (!m_FixedPointSet) 
+  {
     itkExceptionMacro(<< "FixedPointSet is not present");
   }
 
-  if (!m_MovingPointSet) {
+  if (!m_MovingPointSet) 
+  {
     itkExceptionMacro(<< "MovingPointSet is not present");
   }
 
-  if (!m_Metric) {
+  if (!m_Metric) 
+  {
     itkExceptionMacro(<< "Metric is not present");
   }
 
-  if (!m_Optimizer) {
+  if (!m_MetricEstimator) 
+  {
+    itkExceptionMacro(<< "Metric estimator is not present");
+  }
+
+  if (!m_Optimizer) 
+  {
     itkExceptionMacro(<< "Optimizer is not present");
   }
 
-  if (!m_Transform) {
+  if (!m_Transform) 
+  {
     itkExceptionMacro(<< "Transform is not present");
   }
 
@@ -93,10 +101,6 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   m_FinalMetricValues.clear();
   m_FinalMetricValues.set_size(m_NumberOfLevels);
   m_FinalMetricValues.Fill(NAN);
-
-  m_Scales.clear();
-  m_Scales.set_size(m_NumberOfLevels);
-  m_Scales.Fill(NAN);
 }
 
 /**
@@ -197,27 +201,22 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   m_Metric->SetTransform(m_Transform);
   m_Metric->Initialize();
 
-  // setup the optimizer
+  // setup the optimizer and metric estimator
   m_Optimizer->SetCostFunction(m_Metric);
-
-  typedef itk::GMMScalePointSetMetricEstimator<MetricType> GMMScalePointSetMetricEstimatorType;
-  GMMScalePointSetMetricEstimatorType::Pointer estimator = GMMScalePointSetMetricEstimatorType::New();
-  estimator->SetMetric(m_Metric);
+  m_MetricEstimator->SetMetric(m_Metric);
 
   std::vector<ParametersType> parameters;
 
   for (size_t level = 0; level < m_NumberOfLevels; ++level) 
   {
-    if (level > 1) {
-      estimator->SetInitialParameters(parameters[level - 1]);
+    if (level > 0) 
+    {
+      m_MetricEstimator->SetInitialParameters(parameters[level - 1]);
     }
+    m_MetricEstimator->Estimate();
 
-    estimator->Estimate();
-    estimator->GetParameters();
-
-    parameters.push_back(estimator->GetParameters());
-    m_Metric->SetScale(estimator->GetParameters());
-    m_Scales[level] = estimator->GetParameters()[0];
+    parameters.push_back(m_MetricEstimator->GetParameters());
+    m_Metric->SetScale(m_MetricEstimator->GetParameters());
 
     m_Optimizer->SetInitialPosition(m_Transform->GetParameters());
     try {
@@ -233,6 +232,16 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
 
     m_InitialMetricValues[level] = m_Metric->GetValue(m_Optimizer->GetInitialPosition());
     m_FinalMetricValues[level] = m_Metric->GetValue(m_Optimizer->GetCurrentPosition());
+  }
+
+  int numberOfParameters = m_MetricEstimator->GetParameters().Size();
+  m_MetricParameters.SetSize(m_NumberOfLevels * numberOfParameters);
+  int count = 0;
+
+  for (int level = 0; level < m_NumberOfLevels; ++level)
+  {
+    for (int i = 0; i < numberOfParameters; ++i)
+      m_MetricParameters[count++] = parameters[level][i];
   }
 }
 

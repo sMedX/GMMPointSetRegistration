@@ -7,6 +7,7 @@
 #include "itkDataObjectDecorator.h"
 #include "itkGMMPointSetToPointSetMetricBase.h"
 #include "itkGMMScalePointSetMetric.h"
+#include "itkGMMScalePointSetMetricEstimator.h"
 
 namespace itk
 {
@@ -45,6 +46,7 @@ public:
   typedef typename MetricType::Pointer                                            MetricPointer;
   typedef itk::Array<typename MetricType::MeasureType>                            MetricValuesType;
   typedef itk::Array<double>                                                      ScaleType;
+  typedef itk::GMMScalePointSetMetricEstimator<MetricType>                        MetricEstimatorType;
 
   /**  Type of the Transform . */
   typedef typename MetricType::TransformType TransformType;
@@ -83,6 +85,10 @@ public:
   itkSetObjectMacro(Metric, MetricType);
   itkGetModifiableObjectMacro(Metric, MetricType);
 
+  /** Set/Get the Metric Estimator. */
+  itkSetObjectMacro(MetricEstimator, MetricEstimatorType);
+  itkGetModifiableObjectMacro(MetricEstimator, MetricEstimatorType);
+
   /** Set/Get the Transform. */
   itkSetObjectMacro(Transform, TransformType);
   itkGetModifiableObjectMacro(Transform, TransformType);
@@ -114,7 +120,7 @@ public:
 
   itkGetMacro(InitialMetricValues, MetricValuesType);
   itkGetMacro(FinalMetricValues, MetricValuesType);
-  itkGetMacro(Scales, ScaleType);
+  itkGetMacro(MetricParameters, ScaleType);
 
 protected:
   GMMPointSetToPointSetRegistrationMethod();
@@ -128,6 +134,7 @@ protected:
   MovingPointSetConstPointer m_MovingPointSet;
   MetricPointer m_Metric;
   OptimizerPointer m_Optimizer;
+  typename MetricEstimatorType::Pointer m_MetricEstimator;
 
   TransformPointer m_Transform;
   ParametersType m_InitialTransformParameters;
@@ -137,7 +144,7 @@ protected:
   MetricValuesType m_FinalMetricValues;
 
   size_t m_NumberOfLevels;
-  ScaleType m_Scales;
+  ScaleType m_MetricParameters;
 
 private:
   GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;
