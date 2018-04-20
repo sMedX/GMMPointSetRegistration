@@ -69,6 +69,11 @@ public:
     return 2.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints()) / (this->m_Scale * this->m_Scale);
   }
 
+  virtual double GetNormalizingDerivativeScaleFactor() const ITK_OVERRIDE
+  {
+    return -4.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints()) / (this->m_Scale * this->m_Scale * this->m_Scale);
+  }
+
 protected:
   GMML2RigidPointSetToPointSetMetric();
   virtual ~GMML2RigidPointSetToPointSetMetric() {}

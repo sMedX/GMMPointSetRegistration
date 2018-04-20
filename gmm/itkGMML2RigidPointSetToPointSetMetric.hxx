@@ -117,29 +117,27 @@ GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
 
   FixedNeighborsIdentifierType idx;
-  if (!this->SearchFixedPoints(point, idx)) {
+  if (!this->SearchFixedPoints(point, idx)) 
+  {
     return false;
   }
 
   derivative1.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
   derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
-  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
+  {
     FixedPointType fixedPoint = this->GetFixedPoint(*it);
 
     const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
     const double expval = std::exp(-distance / this->m_Variance);
 
-    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) 
+    {
       derivative1[dim] += expval * (point[dim] - fixedPoint[dim]);
       derivative2[dim] += expval * (point[dim] - fixedPoint[dim]) * (1 - distance/m_Variance);
     }
   }
-
-  for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-    derivative2[dim] *= -2.0 / this->m_Scale;
-  }
-
 
   return true;
 }

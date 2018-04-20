@@ -166,10 +166,12 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
   }
 
   double derivativeFactor = this->GetNormalizingDerivativeFactor();
+  double derivativeScaleFactor = this->GetNormalizingDerivativeScaleFactor();
 
-  for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+  for (size_t par = 0; par < m_NumberOfParameters; ++par) 
+  {
     derivative1[par] *= derivativeFactor;
-    derivative2[par] *= derivativeFactor;
+    derivative2[par] *= derivativeScaleFactor;
   }
 }
 
