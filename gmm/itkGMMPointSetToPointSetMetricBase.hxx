@@ -45,6 +45,7 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_MovingPointsLocator = ITK_NULLPTR;
 
   m_SearchRadius = 3;
+  m_IsInitialized = false;
 }
 
 /**
@@ -130,18 +131,18 @@ void
 GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
 ::GetDerivatives(const TransformParametersType & parameters, DerivativeType & derivative1, DerivativeType & derivative2) const
 {
-  this->InitializeForIteration(parameters);
-
   if (derivative1.size() != this->m_NumberOfParameters) 
   {
     derivative1.set_size(this->m_NumberOfParameters);
   }
+
   derivative1.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
   if (derivative2.size() != this->m_NumberOfParameters) 
   {
     derivative2.set_size(this->m_NumberOfParameters);
   }
+
   derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
   LocalDerivativeType localDerivative1;
@@ -288,6 +289,8 @@ throw ( ExceptionObject )
   }
 
   m_NumberOfParameters = this->GetNumberOfParameters();
+
+  m_IsInitialized = true;
 }
 
 /** Initialize KdTree for FixedPointSet */

@@ -47,6 +47,9 @@ public:
   /**  Get value and derivatives for multiple valued optimizers. */
   void GetValueAndDerivative(const ParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
 
+  /** Initialize the Metric by making sure that all the components are present and plugged together correctly     */
+  virtual void Initialize(void)  throw (ExceptionObject);
+
   itkSetObjectMacro(PointSetMetric, PointSetMetricType);
   itkGetObjectMacro(PointSetMetric, PointSetMetricType);
 

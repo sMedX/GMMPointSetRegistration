@@ -160,13 +160,12 @@ public:
   void SetTransformParameters(const ParametersType &) const;
 
   /** Return the number of parameters required by the Transform */
-  virtual unsigned int GetNumberOfParameters(void) const ITK_OVERRIDE
-  { 
-    return m_Transform->GetNumberOfParameters(); 
-  }
+  virtual unsigned int GetNumberOfParameters(void) const ITK_OVERRIDE { return m_Transform->GetNumberOfParameters(); }
 
   /** Initialize the Metric by making sure that all the components are present and plugged together correctly     */
   virtual void Initialize(void)  throw ( ExceptionObject );
+
+  bool IsInitialized()  { return m_IsInitialized; }
 
   /** Calculates the local metric value for a single point. */
   virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const = 0;
@@ -180,6 +179,9 @@ public:
   /** Calculates the local derivatives for a single point.*/
   virtual bool GetLocalNeighborhoodDerivatives(const MovingPointIterator &, LocalDerivativeType &, LocalDerivativeType &) const = 0;
 
+  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize() which is a one-time initialization. */
+  virtual void InitializeForIteration(const ParametersType & parameters) const;
+
   virtual double GetNormalizingValueFactor() const = 0;
 
   virtual double GetNormalizingDerivativeFactor() const = 0;
@@ -192,9 +194,6 @@ protected:
   void InitializeTransformedMovingPointSet();
 
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
-
-  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize() which is a one-time initialization. */
-  virtual void InitializeForIteration(const ParametersType & parameters) const;
 
   /** Get point from point sets. */
   virtual FixedPointType GetFixedPoint(const FixedPointIdentifier & pointIdentifier) const
@@ -237,6 +236,8 @@ protected:
   bool m_UseFixedPointSetKdTree;
   bool m_UseMovingPointSetKdTree;
   double m_SearchRadius;
+
+  bool m_IsInitialized;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;
