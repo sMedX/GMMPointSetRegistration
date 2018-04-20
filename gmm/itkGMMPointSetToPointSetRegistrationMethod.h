@@ -109,14 +109,12 @@ public:
   /** Method to return the latest modified time of this object or any of its cached ivars */
   virtual ModifiedTimeType GetMTime() const ITK_OVERRIDE;
 
-  itkSetMacro(Scale, ScaleType);
-  itkGetMacro(Scale, ScaleType);
-
   itkSetMacro(NumberOfLevels, size_t);
   itkGetMacro(NumberOfLevels, size_t);
 
   itkGetMacro(InitialMetricValues, MetricValuesType);
   itkGetMacro(FinalMetricValues, MetricValuesType);
+  itkGetMacro(Scales, ScaleType);
 
 protected:
   GMMPointSetToPointSetRegistrationMethod();
@@ -124,8 +122,9 @@ protected:
 
   /** Method invoked by the pipeline in order to trigger the computation of the registration. */
   virtual void GenerateData() ITK_OVERRIDE;
+  double ComputeScaleForPointSetMetric();
 
-  FixedPointSetConstPointer  m_FixedPointSet;
+  FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
   MetricPointer m_Metric;
   OptimizerPointer m_Optimizer;
@@ -138,7 +137,7 @@ protected:
   MetricValuesType m_FinalMetricValues;
 
   size_t m_NumberOfLevels;
-  ScaleType m_Scale;
+  ScaleType m_Scales;
 
 private:
   GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;

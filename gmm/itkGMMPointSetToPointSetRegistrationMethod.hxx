@@ -2,6 +2,8 @@
 #define itkGMMPointSetToPointSetRegistrationMethod_hxx
 
 #include "itkGMMPointSetToPointSetRegistrationMethod.h"
+#include "itkLBFGSBOptimizer.h"
+#include "itkGMMScalePointSetMetricEstimator.h"
 
 namespace itk
 {
@@ -20,7 +22,7 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >::GMMP
   m_Metric = ITK_NULLPTR;
   m_Optimizer = ITK_NULLPTR;
 
-  m_NumberOfLevels = 0;
+  m_NumberOfLevels = 1;
 
   m_InitialTransformParameters = ParametersType(1);
   m_FinalTransformParameters = ParametersType(1);
@@ -84,14 +86,6 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   // setup the transform
   m_Transform->SetParameters(m_InitialTransformParameters);
 
-  if (m_NumberOfLevels > m_Scale.size()) {
-    itkExceptionMacro(<< "The number of levels is too large");
-  }
-
-  if (m_NumberOfLevels == 0) {
-    m_NumberOfLevels = m_Scale.Size();
-  }
-
   m_InitialMetricValues.clear();
   m_InitialMetricValues.set_size(m_NumberOfLevels);
   m_InitialMetricValues.Fill(NAN);
@@ -99,6 +93,10 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   m_FinalMetricValues.clear();
   m_FinalMetricValues.set_size(m_NumberOfLevels);
   m_FinalMetricValues.Fill(NAN);
+
+  m_Scales.clear();
+  m_Scales.set_size(m_NumberOfLevels);
+  m_Scales.Fill(NAN);
 }
 
 /**
@@ -187,7 +185,7 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   }
   catch (ExceptionObject & excep) {
     m_FinalTransformParameters = ParametersType(1);
-    m_FinalTransformParameters.Fill(0.0f);
+    m_FinalTransformParameters.Fill(0);
 
     // pass exception to caller
     throw excep;
@@ -197,13 +195,29 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   m_Metric->SetFixedPointSet(m_FixedPointSet);
   m_Metric->SetMovingPointSet(m_MovingPointSet);
   m_Metric->SetTransform(m_Transform);
+  m_Metric->Initialize();
 
   // setup the optimizer
   m_Optimizer->SetCostFunction(m_Metric);
 
-  for (size_t level = 0; level < m_NumberOfLevels; ++level) {
-    m_Metric->SetScale(m_Scale[level]);
-    m_Metric->Initialize();
+  typedef itk::GMMScalePointSetMetricEstimator<MetricType> GMMScalePointSetMetricEstimatorType;
+  GMMScalePointSetMetricEstimatorType::Pointer estimator = GMMScalePointSetMetricEstimatorType::New();
+  estimator->SetMetric(m_Metric);
+
+  std::vector<ParametersType> parameters;
+
+  for (size_t level = 0; level < m_NumberOfLevels; ++level) 
+  {
+    if (level > 1) {
+      estimator->SetInitialParameters(parameters[level - 1]);
+    }
+
+    estimator->Estimate();
+    estimator->GetParameters();
+
+    parameters.push_back(estimator->GetParameters());
+    m_Metric->SetScale(estimator->GetParameters());
+    m_Scales[level] = estimator->GetParameters()[0];
 
     m_Optimizer->SetInitialPosition(m_Transform->GetParameters());
     try {
@@ -221,5 +235,6 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     m_FinalMetricValues[level] = m_Metric->GetValue(m_Optimizer->GetCurrentPosition());
   }
 }
+
 } // end namespace itk
 #endif
