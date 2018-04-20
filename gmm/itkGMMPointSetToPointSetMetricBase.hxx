@@ -212,7 +212,7 @@ void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetDeriva
   }
 }
 
-/** Set sigma */
+/** Set scale */
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
 GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
@@ -220,6 +220,15 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 {
   this->m_Scale = sigma; 
   this->m_Variance = sigma * sigma;
+}
+
+/** Set scale */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::SetScale(const ParametersType & parameters)
+{
+  this->SetScale(parameters[0]);
 }
 
 /** Initialize data for current iteration with the input parameters */

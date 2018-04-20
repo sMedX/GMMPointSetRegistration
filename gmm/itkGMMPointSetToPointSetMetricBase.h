@@ -120,7 +120,8 @@ public:
   typedef Superclass::ParametersType ParametersType;
 
   /** Get/Set the sigma. */
-  virtual void SetScale(const double &);
+  virtual void SetScale(const ParametersType &);
+  virtual void SetScale(const double & );
   itkGetMacro(Scale, double);
 
   /** Get/Set the Fixed point set.  */
@@ -165,7 +166,7 @@ public:
   /** Initialize the Metric by making sure that all the components are present and plugged together correctly     */
   virtual void Initialize(void)  throw ( ExceptionObject );
 
-  bool IsInitialized()  { return m_IsInitialized; }
+  bool IsInitialized() const { return m_IsInitialized; }
 
   /** Calculates the local metric value for a single point. */
   virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const = 0;
