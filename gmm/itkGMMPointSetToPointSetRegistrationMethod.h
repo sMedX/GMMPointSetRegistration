@@ -64,7 +64,8 @@ public:
 
   /** Type of the Transformation parameters This is the same type used to
    *  represent the search space of the optimization algorithm */
-  typedef typename MetricType::TransformParametersType ParametersType;
+  typedef typename MetricType::TransformParametersType  ParametersType;
+  typedef typename ParametersType::ValueType            ParametersValueType;
 
   /** Smart Pointer type to a DataObject. */
   typedef typename DataObject::Pointer DataObjectPointer;
