@@ -216,17 +216,19 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     }
 
     m_MetricEstimator->Estimate();
+    m_Metric->SetScale(m_MetricEstimator->GetParameters());
 
     if (level > 0) 
     {
-      double magnitude = (m_MetricEstimator->GetParameters() - parameters[level - 1]).magnitude();
+      typename MetricType::DerivativeType derivative;
+      m_Metric->GetDerivative(m_FinalTransformParameters, derivative);
 
-      if (magnitude < itk::NumericTraits<ParametersValueType>::epsilon()) 
+      // The optimization terminates when : || G || < gtol max(1, || X || ) where || . || denotes the Euclidean norm.
+      if (derivative.two_norm() < m_GradientConvergenceTolerance * std::max(ParametersValueType(1), m_FinalTransformParameters.two_norm()))
         break;
     }
 
     parameters.push_back(m_MetricEstimator->GetParameters());
-    m_Metric->SetScale(m_MetricEstimator->GetParameters());
 
     m_Optimizer->SetInitialPosition(m_Transform->GetParameters());
     try {
