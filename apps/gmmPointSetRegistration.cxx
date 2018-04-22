@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
   optimizer->SetMaximumNumberOfFunctionEvaluations(numberOfIterations);
   optimizer->SetScales(initializerTransform->GetScales());
   optimizer->SetTrace(trace);
-
+  
   //--------------------------------------------------------------------
   // metric
   typedef itk::InitializeMetric<FixedPointSetType, MovingPointSetType> InitializeMetricType;
@@ -205,6 +205,7 @@ int main(int argc, char** argv) {
   registration->SetMetricEstimator(estimator);
   registration->SetTransform(transform);
   registration->SetNumberOfLevels(2);
+  registration->SetGradientConvergenceTolerance(optimizer->GetGradientConvergenceTolerance());
   try {
     registration->Update();
   }

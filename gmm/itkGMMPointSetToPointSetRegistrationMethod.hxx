@@ -21,6 +21,7 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >::GMMP
   m_Optimizer = ITK_NULLPTR;
 
   m_NumberOfLevels = 1;
+  m_GradientConvergenceTolerance = 1e-5;
 
   m_InitialTransformParameters = ParametersType(1);
   m_FinalTransformParameters = ParametersType(1);

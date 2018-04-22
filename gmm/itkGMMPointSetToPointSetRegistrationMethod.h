@@ -119,6 +119,11 @@ public:
   itkSetMacro(NumberOfLevels, size_t);
   itkGetMacro(NumberOfLevels, size_t);
 
+  /** Set/Get the gradient convergence tolerance. This is a positive real number that determines the accuracy with which the solution is to
+  * be found. The optimization terminates when: ||G|| < gtol max(1,||X||) where ||.|| denotes the Euclidean norm.  */
+  itkSetMacro(GradientConvergenceTolerance, double);
+  itkGetMacro(GradientConvergenceTolerance, double);
+
   itkGetMacro(InitialMetricValues, MetricValuesType);
   itkGetMacro(FinalMetricValues, MetricValuesType);
   itkGetMacro(MetricParameters, ScaleType);
@@ -144,8 +149,10 @@ protected:
   MetricValuesType m_InitialMetricValues;
   MetricValuesType m_FinalMetricValues;
 
-  size_t m_NumberOfLevels;
   ScaleType m_MetricParameters;
+
+  size_t m_NumberOfLevels;
+  double m_GradientConvergenceTolerance;
 
 private:
   GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;
