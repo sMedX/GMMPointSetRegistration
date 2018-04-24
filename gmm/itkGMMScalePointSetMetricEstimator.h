@@ -59,7 +59,7 @@ protected:
   bool m_UseInitialParameters;
 
   bool m_Trace;
-  double m_MeanDistance;
+  double m_RMSDistance;
 
 private:
   GMMScalePointSetMetricEstimator(const Self &) ITK_DELETE_FUNCTION;

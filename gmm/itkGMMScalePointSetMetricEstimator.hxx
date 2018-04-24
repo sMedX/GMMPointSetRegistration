@@ -51,7 +51,7 @@ GMMScalePointSetMetricEstimator< TMetricType >
     m_InitialParameters.set_size(1);
 
     this->ComputeMeanDistance();
-    m_InitialParameters.Fill(m_MeanDistance / 2);
+    m_InitialParameters.Fill(m_RMSDistance / 2);
   }
 
   itk::Array<long> boundSelection(1);
@@ -103,17 +103,17 @@ GMMScalePointSetMetricEstimator< TMetricType >
 
   typename MetricType::TransformType::ConstPointer transform = m_Metric->GetTransform();
 
-  m_MeanDistance = 0;
+  m_RMSDistance = 0;
 
   for (MovingPointIterator movingIt = movingPointSet->GetPoints()->Begin(); movingIt != movingPointSet->GetPoints()->End(); ++movingIt) {
     MovingPointSetType::PointType movingPoint = transform->TransformPoint(movingIt.Value());
 
     for (FixedPointIterator fixedIt = fixedPointSet->GetPoints()->Begin(); fixedIt != fixedPointSet->GetPoints()->End(); ++fixedIt) {
-      m_MeanDistance += movingPoint.EuclideanDistanceTo(fixedIt.Value());
+      m_RMSDistance += movingPoint.SquaredEuclideanDistanceTo(fixedIt.Value());
     }
   }
 
-  m_MeanDistance /= fixedPointSet->GetNumberOfPoints() * movingPointSet->GetNumberOfPoints();
+  m_RMSDistance = sqrt(m_RMSDistance / (fixedPointSet->GetNumberOfPoints() * movingPointSet->GetNumberOfPoints()));
 }
 } // end namespace itk
 #endif
