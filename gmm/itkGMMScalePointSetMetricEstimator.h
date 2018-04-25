@@ -51,7 +51,7 @@ protected:
   GMMScalePointSetMetricEstimator();
   virtual ~GMMScalePointSetMetricEstimator() {};
 
-  void ComputeMeanDistance();
+  void ComputeDistance();
 
   typename MetricType::Pointer m_Metric;
   ParametersType m_InitialParameters;

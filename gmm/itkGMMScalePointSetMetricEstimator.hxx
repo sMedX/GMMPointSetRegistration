@@ -49,12 +49,18 @@ GMMScalePointSetMetricEstimator< TMetricType >
 
   if (!m_UseInitialParameters) 
   {
-    m_InitialParameters.set_size(1);
+    this->ComputeDistance();
 
-    this->ComputeMeanDistance();
-    m_InitialParameters.Fill(m_RMSDistance/2);
+    m_InitialParameters.set_size(1);
+    m_InitialParameters.Fill(m_RMSDistance / 2);
   }
 
+  typedef itk::GMMScalePointSetMetric<FixedPointSetType, MovingPointSetType> GMMScalePointSetMetric;
+  GMMScalePointSetMetric::Pointer metric = GMMScalePointSetMetric::New();
+  metric->SetPointSetMetric(m_Metric);
+  metric->Initialize();
+
+  /*
   itk::Array<long> boundSelection(1);
   boundSelection.Fill(1);
 
@@ -63,11 +69,6 @@ GMMScalePointSetMetricEstimator< TMetricType >
 
   itk::Array<double> upperBound(1);
   upperBound.Fill(0);
-
-  typedef itk::GMMScalePointSetMetric<FixedPointSetType, MovingPointSetType> GMMScalePointSetMetric;
-  GMMScalePointSetMetric::Pointer metric = GMMScalePointSetMetric::New();
-  metric->SetPointSetMetric(m_Metric);
-  metric->Initialize();
 
   typedef itk::LBFGSBOptimizer OptimizerType;
   OptimizerType::Pointer optimizer = OptimizerType::New();
@@ -83,14 +84,30 @@ GMMScalePointSetMetricEstimator< TMetricType >
   optimizer->SetCostFunctionConvergenceFactor(1.0);
   optimizer->SetProjectedGradientTolerance(1.0e-05);
   optimizer->StartOptimization();
+  */
+
+  ParametersType scales(metric->GetNumberOfParameters());
+  scales.Fill(1);
+
+  typedef itk::LBFGSOptimizer OptimizerType;
+  OptimizerType::Pointer optimizer = OptimizerType::New();
+  optimizer->SetCostFunction(metric);
+  optimizer->SetMaximumNumberOfFunctionEvaluations(10);
+  optimizer->SetInitialPosition(m_InitialParameters);
+  optimizer->SetLineSearchAccuracy(0.5);
+  optimizer->SetScales(scales);
+  optimizer->SetMinimize(true);
+  optimizer->SetTrace(m_Trace);
+  optimizer->StartOptimization();
 
   m_Parameters = optimizer->GetCurrentPosition();
 
   if (m_Trace)
   {
     std::cout << optimizer->GetStopConditionDescription() << std::endl;
-    std::cout << "Initial metric parameters   " << m_InitialParameters << std::endl;
-    std::cout << "Estimated metric parameters " << m_Parameters << std::endl;
+    std::cout << "Scales for parameters " << optimizer->GetScales() << std::endl;
+    std::cout << "Initial parameters    " << m_InitialParameters << std::endl;
+    std::cout << "Estimated parameters  " << m_Parameters << std::endl;
     std::cout << std::endl;
   }
 }
@@ -101,7 +118,7 @@ GMMScalePointSetMetricEstimator< TMetricType >
 template< typename TMetricType >
 void
 GMMScalePointSetMetricEstimator< TMetricType >
-::ComputeMeanDistance()
+::ComputeDistance()
 {
   typename MetricType::FixedPointSetType::ConstPointer fixedPointSet = m_Metric->GetFixedPointSet();
   typename MetricType::MovingPointSetType::ConstPointer movingPointSet = m_Metric->GetMovingPointSet();
