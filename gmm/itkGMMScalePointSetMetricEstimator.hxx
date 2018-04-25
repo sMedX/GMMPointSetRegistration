@@ -3,6 +3,7 @@
 
 #include "itkGMMScalePointSetMetricEstimator.h"
 #include "itkLBFGSBOptimizer.h"
+#include "itkParticleSwarmOptimizer.h"
 
 namespace itk
 {
@@ -51,7 +52,7 @@ GMMScalePointSetMetricEstimator< TMetricType >
     m_InitialParameters.set_size(1);
 
     this->ComputeMeanDistance();
-    m_InitialParameters.Fill(m_RMSDistance / 2);
+    m_InitialParameters.Fill(m_RMSDistance/2);
   }
 
   itk::Array<long> boundSelection(1);
@@ -71,19 +72,23 @@ GMMScalePointSetMetricEstimator< TMetricType >
   typedef itk::LBFGSBOptimizer OptimizerType;
   OptimizerType::Pointer optimizer = OptimizerType::New();
   optimizer->SetCostFunction(metric);
-  optimizer->SetMaximumNumberOfEvaluations(100);
+  optimizer->SetMaximumNumberOfIterations(10);
+  optimizer->SetMaximumNumberOfEvaluations(50);
   optimizer->SetBoundSelection(boundSelection);
   optimizer->SetLowerBound(lowerBound);
   optimizer->SetUpperBound(upperBound);
   optimizer->SetInitialPosition(m_InitialParameters);
   optimizer->SetTrace(m_Trace);
   optimizer->SetMinimize(true);
+  optimizer->SetCostFunctionConvergenceFactor(1.0);
+  optimizer->SetProjectedGradientTolerance(1.0e-05);
   optimizer->StartOptimization();
 
   m_Parameters = optimizer->GetCurrentPosition();
 
   if (m_Trace)
   {
+    std::cout << optimizer->GetStopConditionDescription() << std::endl;
     std::cout << "Initial metric parameters   " << m_InitialParameters << std::endl;
     std::cout << "Estimated metric parameters " << m_Parameters << std::endl;
     std::cout << std::endl;
