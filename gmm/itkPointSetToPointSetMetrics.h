@@ -26,10 +26,14 @@ namespace itk
 
     /** Types transferred from the base class */
     typedef double                                         MeasureType;
+
     typedef TFixedPointSet                                 FixedPointSetType;
-    typedef TMovingPointSet                                MovingPointSetType;
     typedef typename FixedPointSetType::ConstPointer       FixedPointSetConstPointer;
+    typedef typename FixedPointSetType::PointsContainer    FixedPointsContainerType;
+
+    typedef TMovingPointSet                                MovingPointSetType;
     typedef typename MovingPointSetType::ConstPointer      MovingPointSetConstPointer;
+    typedef typename MovingPointSetType::PointsContainer   MovingPointsContainerType;
 
     /**  Type of the parameters. */
     typedef itk::Statistics::ListSample<typename MovingPointSetType::PointType> ListSampleType;
@@ -40,14 +44,33 @@ namespace itk
     typedef typename itk::Statistics::Histogram<MeasureType, itk::Statistics::DenseFrequencyContainer2> HistogramType;
     typedef itk::Statistics::SampleToHistogramFilter<ListMeasureType, HistogramType> HistogramFilterType;
 
-    /** Get/Set the Fixed Point Set.  */
+    /** Get/Set the fixed point set.  */
+    void SetFixedPointSet(const FixedPointsContainerType * points)
+    {
+      typename FixedPointSetType::Pointer pointSet = FixedPointSetType::New();
+      pointSet->SetPoints(const_cast<FixedPointsContainerType*>(points));
+      this->SetFixedPointSet(pointSet);
+    }
     itkSetConstObjectMacro(FixedPointSet, FixedPointSetType);
     itkGetConstObjectMacro(FixedPointSet, FixedPointSetType);
 
+    /** Get/Set the target point set.  */
+    void SetTargetPointSet(const FixedPointsContainerType * points)
+    {
+      typename FixedPointSetType::Pointer pointSet = FixedPointSetType::New();
+      pointSet->SetPoints(const_cast<FixedPointsContainerType*>(points));
+      this->SetTargetPointSet(pointSet);
+    }
     itkSetConstObjectMacro(TargetPointSet, FixedPointSetType);
     itkGetConstObjectMacro(TargetPointSet, FixedPointSetType);
 
-    /** Get/Set the Moving Image.  */
+    /** Get/Set the moving point set.  */
+    void SetMovingPointSet(const MovingPointsContainerType * points)
+    {
+      typename MovingPointSetType::Pointer pointSet = MovingPointSetType::New();
+      pointSet->SetPoints(const_cast<MovingPointsContainerType*>(points));
+      this->SetMovingPointSet(pointSet);
+    }
     itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
     itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
 

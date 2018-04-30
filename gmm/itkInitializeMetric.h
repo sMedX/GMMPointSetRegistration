@@ -7,7 +7,7 @@
 
 namespace itk
 {
-  template <typename TFixedPointSet, typename TMovingPointSet>
+  template <typename TFixedPointSet, typename TMovingPointSet = TFixedPointSet>
   class InitializeMetric : public itk::Object
   {
   public:

@@ -12,11 +12,13 @@
 #include "argsCustomParsers.h"
 
 const unsigned int Dimension = 3;
+typedef itk::Transform <double, Dimension, Dimension> TransformType;
+
 typedef itk::Mesh<float, Dimension> FixedMeshType;
 typedef itk::PointSet<FixedMeshType::PixelType, Dimension> FixedPointSetType;
+
 typedef itk::Mesh<float, Dimension> MovingMeshType;
 typedef itk::PointSet<MovingMeshType::PixelType, Dimension> MovingPointSetType;
-typedef itk::Transform <double, Dimension, Dimension> TransformType;
 
 int main(int argc, char** argv) {
 
@@ -178,7 +180,7 @@ int main(int argc, char** argv) {
   optimizer->SetTrace(trace);
   
   //--------------------------------------------------------------------
-  // metric
+  // initialize metric
   typedef itk::InitializeMetric<FixedPointSetType, MovingPointSetType> InitializeMetricType;
   InitializeMetricType::Pointer initializerMetric = InitializeMetricType::New();
   initializerMetric->SetTypeOfMetric(typeOfMetric);

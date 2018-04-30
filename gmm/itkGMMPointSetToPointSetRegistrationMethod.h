@@ -69,10 +69,22 @@ public:
   typedef typename DataObject::Pointer DataObjectPointer;
 
   /** Set/Get the Fixed PointSet. */
+  void SetFixedPointSet( const FixedPointsContainerType * points)
+  {
+    typename FixedPointSetType::Pointer pointSet = FixedPointSetType::New();
+    pointSet->SetPoints(const_cast<FixedPointsContainerType*>(points));
+    this->SetFixedPointSet(pointSet);
+  }
   itkSetConstObjectMacro(FixedPointSet, FixedPointSetType);
   itkGetConstObjectMacro(FixedPointSet, FixedPointSetType);
 
   /** Set/Get the Moving PointSet. */
+  void SetMovingPointSet(const MovingPointsContainerType * points)
+  {
+    typename MovingPointSetType::Pointer pointSet = MovingPointSetType::New();
+    pointSet->SetPoints(const_cast<MovingPointsContainerType*>(points));
+    this->SetMovingPointSet(pointSet);
+  }
   itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
   itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
 
