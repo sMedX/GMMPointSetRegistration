@@ -223,13 +223,12 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   for (size_t level = 0; level < m_NumberOfLevels; ++level) 
   {
     if (level == 0) {
-      m_Metric->SetScale(m_Scales[level]);
+      m_Metric->SetScale(m_Scales[0]);
     }
     else {
-      typename MetricType::DerivativeType derivative;
-
       m_Scales[level] = m_Scales[level - 1] / 2;
 
+      typename MetricType::DerivativeType derivative;
       m_Metric->SetScale(m_Scales[level]);
       m_Metric->GetDerivative(m_FinalTransformParameters, derivative);
 
