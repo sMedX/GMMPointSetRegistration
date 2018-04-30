@@ -59,6 +59,7 @@ GMMScalePointSetMetricEstimator< TMetricType >
   GMMScalePointSetMetric::Pointer metric = GMMScalePointSetMetric::New();
   metric->SetPointSetMetric(m_Metric);
   metric->Initialize();
+  double initialValue = metric->GetValue(m_InitialParameters);
 
   /*
   itk::Array<long> boundSelection(1);
@@ -106,8 +107,8 @@ GMMScalePointSetMetricEstimator< TMetricType >
   {
     std::cout << optimizer->GetStopConditionDescription() << std::endl;
     std::cout << "Scales for parameters " << optimizer->GetScales() << std::endl;
-    std::cout << "Initial parameters    " << m_InitialParameters << std::endl;
-    std::cout << "Estimated parameters  " << m_Parameters << std::endl;
+    std::cout << "Initial parameters    " << m_InitialParameters << ", value " << initialValue <<  std::endl;
+    std::cout << "Estimated parameters  " << m_Parameters << ", value " << optimizer->GetValue() << std::endl;
     std::cout << std::endl;
   }
 }
