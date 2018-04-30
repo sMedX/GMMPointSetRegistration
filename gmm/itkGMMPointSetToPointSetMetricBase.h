@@ -184,8 +184,6 @@ public:
 
   virtual double GetNormalizingDerivativeFactor() const = 0;
 
-  virtual double GetNormalizingDerivativeScaleFactor() const = 0;
-
 protected:
   GMMPointSetToPointSetMetricBase();
   virtual ~GMMPointSetToPointSetMetricBase() {}
