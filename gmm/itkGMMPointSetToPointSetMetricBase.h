@@ -177,9 +177,6 @@ public:
   /** Calculates the local derivative for a single point.*/
   virtual bool GetLocalNeighborhoodDerivative(const MovingPointIterator &, LocalDerivativeType &) const = 0;
 
-  /** Calculates the local derivatives for a single point.*/
-  virtual bool GetLocalNeighborhoodDerivatives(const MovingPointIterator &, LocalDerivativeType &, LocalDerivativeType &) const = 0;
-
   /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize() which is a one-time initialization. */
   virtual void InitializeForIteration(const ParametersType & parameters) const;
 

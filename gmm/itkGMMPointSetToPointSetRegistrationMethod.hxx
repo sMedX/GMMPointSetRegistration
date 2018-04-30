@@ -68,11 +68,6 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     itkExceptionMacro(<< "Metric is not present");
   }
 
-  if (!m_MetricEstimator) 
-  {
-    itkExceptionMacro(<< "Metric estimator is not present");
-  }
-
   if (!m_Optimizer) 
   {
     itkExceptionMacro(<< "Optimizer is not present");
@@ -102,6 +97,10 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   m_FinalMetricValues.clear();
   m_FinalMetricValues.set_size(m_NumberOfLevels);
   m_FinalMetricValues.Fill(NAN);
+
+  m_Scales.clear();
+  m_Scales.set_size(m_NumberOfLevels);
+  m_Scales.Fill(NAN);
 }
 
 /**
@@ -204,19 +203,32 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
 
   // setup the optimizer and metric estimator
   m_Optimizer->SetCostFunction(m_Metric);
-  m_MetricEstimator->SetMetric(m_Metric);
 
-  std::vector<ParametersType> parameters;
+  typedef typename FixedPointSetType::PointsContainer::ConstIterator   FixedPointIterator;
+  typedef typename MovingPointSetType::PointsContainer::ConstIterator  MovingPointIterator;
+
+  double RMSDistance = 0;
+
+  for (MovingPointIterator movingIt = m_MovingPointSet->GetPoints()->Begin(); movingIt != m_MovingPointSet->GetPoints()->End(); ++movingIt) {
+    MovingPointSetType::PointType movingPoint = m_Transform->TransformPoint(movingIt.Value());
+
+    for (FixedPointIterator fixedIt = m_FixedPointSet->GetPoints()->Begin(); fixedIt != m_FixedPointSet->GetPoints()->End(); ++fixedIt) {
+      RMSDistance += movingPoint.SquaredEuclideanDistanceTo(fixedIt.Value());
+    }
+  }
+
+  RMSDistance = sqrt(RMSDistance / (m_FixedPointSet->GetNumberOfPoints() * m_MovingPointSet->GetNumberOfPoints()));
+  
+  m_Scales[0] = RMSDistance;
+
+  for (size_t level = 1; level < m_NumberOfLevels; ++level) 
+  {
+    m_Scales[level] = m_Scales[level - 1] / 2;
+  }
 
   for (size_t level = 0; level < m_NumberOfLevels; ++level) 
   {
-    if (level > 0) 
-    {
-      m_MetricEstimator->SetInitialParameters(parameters[level - 1]);
-    }
-
-    m_MetricEstimator->Estimate();
-    m_Metric->SetScale(m_MetricEstimator->GetParameters());
+    m_Metric->SetScale(m_Scales[level]);
 
     if (level > 0) 
     {
@@ -227,8 +239,6 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
       if (derivative.two_norm() < m_GradientConvergenceTolerance * std::max(ParametersValueType(1), m_FinalTransformParameters.two_norm()))
         break;
     }
-
-    parameters.push_back(m_MetricEstimator->GetParameters());
 
     m_Optimizer->SetInitialPosition(m_Transform->GetParameters());
     try {
@@ -251,17 +261,6 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
     m_InitialMetricValues[level] = m_Metric->GetValue(m_Optimizer->GetInitialPosition());
     m_FinalMetricValues[level] = m_Metric->GetValue(m_Optimizer->GetCurrentPosition());
   }
-
-  int numberOfParameters = m_MetricEstimator->GetParameters().Size();
-  m_MetricParameters.SetSize(parameters.size() * numberOfParameters);
-  int count = 0;
-
-  for (int level = 0; level < parameters.size(); ++level)
-  {
-    for (int i = 0; i < numberOfParameters; ++i)
-      m_MetricParameters[count++] = parameters[level][i];
-  }
 }
-
 } // end namespace itk
 #endif

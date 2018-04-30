@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
   args::ValueFlag<std::string> argOutputFileName(parser, "output", "The output mesh (point-set) file name", {'o', "output"});
   args::ValueFlag<std::string> argTargetFileName(parser, "target", "The target mesh (point-set) file name", {'t', "target"});
 
-  args::ValueFlag<std::vector<double>, args::DoubleVectorReader> argScale(parser, "scale", "The scale levels", {"scale"} );
+  args::ValueFlag<size_t> argNumberOfLevels(parser, "levels", "The number of levels", {"levels"} );
   args::ValueFlag<size_t> argNumberOfIterations(parser, "iterations", "The number of iterations", {"iterations"}, 1000);
   args::Flag trace(parser, "trace", "Optimizer iterations tracing", {"trace"});
 
@@ -74,11 +74,13 @@ int main(int argc, char** argv) {
   std::string movingFileName = args::get(argMovingFileName);
   std::string targetFileName = args::get(argTargetFileName);
   size_t numberOfIterations = args::get(argNumberOfIterations);
+  size_t numberOfLevels = args::get(argNumberOfLevels);
   size_t typeOfTransform = args::get(argTypeOfTransform);
   size_t typeOfMetric = args::get(argTypeOfMetric);
 
   std::cout << "options" << std::endl;
   std::cout << "number of iterations " << numberOfIterations << std::endl;
+  std::cout << "number of levels     " << numberOfLevels << std::endl;
   std::cout << "transform " << typeOfTransform << std::endl;
   std::cout << "metric    " << typeOfMetric << std::endl;
   std::cout << std::endl;
@@ -190,10 +192,6 @@ int main(int argc, char** argv) {
   initializerMetric->Print(std::cout);
   InitializeMetricType::MetricType::Pointer metric = initializerMetric->GetMetric();
 
-  typedef itk::GMMScalePointSetMetricEstimator<InitializeMetricType::MetricType> MetricEstimatorType;
-  MetricEstimatorType::Pointer estimator = MetricEstimatorType::New();
-  estimator->SetTrace(trace);
-
   //--------------------------------------------------------------------
   // perform registration
   typedef itk::GMMPointSetToPointSetRegistrationMethod<FixedPointSetType, MovingPointSetType> GMMPointSetToPointSetRegistrationMethodType;
@@ -201,10 +199,9 @@ int main(int argc, char** argv) {
   registration->SetFixedPointSet(fixedPointSet);
   registration->SetMovingPointSet(movingPointSet);
   registration->SetOptimizer(optimizer);
-  registration->SetMetric(metric);
-  registration->SetMetricEstimator(estimator);
+  registration->SetMetric(initializerMetric->GetMetric());
   registration->SetTransform(transform);
-  registration->SetNumberOfLevels(2);
+  registration->SetNumberOfLevels(numberOfLevels);
   registration->SetGradientConvergenceTolerance(optimizer->GetGradientConvergenceTolerance());
   try {
     registration->Update();
@@ -222,7 +219,7 @@ int main(int argc, char** argv) {
   std::cout << "Initial transform parameters " << registration->GetInitialTransformParameters() << std::endl;
   std::cout << "  Final transform parameters " << registration->GetFinalTransformParameters() << std::endl;
   std::cout << std::endl;
-  std::cout << "Metric parameters            " << registration->GetMetricParameters() << std::endl;
+  std::cout << "Metric parameters            " << registration->GetScales() << std::endl;
   std::cout << std::endl;
   std::cout << "metric " << registration->GetMetric()->GetNameOfClass() << std::endl;
   std::cout << "   Initial metric values " << registration->GetInitialMetricValues() << std::endl;

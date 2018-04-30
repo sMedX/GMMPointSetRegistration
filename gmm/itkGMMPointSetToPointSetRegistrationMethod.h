@@ -6,8 +6,6 @@
 #include "itkSingleValuedNonLinearOptimizer.h"
 #include "itkDataObjectDecorator.h"
 #include "itkGMMPointSetToPointSetMetricBase.h"
-#include "itkGMMScalePointSetMetric.h"
-#include "itkGMMScalePointSetMetricEstimator.h"
 
 namespace itk
 {
@@ -46,7 +44,6 @@ public:
   typedef typename MetricType::Pointer                                            MetricPointer;
   typedef itk::Array<typename MetricType::MeasureType>                            MetricValuesType;
   typedef itk::Array<double>                                                      ScaleType;
-  typedef itk::GMMScalePointSetMetricEstimator<MetricType>                        MetricEstimatorType;
 
   /**  Type of the Transform . */
   typedef typename MetricType::TransformType TransformType;
@@ -66,6 +63,7 @@ public:
    *  represent the search space of the optimization algorithm */
   typedef typename MetricType::TransformParametersType  ParametersType;
   typedef typename ParametersType::ValueType            ParametersValueType;
+  typedef typename itk::Array<double>                   ScalesType;
 
   /** Smart Pointer type to a DataObject. */
   typedef typename DataObject::Pointer DataObjectPointer;
@@ -85,10 +83,6 @@ public:
   /** Set/Get the Metric. */
   itkSetObjectMacro(Metric, MetricType);
   itkGetModifiableObjectMacro(Metric, MetricType);
-
-  /** Set/Get the Metric Estimator. */
-  itkSetObjectMacro(MetricEstimator, MetricEstimatorType);
-  itkGetModifiableObjectMacro(MetricEstimator, MetricEstimatorType);
 
   /** Set/Get the Transform. */
   itkSetObjectMacro(Transform, TransformType);
@@ -126,7 +120,7 @@ public:
 
   itkGetMacro(InitialMetricValues, MetricValuesType);
   itkGetMacro(FinalMetricValues, MetricValuesType);
-  itkGetMacro(MetricParameters, ScaleType);
+  itkGetMacro(Scales, ScaleType);
 
 protected:
   GMMPointSetToPointSetRegistrationMethod();
@@ -140,7 +134,6 @@ protected:
   MovingPointSetConstPointer m_MovingPointSet;
   MetricPointer m_Metric;
   OptimizerPointer m_Optimizer;
-  typename MetricEstimatorType::Pointer m_MetricEstimator;
 
   TransformPointer m_Transform;
   ParametersType m_InitialTransformParameters;
@@ -149,7 +142,7 @@ protected:
   MetricValuesType m_InitialMetricValues;
   MetricValuesType m_FinalMetricValues;
 
-  ScaleType m_MetricParameters;
+  ScaleType m_Scales;
 
   size_t m_NumberOfLevels;
   double m_GradientConvergenceTolerance;

@@ -56,9 +56,6 @@ public:
   /** Calculates the local derivative for a single point.*/
   virtual bool GetLocalNeighborhoodDerivative(const MovingPointIterator &, LocalDerivativeType &) const ITK_OVERRIDE;
 
-  /** Calculates the local derivatives for a single point.*/
-  virtual bool GetLocalNeighborhoodDerivatives(const MovingPointIterator &, LocalDerivativeType &, LocalDerivativeType &) const ITK_OVERRIDE;
-
   virtual double GetNormalizingValueFactor() const ITK_OVERRIDE
   {
     return -1.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_MovingPointSet->GetNumberOfPoints());
