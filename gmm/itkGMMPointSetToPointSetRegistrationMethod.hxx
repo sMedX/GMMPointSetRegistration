@@ -218,21 +218,19 @@ GMMPointSetToPointSetRegistrationMethod< TFixedPointSet, TMovingPointSet >
   }
 
   RMSDistance = sqrt(RMSDistance / (m_FixedPointSet->GetNumberOfPoints() * m_MovingPointSet->GetNumberOfPoints()));
-  
   m_Scales[0] = RMSDistance;
-
-  for (size_t level = 1; level < m_NumberOfLevels; ++level) 
-  {
-    m_Scales[level] = m_Scales[level - 1] / 2;
-  }
 
   for (size_t level = 0; level < m_NumberOfLevels; ++level) 
   {
-    m_Metric->SetScale(m_Scales[level]);
-
-    if (level > 0) 
-    {
+    if (level == 0) {
+      m_Metric->SetScale(m_Scales[level]);
+    }
+    else {
       typename MetricType::DerivativeType derivative;
+
+      m_Scales[level] = m_Scales[level - 1] / 2;
+
+      m_Metric->SetScale(m_Scales[level]);
       m_Metric->GetDerivative(m_FinalTransformParameters, derivative);
 
       // The optimization terminates when : || G || < gtol max(1, || X || ) where || . || denotes the Euclidean norm.
