@@ -6,7 +6,7 @@
 #include "itkInitializeTransform.h"
 #include "itkInitializeRandomTransform.h"
 #include "itkInitializeMetric.h"
-#include "itkAddNoiseAndTransformMeshFilter.h"
+#include "itkTransformAndAddNoiseMeshFilter.h"
 #include "itkGMMPointSetToPointSetRegistrationMethod.h"
 #include "itkPointSetPropertiesCalculator.h"
 #include "itkPointSetToPointSetMetrics.h"
@@ -168,11 +168,11 @@ int main(int argc, char** argv) {
     initializerRandomTransform->Print(std::cout);
 
     // transform initial moving mesh
-    typedef itk::AddNoiseAndTransformMeshFilter<MeshType, MeshType, TransformType> RandomTransformFilterType;
-    RandomTransformFilterType::Pointer transformMesh1 = RandomTransformFilterType::New();
+    typedef itk::TransformAndAddNoiseMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType1;
+    TransformMeshFilterType1::Pointer transformMesh1 = TransformMeshFilterType1::New();
     transformMesh1->SetInput(initialMovingMesh);
     transformMesh1->SetTransform(initializerRandomTransform->GetTransform());
-    transformMesh1->SetStandardDeviation(1);
+    transformMesh1->SetStandardDeviation(0);
     try {
       transformMesh1->Update();
     }
@@ -230,8 +230,8 @@ int main(int argc, char** argv) {
     }
 
     // transform moving mesh
-    typedef itk::TransformMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType;
-    TransformMeshFilterType::Pointer transformMesh2 = TransformMeshFilterType::New();
+    typedef itk::TransformMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType2;
+    TransformMeshFilterType2::Pointer transformMesh2 = TransformMeshFilterType2::New();
     transformMesh2->SetInput(movingMesh);
     transformMesh2->SetTransform(transform);
     try {

@@ -9,11 +9,11 @@
 namespace itk
 {
   template< typename TInputMesh, typename TOutputMesh, typename TTransform>
-  class AddNoiseAndTransformMeshFilter : public MeshToMeshFilter< TInputMesh, TOutputMesh >
+  class TransformAndAddNoiseMeshFilter : public MeshToMeshFilter< TInputMesh, TOutputMesh >
   {
   public:
     /** Standard class typedefs. */
-    typedef AddNoiseAndTransformMeshFilter               Self;
+    typedef TransformAndAddNoiseMeshFilter               Self;
     typedef MeshToMeshFilter< TInputMesh, TOutputMesh >  Superclass;
     typedef SmartPointer< Self >                         Pointer;
     typedef SmartPointer< const Self >                   ConstPointer;
@@ -41,7 +41,7 @@ namespace itk
     itkNewMacro(Self);
 
     /** Run-time type information (and related methods). */
-    itkTypeMacro(AddNoiseAndTransformMeshFilter, MeshToMeshFilter);
+    itkTypeMacro(TransformAndAddNoiseMeshFilter, MeshToMeshFilter);
 
     /** Get/Set transform. */
     itkSetObjectMacro(Transform, TransformType);
@@ -63,13 +63,13 @@ namespace itk
     itkGetMacro(UpperBounds, ParametersType);
 
   protected:
-    AddNoiseAndTransformMeshFilter() 
+    TransformAndAddNoiseMeshFilter() 
     {
       m_Transform = ITK_NULLPTR;
       m_TransformGenerator = ITK_NULLPTR;
     };
 
-    ~AddNoiseAndTransformMeshFilter() {};
+    ~TransformAndAddNoiseMeshFilter() {};
 
     /** Generate Requested Data */
     virtual void GenerateData() ITK_OVERRIDE
@@ -144,7 +144,7 @@ namespace itk
     int m_RandomSeed = 0;
 
   private:
-    AddNoiseAndTransformMeshFilter(const AddNoiseAndTransformMeshFilter &) ITK_DELETE_FUNCTION;
-    void operator=(const AddNoiseAndTransformMeshFilter &)ITK_DELETE_FUNCTION;
+    TransformAndAddNoiseMeshFilter(const TransformAndAddNoiseMeshFilter &) ITK_DELETE_FUNCTION;
+    void operator=(const TransformAndAddNoiseMeshFilter &)ITK_DELETE_FUNCTION;
   };
 }
