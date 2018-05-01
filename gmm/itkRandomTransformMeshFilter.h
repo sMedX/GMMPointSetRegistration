@@ -6,32 +6,40 @@
 #include <itkNormalVariateGenerator.h>
 #include <itkMersenneTwisterRandomVariateGenerator.h>
 
-namespace agtk
+namespace itk
 {
-  template< typename TInputMesh, typename TOutputMesh, typename TTransform >
+  template< typename TInputMesh, typename TOutputMesh = TInputMesh>
   class RandomTransformMeshFilter : public itk::MeshToMeshFilter< TInputMesh, TOutputMesh >
   {
   public:
     /** Standard class typedefs. */
-    typedef RandomTransformMeshFilter                         Self;
-    typedef itk::MeshToMeshFilter< TInputMesh, TOutputMesh >  Superclass;
-    typedef itk::SmartPointer< Self >                         Pointer;
-    typedef itk::SmartPointer< const Self >                   ConstPointer;
+    typedef RandomTransformMeshFilter                    Self;
+    typedef MeshToMeshFilter< TInputMesh, TOutputMesh >  Superclass;
+    typedef SmartPointer< Self >                         Pointer;
+    typedef SmartPointer< const Self >                   ConstPointer;
 
     itkStaticConstMacro(Dimension, unsigned int, TInputMesh::PointDimension);
 
-    typedef TInputMesh                       InputMeshType;
-    typedef TOutputMesh                      OutputMeshType;
-    typedef typename InputMeshType::ConstPointer  InputMeshPointer;
-    typedef typename OutputMeshType::Pointer      OutputMeshPointer;
-    typedef TTransform TransformType;
-    typedef typename TransformType::ParametersType ParametersType;
+#ifdef ITK_USE_CONCEPT_CHECKING
+    // Begin concept checking
+    itkConceptMacro(SameDimensionCheck, (itk::Concept::SameDimension< TInputMesh::PointDimension, TOutputMesh::PointDimension >));
+    // End concept checking
+#endif
 
-    /** Type for representing coordinates. */
-    typedef typename TInputMesh::CoordRepType CoordRepType;
+    typedef TInputMesh                                    InputMeshType;
+    typedef typename InputMeshType::ConstPointer          InputMeshPointer;
+    typedef typename InputMeshType::PointsContainer       InputPointsContainer;
+    typedef typename InputPointsContainer::ConstPointer   InputPointsContainerConstPointer;
+
+    typedef TOutputMesh                                   OutputMeshType;
+    typedef typename OutputMeshType::Pointer              OutputMeshPointer;
+    typedef typename OutputMeshType::PointsContainer      OutputPointsContainer;
+    typedef typename OutputPointsContainer::Pointer       OutputPointsContainerPointer;
+
+    typedef itk::Transform<double, Dimension, Dimension>  TransformType;
+    typedef typename TransformType::ParametersType        ParametersType;
 
     /** Type of the transform. */
-    typedef TTransform TransformType;
     typedef itk::Statistics::MersenneTwisterRandomVariateGenerator TransformGeneratorType;
 
     /** Method for creation through the object factory. */
@@ -71,12 +79,6 @@ namespace agtk
     /** Generate Requested Data */
     virtual void GenerateData() ITK_OVERRIDE
     {
-      typedef typename TInputMesh::PointsContainer  InputPointsContainer;
-      typedef typename TOutputMesh::PointsContainer OutputPointsContainer;
-
-      typedef typename TInputMesh::PointsContainerConstPointer InputPointsContainerConstPointer;
-      typedef typename TOutputMesh::PointsContainerPointer     OutputPointsContainerPointer;
-
       InputMeshPointer inputMesh = this->GetInput();
       OutputMeshPointer outputMesh = this->GetOutput();
 
@@ -103,14 +105,19 @@ namespace agtk
       typename InputPointsContainer::ConstIterator inputPoint = inpPoints->Begin();
       typename OutputPointsContainer::Iterator outputPoint = outPoints->Begin();
 
-      for ( ; inputPoint != inpPoints->End(); ++inputPoint, ++outputPoint ) {
-        typename InputMeshType::PointType point = inputPoint.Value();
+      for ( ; inputPoint != inpPoints->End(); ++inputPoint, ++outputPoint ) 
+      {
+        typename OutputMeshType::PointType point = m_Transform->TransformPoint(inputPoint.Value());
 
-        for (size_t n = 0; n < Dimension; ++n) {
-          point[n] += m_StandardDeviation * randn->GetVariate();
+        if (m_StandardDeviation > itk::NumericTraits<double>::epsilon())
+        {
+          for (size_t n = 0; n < Dimension; ++n) 
+          {
+            point[n] += m_StandardDeviation * randn->GetVariate();
+          }
         }
 
-        outputPoint.Value() = m_Transform->TransformPoint(point);
+        outputPoint.Value() = point;
       }
 
       // Create duplicate references to the rest of data on the mesh
