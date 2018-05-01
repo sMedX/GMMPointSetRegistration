@@ -8,23 +8,18 @@
 
 namespace itk
 {
-  template< typename TInputMesh, typename TOutputMesh = TInputMesh>
-  class RandomTransformMeshFilter : public itk::MeshToMeshFilter< TInputMesh, TOutputMesh >
+  template< typename TInputMesh, typename TOutputMesh, typename TTransform>
+  class AddNoiseAndTransformMeshFilter : public MeshToMeshFilter< TInputMesh, TOutputMesh >
   {
   public:
     /** Standard class typedefs. */
-    typedef RandomTransformMeshFilter                    Self;
+    typedef AddNoiseAndTransformMeshFilter               Self;
     typedef MeshToMeshFilter< TInputMesh, TOutputMesh >  Superclass;
     typedef SmartPointer< Self >                         Pointer;
     typedef SmartPointer< const Self >                   ConstPointer;
 
-    itkStaticConstMacro(Dimension, unsigned int, TInputMesh::PointDimension);
-
-#ifdef ITK_USE_CONCEPT_CHECKING
-    // Begin concept checking
-    itkConceptMacro(SameDimensionCheck, (itk::Concept::SameDimension< TInputMesh::PointDimension, TOutputMesh::PointDimension >));
-    // End concept checking
-#endif
+    itkStaticConstMacro(InputPointDimension, unsigned int, TInputMesh::PointDimension);
+    itkStaticConstMacro(OutputPointDimension, unsigned int, TOutputMesh::PointDimension);
 
     typedef TInputMesh                                    InputMeshType;
     typedef typename InputMeshType::ConstPointer          InputMeshPointer;
@@ -36,7 +31,7 @@ namespace itk
     typedef typename OutputMeshType::PointsContainer      OutputPointsContainer;
     typedef typename OutputPointsContainer::Pointer       OutputPointsContainerPointer;
 
-    typedef itk::Transform<double, Dimension, Dimension>  TransformType;
+    typedef TTransform                                    TransformType;
     typedef typename TransformType::ParametersType        ParametersType;
 
     /** Type of the transform. */
@@ -46,7 +41,7 @@ namespace itk
     itkNewMacro(Self);
 
     /** Run-time type information (and related methods). */
-    itkTypeMacro(RandomTransformMeshFilter, MeshToMeshFilter);
+    itkTypeMacro(AddNoiseAndTransformMeshFilter, MeshToMeshFilter);
 
     /** Get/Set transform. */
     itkSetObjectMacro(Transform, TransformType);
@@ -68,13 +63,13 @@ namespace itk
     itkGetMacro(UpperBounds, ParametersType);
 
   protected:
-    RandomTransformMeshFilter() 
+    AddNoiseAndTransformMeshFilter() 
     {
       m_Transform = ITK_NULLPTR;
       m_TransformGenerator = ITK_NULLPTR;
     };
 
-    ~RandomTransformMeshFilter() {};
+    ~AddNoiseAndTransformMeshFilter() {};
 
     /** Generate Requested Data */
     virtual void GenerateData() ITK_OVERRIDE
@@ -95,8 +90,6 @@ namespace itk
       itk::Statistics::NormalVariateGenerator::Pointer randn = itk::Statistics::NormalVariateGenerator::New();
       randn->Initialize(m_RandomSeed);
 
-      this->InitilaizeTransform();
-
       InputPointsContainerConstPointer inpPoints = inputMesh->GetPoints();
       OutputPointsContainerPointer     outPoints = outputMesh->GetPoints();
       outPoints->Reserve(inputMesh->GetNumberOfPoints());
@@ -111,7 +104,7 @@ namespace itk
 
         if (m_StandardDeviation > itk::NumericTraits<double>::epsilon())
         {
-          for (size_t n = 0; n < Dimension; ++n) 
+          for (size_t n = 0; n < OutputPointDimension; ++n)
           {
             point[n] += m_StandardDeviation * randn->GetVariate();
           }
@@ -141,26 +134,6 @@ namespace itk
       }
     }
 
-    void InitilaizeTransform()
-    {
-      if (!m_Transform) {
-        itkExceptionMacro(<< "Missing Input Transform");
-      }
-
-      if (!m_TransformGenerator) {
-        m_TransformGenerator = TransformGeneratorType::New();
-        m_TransformGenerator->Initialize(m_RandomSeed);
-      }
-
-      typename TransformType::ParametersType parameters = m_Transform->GetParameters();
-
-      for (size_t n = 0; n < m_Transform->GetNumberOfParameters(); ++n) {
-        parameters[n] = m_TransformGenerator->GetUniformVariate(m_LowerBounds[n], m_UpperBounds[n]);
-      }
-
-      m_Transform->SetParameters(parameters);
-    }
-
     /** Transform to apply to all the mesh points. */
     typename TransformType::Pointer m_Transform;
     TransformGeneratorType::Pointer m_TransformGenerator;
@@ -171,7 +144,7 @@ namespace itk
     int m_RandomSeed = 0;
 
   private:
-    RandomTransformMeshFilter(const RandomTransformMeshFilter &) ITK_DELETE_FUNCTION;
-    void operator=(const RandomTransformMeshFilter &)ITK_DELETE_FUNCTION;
+    AddNoiseAndTransformMeshFilter(const AddNoiseAndTransformMeshFilter &) ITK_DELETE_FUNCTION;
+    void operator=(const AddNoiseAndTransformMeshFilter &)ITK_DELETE_FUNCTION;
   };
 }

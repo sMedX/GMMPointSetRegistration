@@ -75,14 +75,14 @@ int main(int argc, char** argv) {
   std::string fixedFileName = args::get(argFixedFileName);
   std::string movingFileName = args::get(argMovingFileName);
   std::string targetFileName = args::get(argTargetFileName);
-  size_t numberOfIterations = args::get(argNumberOfIterations);
   size_t numberOfLevels = args::get(argNumberOfLevels);
+  size_t numberOfIterations = args::get(argNumberOfIterations);
   size_t typeOfTransform = args::get(argTypeOfTransform);
   size_t typeOfMetric = args::get(argTypeOfMetric);
 
   std::cout << "options" << std::endl;
-  std::cout << "number of iterations " << numberOfIterations << std::endl;
   std::cout << "number of levels     " << numberOfLevels << std::endl;
+  std::cout << "number of iterations " << numberOfIterations << std::endl;
   std::cout << "transform " << typeOfTransform << std::endl;
   std::cout << "metric    " << typeOfMetric << std::endl;
   std::cout << std::endl;
@@ -155,6 +155,7 @@ int main(int argc, char** argv) {
   }
   movingPointSetCalculator->Print(std::cout);
 
+  //--------------------------------------------------------------------
   // initialize transform
   typedef itk::InitializeTransform<double> TransformInitializerType;
   TransformInitializerType::Pointer initializerTransform = TransformInitializerType::New();
