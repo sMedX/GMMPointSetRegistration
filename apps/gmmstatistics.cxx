@@ -4,7 +4,7 @@
 #include <itkLBFGSOptimizer.h>
 
 #include "itkInitializeTransform.h"
-#include "itkInitializeRandomTransform.h"
+#include "itkGenerateRandomTransform.h"
 #include "itkInitializeMetric.h"
 #include "itkTransformAndAddNoiseMeshFilter.h"
 #include "itkGMMPointSetToPointSetRegistrationMethod.h"
@@ -124,10 +124,10 @@ int main(int argc, char** argv) {
   }
   movingPointSetCalculator->Print(std::cout);
 
-  typedef itk::InitializeRandomTransform<double> RandomTransformInitializerType;
-  RandomTransformInitializerType::Pointer initializerRandomTransform = RandomTransformInitializerType::New();
-  initializerRandomTransform->SetCenter(movingPointSetCalculator->GetCenter());
-  initializerRandomTransform->SetTypeOfTransform(typeOfTransform);
+  typedef itk::GenerateRandomTransform<double> GenerateRandomTransformType;
+  GenerateRandomTransformType::Pointer generateRandomTransform = GenerateRandomTransformType::New();
+  generateRandomTransform->SetCenter(movingPointSetCalculator->GetCenter());
+  generateRandomTransform->SetTypeOfTransform(typeOfTransform);
 
   // initialize metric
   typedef itk::InitializeMetric<PointSetType, PointSetType> InitializeMetricType;
@@ -159,19 +159,20 @@ int main(int argc, char** argv) {
 
     // generate random transform 
     try {
-      initializerRandomTransform->Initialize();
+      generateRandomTransform->Generate();
     }
     catch (itk::ExceptionObject& excep) {
       std::cerr << excep << std::endl;
       return EXIT_FAILURE;
     }
-    initializerRandomTransform->Print(std::cout);
+    generateRandomTransform->Print(std::cout);
+    continue;
 
     // transform initial moving mesh
     typedef itk::TransformAndAddNoiseMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType1;
     TransformMeshFilterType1::Pointer transformMesh1 = TransformMeshFilterType1::New();
     transformMesh1->SetInput(initialMovingMesh);
-    transformMesh1->SetTransform(initializerRandomTransform->GetTransform());
+    transformMesh1->SetTransform(generateRandomTransform->GetTransform());
     transformMesh1->SetStandardDeviation(0);
     try {
       transformMesh1->Update();

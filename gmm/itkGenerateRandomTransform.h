@@ -10,18 +10,18 @@
 namespace itk
 {
   template<typename TParametersValueType>
-  class InitializeRandomTransform : public Object
+  class GenerateRandomTransform : public Object
   {
   public:
     /** Standard class typedefs. */
-    typedef InitializeRandomTransform  Self;
+    typedef GenerateRandomTransform    Self;
     typedef Object                     Superclass;
     typedef SmartPointer<Self>         Pointer;
     typedef SmartPointer<const Self>   ConstPointer;
 
     /** Method for creation through the object factory. */
     itkNewMacro(Self);
-    itkTypeMacro(InitializeRandomTransform, Object);
+    itkTypeMacro(GenerateRandomTransform, Object);
 
     enum Transform
     {
@@ -73,7 +73,7 @@ namespace itk
     itkSetMacro(SkewBounds, double);
     itkGetMacro(SkewBounds, double);
 
-    void Initialize()
+    void Generate()
     {
       switch (m_TypeOfTransform) {
       case Transform::Translation: {
@@ -109,7 +109,7 @@ namespace itk
         int count = 0;
 
         // rotation
-        this->InitializeVersor();
+        this->GenerateVersor();
 
         for (size_t n = 0; n < m_NumberOfRotationComponents; ++n, ++count) 
         {
@@ -143,7 +143,7 @@ namespace itk
         int count = 0;
 
         // rotation
-        this->InitializeVersor();
+        this->GenerateVersor();
 
         for (size_t n = 0; n < m_NumberOfRotationComponents; ++n, ++count) 
         {
@@ -184,7 +184,7 @@ namespace itk
         int count = 0;
 
         // rotation
-        this->InitializeVersor();
+        this->GenerateVersor();
 
         for (size_t n = 0; n < m_NumberOfRotationComponents; ++n, ++count) 
         {
@@ -218,14 +218,14 @@ namespace itk
     }
 
   protected:
-    InitializeRandomTransform() 
+    GenerateRandomTransform() 
     {
       m_TransformGenerator = TransformGeneratorType::New();
       m_TransformGenerator->Initialize(m_RandomSeed);
     }
-    virtual ~InitializeRandomTransform() {};
+    virtual ~GenerateRandomTransform() {};
 
-    void InitializeVersor() 
+    void GenerateVersor() 
     {
       m_Angle = m_TransformGenerator->GetUniformVariate(-m_RotationBounds, m_RotationBounds);
 
@@ -280,7 +280,7 @@ namespace itk
     size_t m_NumberOfSkewComponents = 0;
 
   private:
-    InitializeRandomTransform(const Self &) ITK_DELETE_FUNCTION;
+    GenerateRandomTransform(const Self &) ITK_DELETE_FUNCTION;
     void operator=(const Self &) ITK_DELETE_FUNCTION;
   };
 }
