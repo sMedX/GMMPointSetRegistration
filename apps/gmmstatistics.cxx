@@ -18,7 +18,9 @@ const unsigned int Dimension = 3;
 typedef itk::Transform <double, Dimension, Dimension> TransformType;
 
 typedef itk::Mesh<float, Dimension> MeshType;
+typedef MeshType::PointType PointType;
 typedef itk::PointSet<MeshType::PixelType, Dimension> PointSetType;
+typedef itk::PointSetPropertiesCalculator<PointSetType> PointSetPropertiesCalculatorType;
 
 int main(int argc, char** argv) {
 
@@ -109,9 +111,20 @@ int main(int argc, char** argv) {
   std::cout << std::endl;
 
   //--------------------------------------------------------------------
-  // random transform initializer
-  typedef itk::PointSetPropertiesCalculator<PointSetType> MovingPointSetPropertiesCalculatorType;
-  MovingPointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = MovingPointSetPropertiesCalculatorType::New();
+  PointSetPropertiesCalculatorType::Pointer fixedPointSetCalculator = PointSetPropertiesCalculatorType::New();
+  fixedPointSetCalculator->SetPointSet(fixedMesh);
+  try 
+  {
+    fixedPointSetCalculator->Compute();
+  }
+  catch (itk::ExceptionObject& excep) {
+    std::cerr << excep << std::endl;
+    return EXIT_FAILURE;
+  }
+  fixedPointSetCalculator->Print(std::cout);
+  PointType fixedCenter = fixedPointSetCalculator->GetCenter();
+
+  PointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = PointSetPropertiesCalculatorType::New();
   movingPointSetCalculator->SetPointSet(initialMovingMesh);
   try 
   {
@@ -123,7 +136,9 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   movingPointSetCalculator->Print(std::cout);
+  PointType initialMovingCenter = movingPointSetCalculator->GetCenter();
 
+  // generate random transform
   typedef itk::GenerateRandomTransform<double> GenerateRandomTransformType;
   GenerateRandomTransformType::Pointer generateRandomTransform = GenerateRandomTransformType::New();
   generateRandomTransform->SetCenter(movingPointSetCalculator->GetCenter());
@@ -133,10 +148,12 @@ int main(int argc, char** argv) {
   typedef itk::InitializeMetric<PointSetType, PointSetType> InitializeMetricType;
   InitializeMetricType::Pointer initializerMetric = InitializeMetricType::New();
   initializerMetric->SetTypeOfMetric(typeOfMetric);
-  try {
+  try 
+  {
     initializerMetric->Initialize();
   }
-  catch (itk::ExceptionObject& excep) {
+  catch (itk::ExceptionObject& excep) 
+  {
     std::cerr << excep << std::endl;
     return EXIT_FAILURE;
   }
@@ -166,7 +183,6 @@ int main(int argc, char** argv) {
       return EXIT_FAILURE;
     }
     generateRandomTransform->Print(std::cout);
-    continue;
 
     // transform initial moving mesh
     typedef itk::TransformAndAddNoiseMeshFilter<MeshType, MeshType, TransformType> TransformMeshFilterType1;
@@ -182,24 +198,13 @@ int main(int argc, char** argv) {
       return EXIT_FAILURE;
     }
     MeshType::Pointer movingMesh = transformMesh1->GetOutput();
+    PointType movingCenter = transformMesh1->GetTransform()->TransformPoint(initialMovingCenter);
 
-    // initialize initial registration
-    typedef itk::PointSetPropertiesCalculator<PointSetType> MovingPointSetPropertiesCalculatorType;
-    MovingPointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = MovingPointSetPropertiesCalculatorType::New();
-    movingPointSetCalculator->SetPointSet(movingMesh);
-    try {
-      movingPointSetCalculator->Compute();
-    }
-    catch (itk::ExceptionObject& excep) {
-      std::cerr << excep << std::endl;
-      return EXIT_FAILURE;
-    }
-    movingPointSetCalculator->Print(std::cout);
-
+    // initialize transform to perform registration
     typedef itk::InitializeTransform<double> TransformInitializerType;
     TransformInitializerType::Pointer initializerTransform = TransformInitializerType::New();
-    initializerTransform->SetFixedLandmark(movingPointSetCalculator->GetCenter());
-    initializerTransform->SetMovingLandmark(movingPointSetCalculator->GetCenter());
+    initializerTransform->SetFixedLandmark(fixedCenter);
+    initializerTransform->SetMovingLandmark(movingCenter);
     initializerTransform->SetTypeOfTransform(typeOfTransform);
     try {
       initializerTransform->Initialize();
@@ -216,8 +221,8 @@ int main(int argc, char** argv) {
     // perform registration
     typedef itk::GMMPointSetToPointSetRegistrationMethod<PointSetType> GMMPointSetToPointSetRegistrationMethodType;
     GMMPointSetToPointSetRegistrationMethodType::Pointer registration = GMMPointSetToPointSetRegistrationMethodType::New();
-    registration->SetFixedPointSet(fixedMesh->GetPoints());
-    registration->SetMovingPointSet(transformMesh1->GetOutput());
+    registration->SetFixedPointSet(fixedMesh);
+    registration->SetMovingPointSet(movingMesh);
     registration->SetMetric(initializerMetric->GetMetric());
     registration->SetTransform(transform);
     registration->SetNumberOfLevels(numberOfLevels);
@@ -244,16 +249,18 @@ int main(int argc, char** argv) {
     }
 
     // compute metrics
+    std::cout << "Point set metrics before registration" << std::endl;
     typedef itk::PointSetToPointSetMetrics<PointSetType> PointSetToPointSetMetricsType;
     PointSetToPointSetMetricsType::Pointer metrics = PointSetToPointSetMetricsType::New();
-    metrics->SetFixedPointSet(fixedMesh->GetPoints());
-    metrics->SetTargetPointSet(initialMovingMesh->GetPoints());
-    metrics->SetMovingPointSet(transformMesh1->GetOutput());
+    metrics->SetFixedPointSet(fixedMesh);
+    metrics->SetTargetPointSet(initialMovingMesh);
+    metrics->SetMovingPointSet(movingMesh);
     metrics->Compute();
     metrics->PrintReport(std::cout);
 
-    metrics->SetFixedPointSet(fixedMesh->GetPoints());
-    metrics->SetTargetPointSet(initialMovingMesh->GetPoints());
+    std::cout << "Point set metrics after registration" << std::endl;
+    metrics->SetFixedPointSet(fixedMesh);
+    metrics->SetTargetPointSet(initialMovingMesh);
     metrics->SetMovingPointSet(transformMesh2->GetOutput());
     metrics->Compute();
     metrics->PrintReport(std::cout);
