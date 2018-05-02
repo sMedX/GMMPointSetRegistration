@@ -6,6 +6,12 @@
 #include <itkHistogram.h>
 #include <itkPointsLocator.h>
 
+inline bool fexists(const std::string& name)
+{
+  struct stat buffer;
+  return (stat(name.c_str(), &buffer) == 0);
+}
+
 namespace itk
 {
   template< typename TFixedPointSet, typename TMovingPointSet = TFixedPointSet >
@@ -87,6 +93,7 @@ namespace itk
     itkGetMacro(QuantileValue, MeasureType);
     itkGetMacro(MaximalValue, MeasureType);
 
+    /** Print metrics. */
     void PrintReport(std::ostream& os) const
     {
       std::string indent = "    ";
@@ -106,6 +113,53 @@ namespace itk
         os << indent << " Maximal = " << m_TargetMaximalValue << std::endl;
         os << std::endl;
       }
+    }
+
+    void PrintReportToFile(const std::string & fileName, const std::string & id="") const
+    {
+      std::string header = m_Delimeter;
+      std::string scores = id + m_Delimeter;
+
+      header += "Mean" + m_Delimeter;
+      scores += std::to_string(m_MeanValue) + m_Delimeter;
+
+      header += "RMSE" + m_Delimeter;
+      scores += std::to_string(m_RMSEValue) + m_Delimeter;
+
+      header += "Quantile " + std::to_string(m_LevelOfQuantile) + m_Delimeter;
+      scores += std::to_string(m_QuantileValue) + m_Delimeter;
+
+      header += "Maximal" + m_Delimeter;
+      scores += std::to_string(m_MaximalValue) + m_Delimeter;
+
+      if (m_TargetPointSet) {
+        header += m_Delimeter;
+        scores += m_Delimeter;
+
+        header += "Mean (target)" + m_Delimeter;
+        scores += std::to_string(m_TargetMeanValue) + m_Delimeter;
+
+        header += "RMSE (target)" + m_Delimeter;
+        scores += std::to_string(m_TargetRMSEValue) + m_Delimeter;
+
+        header += "Quantile (target)" + std::to_string(m_LevelOfQuantile) + m_Delimeter;
+        scores += std::to_string(m_TargetQuantileValue) + m_Delimeter;
+
+        header += "Maximal (target)" + m_Delimeter;
+        scores += std::to_string(m_TargetMaximalValue) + m_Delimeter;
+      }
+
+      bool flag = fexists(fileName);
+
+      std::ofstream file(fileName, std::ofstream::out | std::ofstream::app);
+
+      if (!flag)
+      {
+        file << header << std::endl;
+      }
+
+      file << scores << std::endl;
+      file.close();
     }
 
     /** Compute metrics. */
@@ -159,6 +213,8 @@ namespace itk
     size_t m_BucketSize = 16;
     size_t m_HistogramSize = 1000;
     double m_LevelOfQuantile = 0.95;
+
+    std::string m_Delimeter = ";";
 
     MeasureType m_MeanValue;
     MeasureType m_RMSEValue;

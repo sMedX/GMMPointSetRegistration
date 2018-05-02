@@ -33,6 +33,9 @@ int main(int argc, char** argv) {
   args::ValueFlag<std::string> argFixedFileName(required, "fixed", "The fixed mesh (point-set) file name", {'f', "fixed"});
   args::ValueFlag<std::string> argMovingFileName(required, "moving", "The moving mesh (point-set) file name", {'m', "moving"});
 
+  args::ValueFlag<std::string> argInitialMetricsReportFileName(required, "report1", "The report for initial point-set metrics", {"report1"});
+  args::ValueFlag<std::string> argFinalMetricsReportFileName(required, "report2", "The report for final point-set metrics", {"report2"});
+
   args::ValueFlag<size_t> argNumberOfLevels(parser, "levels", "The number of levels", {"levels"});
   args::ValueFlag<size_t> argNumberOfIterations(parser, "iterations", "The number of iterations", {"iterations"}, 1000);
   args::ValueFlag<size_t> argNumberOfEvaluations(parser, "evaluations", "The number of evaluations", {"evaluations"}, 1000);
@@ -249,6 +252,8 @@ int main(int argc, char** argv) {
     }
 
     // compute metrics
+    std::string idstr = std::to_string(count+1);
+
     std::cout << "Point set metrics before registration" << std::endl;
     typedef itk::PointSetToPointSetMetrics<PointSetType> PointSetToPointSetMetricsType;
     PointSetToPointSetMetricsType::Pointer metrics = PointSetToPointSetMetricsType::New();
@@ -257,6 +262,7 @@ int main(int argc, char** argv) {
     metrics->SetMovingPointSet(movingMesh);
     metrics->Compute();
     metrics->PrintReport(std::cout);
+    metrics->PrintReportToFile(args::get(argInitialMetricsReportFileName), idstr);
 
     std::cout << "Point set metrics after registration" << std::endl;
     metrics->SetFixedPointSet(fixedMesh);
@@ -264,6 +270,7 @@ int main(int argc, char** argv) {
     metrics->SetMovingPointSet(transformMesh2->GetOutput());
     metrics->Compute();
     metrics->PrintReport(std::cout);
+    metrics->PrintReportToFile(args::get(argFinalMetricsReportFileName), idstr);
   }
 
   return EXIT_SUCCESS;
