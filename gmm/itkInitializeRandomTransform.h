@@ -35,12 +35,15 @@ namespace itk
     itkStaticConstMacro(PointDimension, unsigned int, 3U);
     static_assert(PointDimension == 3U, "Invalid dimension. Dimension 3 is supported.");
 
-    typedef typename itk::Transform<TParametersValueType, PointDimension>  TransformType;
+    typedef TParametersValueType                                           ParametersValueType;
+    typedef typename itk::Transform<ParametersValueType, PointDimension>   TransformType;
     typedef typename TransformType::InputPointType                         InputPointType;
     typedef typename TransformType::OutputPointType                        OutputPointType;
     typedef typename TransformType::OutputVectorType                       OutputVectorType;
 
     typedef typename TransformType::ParametersType                         ParametersType;
+    typedef Versor<ParametersValueType>                                    VersorType;
+    typedef Vector<ParametersValueType, PointDimension>                    AxisType;
 
     /** Type of the transform generator. */
     typedef itk::Statistics::MersenneTwisterRandomVariateGenerator TransformGeneratorType;
@@ -80,14 +83,14 @@ namespace itk
 
         m_NumberOfTranslationComponents = 3;
 
-        m_Transform = transform;
-        ParametersType parameters = m_Transform->GetParameters();
+        ParametersType parameters = transform->GetParameters();
 
         for (size_t n = 0; n < m_NumberOfTranslationComponents; ++n)
         {
           parameters[n] = m_TransformGenerator->GetUniformVariate(-m_TranslationBounds, m_TranslationBounds);
         }
 
+        m_Transform = transform;
         m_Transform->SetParameters(parameters);
         break;
       }
@@ -101,24 +104,16 @@ namespace itk
         m_NumberOfRotationComponents = 3;
         m_NumberOfTranslationComponents = 3;
 
-        m_Transform = transform;
-        ParametersType parameters = m_Transform->GetParameters();
+        ParametersType parameters = transform->GetParameters();
 
         int count = 0;
 
         // rotation
-        double prod = itk::NumericTraits<double>::epsilon();
-        double angle = m_TransformGenerator->GetUniformVariate(-m_RotationBounds, m_RotationBounds);
+        this->InitializeVersor();
 
         for (size_t n = 0; n < m_NumberOfRotationComponents; ++n, ++count) 
         {
-          parameters[n] = m_TransformGenerator->GetUniformVariate(-1, 1);
-          prod += parameters[n] * parameters[n];
-        }
-
-        for (size_t n = 0; n < m_NumberOfRotationComponents; ++n) 
-        {
-          parameters[n] *= angle / sqrt(prod);
+          parameters[count] = m_Versor.GetVnlQuaternion()[n];
         }
 
         // translation
@@ -127,6 +122,7 @@ namespace itk
           parameters[count] = m_TransformGenerator->GetUniformVariate(-m_TranslationBounds, m_TranslationBounds);
         }
 
+        m_Transform = transform;
         m_Transform->SetParameters(parameters);
         break;
       }
@@ -142,24 +138,16 @@ namespace itk
         m_NumberOfTranslationComponents = 3;
         m_NumberOfScalingComponents = 1;
 
-        m_Transform = transform;
-        ParametersType parameters = m_Transform->GetParameters();
+        ParametersType parameters = transform->GetParameters();
 
         int count = 0;
 
         // rotation
-        double prod = itk::NumericTraits<double>::epsilon();
-        double angle = m_TransformGenerator->GetUniformVariate(-m_RotationBounds, m_RotationBounds);
+        this->InitializeVersor();
 
         for (size_t n = 0; n < m_NumberOfRotationComponents; ++n, ++count) 
         {
-          parameters[n] = m_TransformGenerator->GetUniformVariate(-1, 1);
-          prod += parameters[n] * parameters[n];
-        }
-
-        for (size_t n = 0; n < m_NumberOfRotationComponents; ++n) 
-        {
-          parameters[n] *= angle / sqrt(prod);
+          parameters[count] = m_Versor.GetVnlQuaternion()[n];
         }
 
         // translation
@@ -174,6 +162,7 @@ namespace itk
           parameters[count] = m_TransformGenerator->GetUniformVariate(1 - m_ScalingBounds, 1 + m_ScalingBounds);
         }
 
+        m_Transform = transform;
         m_Transform->SetParameters(parameters);
         break;
       }
@@ -195,37 +184,29 @@ namespace itk
         int count = 0;
 
         // rotation
-        double prod = itk::NumericTraits<double>::epsilon();
+        this->InitializeVersor();
 
         for (size_t n = 0; n < m_NumberOfRotationComponents; ++n, ++count) 
         {
-          parameters[n] = m_TransformGenerator->GetUniformVariate(-1, 1);
-          prod += parameters[n] * parameters[n];
-        }
-
-        double angle = m_TransformGenerator->GetUniformVariate(-m_RotationBounds, m_RotationBounds);
-
-        for (size_t n = 0; n < m_NumberOfRotationComponents; ++n, ++count) 
-        {
-          parameters[n] *= angle / sqrt(prod);
+          parameters[count] = m_Versor.GetVnlQuaternion()[n];
         }
 
         // translation
         for (size_t n = 0; n < m_NumberOfTranslationComponents; ++n, ++count) 
         {
-          parameters[n] = m_TransformGenerator->GetUniformVariate(-m_TranslationBounds, m_TranslationBounds);
+          parameters[count] = m_TransformGenerator->GetUniformVariate(-m_TranslationBounds, m_TranslationBounds);
         }
 
         // scaling
         for (size_t n = 0; n < m_NumberOfScalingComponents; ++n, ++count) 
         {
-          parameters[n] = m_TransformGenerator->GetUniformVariate(1 - m_ScalingBounds, 1 + m_ScalingBounds);
+          parameters[count] = m_TransformGenerator->GetUniformVariate(1 - m_ScalingBounds, 1 + m_ScalingBounds);
         }
 
         // skew
         for (size_t n = 0; n < m_NumberOfSkewComponents; ++n, ++count) 
         {
-          parameters[n] = m_TransformGenerator->GetUniformVariate(-m_SkewBounds, m_SkewBounds);
+          parameters[count] = m_TransformGenerator->GetUniformVariate(-m_SkewBounds, m_SkewBounds);
         }
 
         m_Transform->SetParameters(parameters);
@@ -234,7 +215,6 @@ namespace itk
       default:
         itkExceptionMacro(<< "Invalid type of the input transform");
       }
-
     }
 
   protected:
@@ -245,18 +225,22 @@ namespace itk
     }
     virtual ~InitializeRandomTransform() {};
 
+    void InitializeVersor() 
+    {
+      m_Angle = m_TransformGenerator->GetUniformVariate(-m_RotationBounds, m_RotationBounds);
+
+      for (size_t n = 0; n < PointDimension; ++n) {
+        m_Axis[n] = m_TransformGenerator->GetUniformVariate(-1, 1);
+      }
+      m_Versor.Set(m_Axis, m_Angle);
+    }
+
     virtual void PrintSelf(std::ostream & os, itk::Indent indent) const ITK_OVERRIDE
     {
       Superclass::PrintSelf(os, indent);
       os << std::endl;
 
-      os << "Center " << m_Center << std::endl;
-      os << std::endl;
-
       os << "Transform " << m_Transform->GetTransformTypeAsString() << std::endl;
-      os << indent << "Center           " << m_Center << std::endl;
-      os << indent << "Fixed parameters " << m_Transform->GetFixedParameters() << ", " << m_Transform->GetNumberOfFixedParameters() << std::endl;
-      os << indent << "Parameters       " << m_Transform->GetParameters() << ", " << m_Transform->GetNumberOfParameters() << std::endl;
       os << std::endl;
 
       os << "Bounds" << std::endl;
@@ -264,12 +248,23 @@ namespace itk
       os << indent << "Rotation bounds    " << m_RotationBounds << std::endl;
       os << indent << "Scaling bounds     " << m_ScalingBounds << std::endl;
       os << indent << "Skew bounds        " << m_SkewBounds << std::endl;
+      os << std::endl;
+
+      os << "Parameters" << std::endl;
+      os << indent << "Center           " << m_Center << std::endl;
+      os << indent << "Fixed parameters " << m_Transform->GetFixedParameters() << ", " << m_Transform->GetNumberOfFixedParameters() << std::endl;
+      os << indent << "Parameters       " << m_Transform->GetParameters() << ", " << m_Transform->GetNumberOfParameters() << std::endl;
+      os << indent << "Versor           " << m_Versor << ", angle " << m_Versor.GetAngle() <<  ", axis " << m_Versor.GetAxis() << std::endl;
+      os << std::endl;
     }
 
     Transform m_TypeOfTransform = Transform::Similarity;
     typename TransformType::Pointer m_Transform = nullptr;
 
     InputPointType m_Center;
+    VersorType m_Versor;
+    AxisType m_Axis;
+    double m_Angle;
 
     typename TransformGeneratorType::Pointer m_TransformGenerator;
     int m_RandomSeed = 0;
