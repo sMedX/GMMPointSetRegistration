@@ -229,10 +229,22 @@ namespace itk
     {
       m_Angle = m_TransformGenerator->GetUniformVariate(-m_RotationBounds, m_RotationBounds);
 
-      for (size_t n = 0; n < PointDimension; ++n) {
-        m_Axis[n] = m_TransformGenerator->GetUniformVariate(-1, 1);
+      while (true) 
+      {
+        for (size_t n = 0; n < PointDimension; ++n) {
+          m_Axis[n] = m_TransformGenerator->GetUniformVariate(-1, 1);
+        }
+
+        // Exception is possible when attempting to set rotation axis with zero norm
+        try {
+          m_Versor.Set(m_Axis, m_Angle);
+        }
+        catch (...) {
+          continue;
+        }
+
+        break;
       }
-      m_Versor.Set(m_Axis, m_Angle);
     }
 
     virtual void PrintSelf(std::ostream & os, itk::Indent indent) const ITK_OVERRIDE
