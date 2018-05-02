@@ -231,15 +231,18 @@ namespace itk
 
       while (true) 
       {
-        for (size_t n = 0; n < PointDimension; ++n) {
+        for (size_t n = 0; n < PointDimension; ++n) 
+        {
           m_Axis[n] = m_TransformGenerator->GetUniformVariate(-1, 1);
         }
 
         // Exception is possible when attempting to set rotation axis with zero norm
-        try {
+        try 
+        {
           m_Versor.Set(m_Axis, m_Angle);
         }
-        catch (...) {
+        catch (...) 
+        {
           continue;
         }
 
