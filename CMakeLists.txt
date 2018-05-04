@@ -25,7 +25,7 @@ set(GMM_LIBRARIES "" CACHE INTERNAL "" FORCE)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/gmm)
 add_subdirectory(${CMAKE_SOURCE_DIR}/transform)
-add_subdirectory(${CMAKE_SOURCE_DIR}/pointset)
+add_subdirectory(${CMAKE_SOURCE_DIR}/mesh)
 add_subdirectory(${CMAKE_SOURCE_DIR}/initializer)
 add_subdirectory(${CMAKE_SOURCE_DIR}/utils)
 add_subdirectory(${CMAKE_SOURCE_DIR}/application)

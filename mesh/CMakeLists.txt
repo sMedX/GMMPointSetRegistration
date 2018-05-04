@@ -1,4 +1,4 @@
-set(_name PointSet)
+set(_name Mesh)
 project(${_name})
 
 set(HEADERS
