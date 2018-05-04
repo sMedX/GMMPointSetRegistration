@@ -297,7 +297,7 @@ throw ( ExceptionObject )
   if (m_UseMovingPointSetKdTree && !m_MovingPointsLocator)
     {
     InitializeMovingTree();
-  }
+    }
 
   m_NumberOfParameters = this->GetNumberOfParameters();
 
