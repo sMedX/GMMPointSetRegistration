@@ -11,6 +11,7 @@ namespace itk
 template <typename TFixedPointSet, typename TMovingPointSet>
 GMMICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMICPPointSetToPointSetMetric()
 {
+  this->m_UseFixedPointSetKdTree = true;
 }
 
 /** Initialize the metric */
@@ -31,7 +32,7 @@ GMMICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
   // transform point
   const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
 
-  // find closest point
+  // find closest point and compute value
   size_t idx = this->m_FixedPointsLocator->FindClosestPoint(point);
   const FixedPointType fixedPoint = this->GetFixedPoint(idx);
 

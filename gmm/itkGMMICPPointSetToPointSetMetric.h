@@ -47,7 +47,7 @@ public:
   typedef typename Superclass::MovingNeighborsIteratorType    MovingNeighborsIteratorType;
 
   /** Initialize the Metric by making sure that all the components are present and plugged together correctly.*/
-  virtual void Initialize() throw (ExceptionObject)ITK_OVERRIDE;
+  virtual void Initialize() throw (ExceptionObject) ITK_OVERRIDE;
 
   /** Calculates the local metric value for a single point.*/
   virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const ITK_OVERRIDE;
@@ -71,8 +71,6 @@ public:
 protected:
   GMMICPPointSetToPointSetMetric();
   virtual ~GMMICPPointSetToPointSetMetric() {}
-
-  typename FixedPointsLocatorType::Pointer m_FixedPointsLocator;
 
 private:
   GMMICPPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
