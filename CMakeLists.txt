@@ -24,5 +24,8 @@ set(GMM_INCLUDE_DIRS
 set(GMM_LIBRARIES "" CACHE INTERNAL "" FORCE)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/gmm)
+add_subdirectory(${CMAKE_SOURCE_DIR}/transform)
+add_subdirectory(${CMAKE_SOURCE_DIR}/pointset)
+add_subdirectory(${CMAKE_SOURCE_DIR}/initializer)
 add_subdirectory(${CMAKE_SOURCE_DIR}/utils)
-add_subdirectory(${CMAKE_SOURCE_DIR}/apps)
+add_subdirectory(${CMAKE_SOURCE_DIR}/application)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "itkGMMICPPointSetToPointSetMetric.h"
 #include "itkGMML2RigidPointSetToPointSetMetric.h"
 #include "itkGMML2PointSetToPointSetMetric.h"
 #include "itkGMMKCPointSetToPointSetMetric.h"
@@ -27,6 +28,7 @@ namespace itk
     // define type of metric
     enum class Metric
     {
+      GMMICP = -1,
       GMML2Rigid = 0,
       GMML2 = 1,
       GMMKC = 2,
@@ -43,6 +45,11 @@ namespace itk
     void Initialize()
     {
       switch (m_TypeOfMetric) {
+      case Metric::GMMICP: {
+        typedef itk::GMMICPPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        m_Metric = MetricType::New();
+        break;
+      }
       case Metric::GMML2Rigid: {
         typedef itk::GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
         m_Metric = MetricType::New();
