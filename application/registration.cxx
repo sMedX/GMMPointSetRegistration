@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
   
   const std::string metricDescription =
     "The type of metric (That is number):\n"
+    " -1 : ICP\n"
     "  0 : L2Rigid\n"
     "  1 : L2\n"
     "  2 : KC\n";
@@ -202,7 +203,7 @@ int main(int argc, char** argv) {
   registration->SetFixedPointSet(fixedPointSet);
   registration->SetMovingPointSet(movingPointSet);
   registration->SetOptimizer(optimizer);
-  registration->SetMetric(initializerMetric->GetMetric());
+  registration->SetMetric(metric);
   registration->SetTransform(transform);
   registration->SetNumberOfLevels(numberOfLevels);
   registration->SetGradientConvergenceTolerance(optimizer->GetGradientConvergenceTolerance());

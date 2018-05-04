@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
 
   const std::string metricDescription =
     "The type of metric (That is number):\n"
+    " -1 : ICP\n"
     "  0 : L2Rigid\n"
     "  1 : L2\n"
     "  2 : KC\n";
