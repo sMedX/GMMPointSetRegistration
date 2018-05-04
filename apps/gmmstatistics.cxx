@@ -120,12 +120,12 @@ int main(int argc, char** argv) {
   {
     fixedPointSetCalculator->Compute();
   }
-  catch (itk::ExceptionObject& excep) {
+  catch (itk::ExceptionObject& excep) 
+  {
     std::cerr << excep << std::endl;
     return EXIT_FAILURE;
   }
   fixedPointSetCalculator->Print(std::cout);
-  PointType fixedCenter = fixedPointSetCalculator->GetCenter();
 
   PointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = PointSetPropertiesCalculatorType::New();
   movingPointSetCalculator->SetPointSet(initialMovingMesh);
@@ -139,13 +139,16 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   movingPointSetCalculator->Print(std::cout);
-  PointType initialMovingCenter = movingPointSetCalculator->GetCenter();
 
   // generate random transform
   typedef itk::GenerateRandomTransform<double> GenerateRandomTransformType;
   GenerateRandomTransformType::Pointer generateRandomTransform = GenerateRandomTransformType::New();
-  generateRandomTransform->SetCenter(movingPointSetCalculator->GetCenter());
   generateRandomTransform->SetTypeOfTransform(typeOfTransform);
+  generateRandomTransform->SetCenter(movingPointSetCalculator->GetCenter());
+  generateRandomTransform->SetTranslationBounds(100);
+  generateRandomTransform->SetRotationBounds(itk::Math::pi_over_4);
+  generateRandomTransform->SetScalingBounds(0.2);
+  generateRandomTransform->SetSkewBounds(0.2);
 
   // initialize metric
   typedef itk::InitializeMetric<PointSetType, PointSetType> InitializeMetricType;
@@ -201,13 +204,24 @@ int main(int argc, char** argv) {
       return EXIT_FAILURE;
     }
     MeshType::Pointer movingMesh = transformMesh1->GetOutput();
-    PointType movingCenter = transformMesh1->GetTransform()->TransformPoint(initialMovingCenter);
+
+    PointSetPropertiesCalculatorType::Pointer movingPointSetCalculator = PointSetPropertiesCalculatorType::New();
+    movingPointSetCalculator->SetPointSet(movingMesh);
+    try 
+    {
+      movingPointSetCalculator->Compute();
+    }
+    catch (itk::ExceptionObject& excep) 
+    {
+      std::cerr << excep << std::endl;
+      return EXIT_FAILURE;
+    }
 
     // initialize transform to perform registration
     typedef itk::InitializeTransform<double> TransformInitializerType;
     TransformInitializerType::Pointer initializerTransform = TransformInitializerType::New();
-    initializerTransform->SetFixedLandmark(fixedCenter);
-    initializerTransform->SetMovingLandmark(movingCenter);
+    initializerTransform->SetFixedLandmark(fixedPointSetCalculator->GetCenter());
+    initializerTransform->SetMovingLandmark(movingPointSetCalculator->GetCenter());
     initializerTransform->SetTypeOfTransform(typeOfTransform);
     try {
       initializerTransform->Initialize();
