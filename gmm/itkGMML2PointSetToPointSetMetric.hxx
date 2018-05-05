@@ -23,10 +23,6 @@ GMML2PointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
   Superclass::Initialize();
 
   this->InitializeTransformedMovingPointSet();
-
-  this->m_NormalizingValueFactor = 1.0 / this->m_TransformedMovingPointSet->GetNumberOfPoints();
-
-  this->m_NormalizingDerivativeFactor = -2.0 / (this->m_TransformedMovingPointSet->GetNumberOfPoints() * this->m_Scale * this->m_Scale);
 }
 
 /** Initialize data for current iteration with the input parameters */
@@ -150,6 +146,64 @@ GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 
   return true;
 }
+
+template<typename TFixedPointSet, typename TMovingPointSet>
+bool
+GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::GetLocalNeighborhoodDerivative(const MovingPointIterator & it, LocalDerivativeType & derivative) const
+{
+  const MovingPointType point = this->GetTransformedMovingPoint(it.Index());
+
+  const double scale = this->m_Scale * this->m_Scale;
+
+  // compute value and derivative gradient for the first sum
+  double value1 = 0;
+  LocalDerivativeType derivative1;
+  derivative1.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+
+  FixedNeighborsIdentifierType idx;
+  this->SearchFixedPoints(point, idx);
+
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) {
+    const FixedPointType fixedPoint = this->GetFixedPoint(*it);
+
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
+    const double expval = std::exp(-distance / scale);
+    value1 += expval;
+
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+      derivative1[dim] += expval * (point[dim] - fixedPoint[dim]);
+    }
+  }
+
+  // compute derivatives for the second part
+  double value2 = 0;
+  LocalDerivativeType derivative2;
+  derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+
+  for (FixedPointIterator it = this->m_TransformedMovingPointSet->GetPoints()->Begin(); it != this->m_TransformedMovingPointSet->GetPoints()->End(); ++it) {
+    const FixedPointType transformedPoint = it.Value();
+    const double distance = point.SquaredEuclideanDistanceTo(transformedPoint);
+    const double expval = std::exp(-distance / scale);
+    value2 += expval;
+
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+      derivative2[dim] += expval * (point[dim] - transformedPoint[dim]);
+    }
+  }
+
+  // local value
+  const double factor1 = this->m_FixedPointSet->GetNumberOfPoints();
+  const double factor2 = this->m_MovingPointSet->GetNumberOfPoints();
+
+  // local derivatives
+  for (size_t dim = 0; dim < this->PointDimension; ++dim) {
+    derivative[dim] = -2.0 * derivative1[dim] / factor1 + derivative2[dim] / factor2;
+  }
+
+  return true;
+}
+
 }
 
 #endif

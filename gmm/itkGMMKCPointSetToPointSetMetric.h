@@ -57,8 +57,21 @@ protected:
   /** Calculates the local value/derivative for a single point.*/
   virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator &, MeasureType &, LocalDerivativeType &) const ITK_OVERRIDE;
 
+  /** Calculates the local derivative for a single point.*/
+  virtual bool GetLocalNeighborhoodDerivative(const MovingPointIterator &, LocalDerivativeType &) const ITK_OVERRIDE;
+
   /** Initialize to prepare for a particular iteration, generally an iteration of optimization. */
   virtual void InitializeForIteration(const ParametersType & parameters) const;
+
+  virtual double GetNormalizingValueFactor() const ITK_OVERRIDE
+  {
+    return -1.0 / (this->m_FixedPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+  }
+
+  virtual double GetNormalizingDerivativeFactor() const ITK_OVERRIDE
+  {
+    return 4.0 * this->m_MovingPointSet->GetNumberOfPoints() / pow(this->m_FixedPointSet->GetNumberOfPoints(), 3);
+  }
 
 private:
   GMMKCPointSetToPointSetMetric(const Self &) ITK_DELETE_FUNCTION;
