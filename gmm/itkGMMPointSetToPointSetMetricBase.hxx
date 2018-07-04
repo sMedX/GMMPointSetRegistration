@@ -36,8 +36,6 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_Jacobian.set_size(MovingPointSetDimension, m_NumberOfParameters);
   m_JacobianCache.set_size(MovingPointSetDimension, MovingPointSetDimension);
 
-  m_NormalizingValueFactor = 1;
-  m_NormalizingDerivativeFactor = 1;
   m_Scale = 1;
 
   m_UseFixedPointSetKdTree = false;
@@ -46,7 +44,8 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_UseMovingPointSetKdTree = false;
   m_MovingPointsLocator = ITK_NULLPTR;
 
-  m_Radius = 3;
+  m_SearchRadius = 3;
+  m_IsInitialized = false;
 }
 
 /**
@@ -60,12 +59,14 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetValue(const
 
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
-  for (MovingPointIterator it = m_TransformedMovingPointSet->GetPoints()->Begin(); it != m_TransformedMovingPointSet->GetPoints()->End(); ++it) 
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
   {
-    value += GetLocalNeighborhoodValue(it.Value());
+    value += GetLocalNeighborhoodValue(it);
   }
 
-  value *= m_NormalizingValueFactor;
+  double valueFactor = this->GetNormalizingValueFactor();
+
+  value *= valueFactor;
 
   return value;
 }
@@ -91,46 +92,87 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
   derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
   LocalDerivativeType localDerivative;
 
-  for (MovingPointIterator it = m_TransformedMovingPointSet->GetPoints()->Begin(); it != m_TransformedMovingPointSet->GetPoints()->End(); ++it) 
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
   {
     // compute local value and derivatives
-    this->GetLocalNeighborhoodValueAndDerivative(it.Value(), localValue, localDerivative);
-
-    value += localValue;
-    //std::cout << it.Index() << it.Value() << std::endl;
-    //std::cout << localValue << std::endl;
-    //std::cout << localDerivative << std::endl;
-
-    // compute derivatives
-    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(m_MovingPointSet->GetPoint(it.Index()), m_Jacobian, m_JacobianCache);
-
-    for (size_t dim = 0; dim < PointDimension; ++dim) 
+    if (this->GetLocalNeighborhoodValueAndDerivative(it, localValue, localDerivative))
     {
-      for (size_t par = 0; par < m_NumberOfParameters; ++par) 
+      value += localValue;
+
+      // compute derivatives
+      this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), m_Jacobian, m_JacobianCache);
+
+      for (size_t dim = 0; dim < PointDimension; ++dim) 
       {
-        derivative[par] += m_Jacobian(dim, par) * localDerivative[dim];
+        for (size_t par = 0; par < m_NumberOfParameters; ++par) 
+        {
+          derivative[par] += m_Jacobian(dim, par) * localDerivative[dim];
+        }
       }
     }
   }
 
-  std::cout << "-------------" << std::endl;
-  std::cout << value << std::endl;
-  std::cout << derivative << std::endl;
-  std::cout << std::endl;
+  double valueFactor = this->GetNormalizingValueFactor();
+  double derivativeFactor = this->GetNormalizingDerivativeFactor();
 
-  value *= m_NormalizingValueFactor;
+  value *= valueFactor;
 
   for (size_t par = 0; par < m_NumberOfParameters; ++par) 
   {
-    derivative[par] *= m_NormalizingDerivativeFactor;
+    derivative[par] *= derivativeFactor;
+  }
+}
+
+/*
+* Get both the match Measure and the Derivative Measure
+*/
+template <typename TFixedPointSet, typename TMovingPointSet>
+void
+GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
+::GetDerivatives(const TransformParametersType & parameters, DerivativeType & derivative1, DerivativeType & derivative2) const
+{
+  if (derivative1.size() != this->m_NumberOfParameters) 
+  {
+    derivative1.set_size(this->m_NumberOfParameters);
   }
 
-  std::cout << value << std::endl;
-  std::cout << derivative << std::endl;
-  std::cout << std::endl;
-  std::cout << m_NormalizingValueFactor << std::endl;
-  std::cout << m_NormalizingDerivativeFactor << std::endl;
-  std::cout << std::endl;
+  derivative1.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+
+  if (derivative2.size() != this->m_NumberOfParameters) 
+  {
+    derivative2.set_size(this->m_NumberOfParameters);
+  }
+
+  derivative2.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+
+  LocalDerivativeType localDerivative1;
+  LocalDerivativeType localDerivative2;
+
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
+
+    // compute local derivatives
+    if (this->GetLocalNeighborhoodDerivatives(it, localDerivative1, localDerivative2)) {
+
+      // compute derivatives
+      this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), m_Jacobian, m_JacobianCache);
+
+      for (size_t dim = 0; dim < PointDimension; ++dim) {
+        for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+          derivative1[par] += m_Jacobian(dim, par) * localDerivative1[dim];
+          derivative2[par] += m_Jacobian(dim, par) * localDerivative2[dim];
+        }
+      }
+    }
+  }
+
+  double derivativeFactor = this->GetNormalizingDerivativeFactor();
+  double derivativeScaleFactor = this->GetNormalizingDerivativeScaleFactor();
+
+  for (size_t par = 0; par < m_NumberOfParameters; ++par) 
+  {
+    derivative1[par] *= derivativeFactor;
+    derivative2[par] *= derivativeScaleFactor;
+  }
 }
 
 /**
@@ -139,7 +181,54 @@ GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>
 template <typename TFixedPointSet, typename TMovingPointSet>
 void GMMPointSetToPointSetMetricBase<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
 {
-  itkExceptionMacro(<< "not implemented");
+  this->InitializeForIteration(parameters);
+
+  if (derivative.size() != this->m_NumberOfParameters) {
+    derivative.set_size(this->m_NumberOfParameters);
+  }
+
+  derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
+  LocalDerivativeType localDerivative;
+
+  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) {
+    // compute local value and derivatives
+    if (this->GetLocalNeighborhoodDerivative(it, localDerivative)) {
+
+      // compute derivatives
+      this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(it.Value(), m_Jacobian, m_JacobianCache);
+
+      for (size_t dim = 0; dim < PointDimension; ++dim) {
+        for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+          derivative[par] += m_Jacobian(dim, par) * localDerivative[dim];
+        }
+      }
+    }
+  }
+
+  double derivativeFactor = this->GetNormalizingDerivativeFactor();
+
+  for (size_t par = 0; par < m_NumberOfParameters; ++par) {
+    derivative[par] *= derivativeFactor;
+  }
+}
+
+/** Set scale */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::SetScale(const double & sigma)
+{
+  this->m_Scale = sigma; 
+  this->m_Variance = sigma * sigma;
+}
+
+/** Set scale */
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::SetScale(const ParametersType & parameters)
+{
+  this->SetScale(parameters[0]);
 }
 
 /** Initialize data for current iteration with the input parameters */
@@ -148,18 +237,7 @@ void
 GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 ::InitializeForIteration(const ParametersType & parameters) const
 {
-  this->SetTransformParameters(parameters);
-
-  if (!m_TransformedMovingPointSet) 
-  {
-    m_TransformedMovingPointSet = MovingPointSetType::New();
-    m_TransformedMovingPointSet->GetPoints()->resize(m_MovingPointSet->GetNumberOfPoints());
-  }
-
-  for (MovingPointIterator it = m_MovingPointSet->GetPoints()->Begin(); it != m_MovingPointSet->GetPoints()->End(); ++it) 
-  {
-    m_TransformedMovingPointSet->GetPoints()->SetElement(it.Index(), m_Transform->TransformPoint(it.Value()));
-  }
+  m_Transform->SetParameters(parameters);
 }
 
 /** Set the parameters that define a unique transform */
@@ -221,9 +299,9 @@ throw ( ExceptionObject )
     InitializeMovingTree();
   }
 
-  m_NumberOfParameters = m_Transform->GetNumberOfParameters();
-  m_NumberOfFixedPoints = m_FixedPointSet->GetNumberOfPoints();
-  m_NumberOfMovingPoints = m_MovingPointSet->GetNumberOfPoints();
+  m_NumberOfParameters = this->GetNumberOfParameters();
+
+  m_IsInitialized = true;
 }
 
 /** Initialize KdTree for FixedPointSet */
@@ -248,6 +326,16 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
   m_MovingPointsLocator->Initialize();
 }
 
+/** Initialize transformed point set*/
+template< typename TFixedPointSet, typename TMovingPointSet >
+void
+GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
+::InitializeTransformedMovingPointSet()
+{
+  m_TransformedMovingPointSet = FixedPointSetType::New();
+  m_TransformedMovingPointSet->GetPoints()->resize(m_MovingPointSet->GetNumberOfPoints());
+}
+
 /** PrintSelf */
 template< typename TFixedPointSet, typename TMovingPointSet >
 void
@@ -255,9 +343,19 @@ GMMPointSetToPointSetMetricBase< TFixedPointSet, TMovingPointSet >
 ::PrintSelf(std::ostream & os, Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-  os << indent << "Moving PointSet: " << m_MovingPointSet.GetPointer()  << std::endl;
-  os << indent << "Fixed  PointSet: " << m_FixedPointSet.GetPointer()   << std::endl;
-  os << indent << "Transform:       " << m_Transform.GetPointer()    << std::endl;
+  os << std::endl;
+
+  os << "Transform " << m_Transform.GetPointer() << std::endl;
+  os << indent << m_Transform->GetNameOfClass() << std::endl;
+  os << std::endl;
+
+  os << "Fixed point set  " << m_FixedPointSet.GetPointer() << std::endl;
+  os << indent << "Use KdTree  " << m_UseFixedPointSetKdTree << std::endl;
+  os << std::endl;
+
+  os << "Moving point set " << m_MovingPointSet.GetPointer() << std::endl;
+  os << indent << "Use KdTree  " << m_UseMovingPointSetKdTree << std::endl;
+  os << std::endl;
 }
 } // end namespace itk
 

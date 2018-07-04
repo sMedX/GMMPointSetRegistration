@@ -11,6 +11,7 @@ namespace itk
 template <typename TFixedPointSet, typename TMovingPointSet>
 GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GMMMLEPointSetToPointSetMetric()
 {
+  this->m_UseFixedPointSetKdTree  = true;
 }
 
 /** Initialize the metric */
@@ -21,121 +22,74 @@ GMMMLEPointSetToPointSetMetric< TFixedPointSet, TMovingPointSet >
 {
   Superclass::Initialize();
 
-  m_ValuesOfProbability.set_size(this->m_NumberOfFixedPoints);
+  this->InitializeTransformedMovingPointSet();
+
+  this->m_NormalizingValueFactor = -2.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints());
+
+  this->m_NormalizingDerivativeFactor = 4.0 / (this->m_MovingPointSet->GetNumberOfPoints() * this->m_FixedPointSet->GetNumberOfPoints() * this->m_Scale * this->m_Scale);
 }
 
-/**
- * Get the match Measure
- */
-template <typename TFixedPointSet, typename TMovingPointSet>
-typename GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::MeasureType
-GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
+template<typename TFixedPointSet, typename TMovingPointSet>
+typename GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::MeasureType
+GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::GetLocalNeighborhoodValue(const MovingPointIterator & it) const
 {
-  this->m_Transform->SetParameters(parameters);
+  const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
 
-  // compute transformed point set
-  this->m_TransformedPointSet = MovingPointSetType::New();
-  for (MovingPointIterator iter = this->m_MovingPointSet->GetPoints()->Begin(); iter != this->m_MovingPointSet->GetPoints()->End(); ++iter) {
-    this->m_TransformedPointSet->SetPoint(iter.Index(), this->m_Transform->TransformPoint(iter.Value()));
-  }
-
-  const double scale = 2.0 * this->m_MovingPointSetScale * this->m_MovingPointSetScale;
+  const double scale = this->m_Scale * this->m_Scale;
 
   MeasureType value = NumericTraits<MeasureType>::ZeroValue();
 
-  for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
-    const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
-    double sum = 1.0e-05;
+  FixedNeighborsIdentifierType idx;
+  this->SearchFixedPoints(point, idx);
 
-    for (MovingPointIterator transformedIter = this->m_TransformedPointSet->GetPoints()->Begin(); transformedIter != this->m_TransformedPointSet->GetPoints()->End(); ++transformedIter) {
-      const typename MovingPointSetType::PointType transformedPoint = transformedIter.Value();
-      const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
-      sum += exp(-distance / scale);
-    }
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
+  {
+    const FixedPointType fixedPoint = this->GetFixedPoint(*it);
 
-    m_ValuesOfProbability[fixedIter.Index()] = sum;
-    value -= log(sum);
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
+    const double expval = std::exp(-distance / scale);
+    value += expval;
   }
 
   return value;
 }
-/**
- * Get the Derivative Measure
- */
-template <typename TFixedPointSet, typename TMovingPointSet>
-void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const
-{
-  itkExceptionMacro(<< "not implemented");
-}
 
-/*
- * Get both the match Measure and the Derivative Measure
- */
-template <typename TFixedPointSet, typename TMovingPointSet>
-void GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & value, DerivativeType  & derivative) const
+template<typename TFixedPointSet, typename TMovingPointSet>
+bool
+GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
+::GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator & it, MeasureType & value, LocalDerivativeType & derivative) const
 {
-  this->m_Transform->SetParameters(parameters);
+  const FixedPointType point = this->m_Transform->TransformPoint(it.Value());
 
-  if (derivative.size() != this->m_NumberOfParameters) {
-    derivative.set_size(this->m_NumberOfParameters);
+  FixedNeighborsIdentifierType idx;
+  if (!this->SearchFixedPoints(point, idx)) 
+  {
+    return false;
   }
 
-  // compute transformed point set
-  this->m_TransformedPointSet = MovingPointSetType::New();
-  for (MovingPointIterator iter = this->m_MovingPointSet->GetPoints()->Begin(); iter != this->m_MovingPointSet->GetPoints()->End(); ++iter) {
-    this->m_TransformedPointSet->SetPoint(iter.Index(), this->m_Transform->TransformPoint(iter.Value()));
-  }
-
-  const double scale = 2.0 * this->m_MovingPointSetScale * this->m_MovingPointSetScale;
+  const double scale = this->m_Scale * this->m_Scale;
 
   value = NumericTraits<MeasureType>::ZeroValue();
 
-  for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
-    const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
-    double sum = 1.0e-05;
+  derivative.Fill(NumericTraits<DerivativeValueType>::ZeroValue());
 
-    for (MovingPointIterator transformedIter = this->m_TransformedPointSet->GetPoints()->Begin(); transformedIter != this->m_TransformedPointSet->GetPoints()->End(); ++transformedIter) {
-      const typename MovingPointSetType::PointType transformedPoint = transformedIter.Value();
-      const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
-      sum += exp(-distance / scale);
-    }
+  for (FixedNeighborsIteratorType it = idx.begin(); it != idx.end(); ++it) 
+  {
+    const FixedPointType fixedPoint = this->GetFixedPoint(*it);
 
-    m_ValuesOfProbability[fixedIter.Index()] = sum;
-    value -= log(sum);
-  }
+    const double distance = point.SquaredEuclideanDistanceTo(fixedPoint);
+    const double expval = std::exp(-distance / scale);
+    value += expval;
 
-  // compute the derivatives
-  derivative.Fill(NumericTraits<typename DerivativeType::ValueType>::ZeroValue());
-  GradientType gradient;
-
-  for (MovingPointIterator transformedIter = this->m_TransformedPointSet->GetPoints()->Begin(); transformedIter != this->m_TransformedPointSet->GetPoints()->End(); ++transformedIter) {
-
-    // compute gradient for the current transformed point
-    const typename MovingPointSetType::PointType transformedPoint = transformedIter.Value();
-    gradient.Fill(0);
-
-    for (FixedPointIterator fixedIter = this->m_FixedPointSet->GetPoints()->Begin(); fixedIter != this->m_FixedPointSet->GetPoints()->End(); ++fixedIter) {
-      const typename FixedPointSetType::PointType fixedPoint = fixedIter.Value();
-      const double distance = transformedPoint.SquaredEuclideanDistanceTo(fixedPoint);
-      const double expval = exp(-distance / scale);
-      const double prbval = m_ValuesOfProbability[fixedIter.Index()];
-
-      for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-        gradient[dim] += expval * (transformedPoint[dim] - fixedPoint[dim]) / prbval;
-      }
-    }
-
-    // compute derivatives for the current transformed point
-    this->m_Transform->ComputeJacobianWithRespectToParametersCachedTemporaries(this->m_MovingPointSet->GetPoint(transformedIter.Index()), this->m_Jacobian, this->m_JacobianCache);
-
-    for (size_t dim = 0; dim < this->PointDimension; ++dim) {
-      gradient[dim] *= (2.0 / scale);
-
-      for (size_t par = 0; par < this->m_NumberOfParameters; ++par) {
-        derivative[par] += this->m_Jacobian(dim, par) * gradient[dim];
-      }
+    for (size_t dim = 0; dim < this->PointDimension; ++dim) 
+    {
+      derivative[dim] += expval * (point[dim] - fixedPoint[dim]);
     }
   }
+
+  return true;
 }
 }
 

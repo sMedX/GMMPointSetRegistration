@@ -22,12 +22,12 @@ namespace itk
     itkNewMacro(Self);
     itkTypeMacro(InitializeTransform, Object);
 
-    enum class Transform
+    enum Transform
     {
-      Translation,
-      Versor3D,
-      Similarity,
-      ScaleSkewVersor3D
+      Translation = 0,
+      Versor3D = 1,
+      Similarity = 2,
+      ScaleSkewVersor3D = 3
     };
 
     /** typedefs */
@@ -72,7 +72,7 @@ namespace itk
     itkSetMacro(MovingLandmark, InputPointType);
     itkSetMacro(FixedLandmark, OutputPointType);
 
-    void Update()
+    void Initialize()
     {
       m_Center = m_MovingLandmark;
       m_Translation = m_FixedLandmark - m_MovingLandmark;
@@ -212,25 +212,38 @@ namespace itk
 
         break;
       }
+      default:
+        itkExceptionMacro(<< "Invalid type of the input transform");
       }
     }
 
-    void PrintReport() const
+  protected:
+    InitializeTransform() {}
+    virtual ~InitializeTransform() {};
+
+    virtual void PrintSelf(std::ostream & os, itk::Indent indent) const ITK_OVERRIDE
     {
-      std::cout << this->GetNameOfClass() << std::endl;
-      std::cout << "spatial transform    " << m_Transform->GetTransformTypeAsString() << std::endl;
-      std::cout << "center               " << m_Center << std::endl;
-      std::cout << "translation          " << m_Translation << std::endl;
-      std::cout << "fixed parameters     " << m_Transform->GetFixedParameters() << " " << m_Transform->GetNumberOfFixedParameters() << std::endl;
-      std::cout << "parameters           " << m_Transform->GetParameters() << " " << m_Transform->GetNumberOfParameters() << std::endl;
-      std::cout << "scales               " << std::endl << m_Scales << std::endl;
-      std::cout << "mode bounds          " << std::endl << m_ModeBounds << std::endl;
-      std::cout << "lower bounds         " << std::endl << m_LowerBounds << std::endl;
-      std::cout << "upper bounds         " << std::endl << m_UpperBounds << std::endl;
-      std::cout << std::endl;
+      Superclass::PrintSelf(os, indent);
+      os << std::endl;
+
+      os << "Landmarks" << std::endl;
+      os << indent << "fixed  " << m_FixedLandmark << std::endl;
+      os << indent << "moving " << m_MovingLandmark << std::endl;
+      os << std::endl;
+
+      os << "Transform " << m_Transform->GetTransformTypeAsString() << std::endl;
+      os << indent << "Center           " << m_Center << std::endl;
+      os << indent << "Translation      " << m_Translation << std::endl;
+      os << indent << "Fixed parameters " << m_Transform->GetFixedParameters() << ", " << m_Transform->GetNumberOfFixedParameters() << std::endl;
+      os << indent << "Parameters       " << m_Transform->GetParameters() << ", " << m_Transform->GetNumberOfParameters() << std::endl;
+      os << std::endl;
+      os << indent << "Scales           " << m_Scales << std::endl;
+      os << indent << "Mode bounds      " << m_ModeBounds << std::endl;
+      os << indent << "Lower bounds     " << m_LowerBounds << std::endl;
+      os << indent << "Upper bounds     " << m_UpperBounds << std::endl;
+      os << std::endl;
     }
 
-  protected:
     Transform m_TypeOfTransform = Transform::Similarity;
     typename TransformType::Pointer m_Transform = nullptr;
 
@@ -279,7 +292,8 @@ namespace itk
       m_UpperBounds.Fill(0);
     }
 
-    InitializeTransform() {}
-    ~InitializeTransform() {}
+  private:
+    InitializeTransform(const Self &) ITK_DELETE_FUNCTION;
+    void operator=(const Self &) ITK_DELETE_FUNCTION;
   };
 }

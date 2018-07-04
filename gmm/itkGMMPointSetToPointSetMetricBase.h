@@ -58,15 +58,17 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(GMMPointSetToPointSetMetricBase, SingleValuedCostFunction);
 
-  /**  Type of the moving point set. */
-  typedef TMovingPointSet                           MovingPointSetType;
-  typedef typename MovingPointSetType::PointType    MovingPointType;
-  typedef typename MovingPointSetType::ConstPointer MovingPointSetConstPointer;
-
   /**  Type of the fixed point set. */
-  typedef TFixedPointSet                            FixedPointSetType;
-  typedef typename FixedPointSetType::PointType     FixedPointType;
-  typedef typename FixedPointSetType::ConstPointer  FixedPointSetConstPointer;
+  typedef TFixedPointSet                               FixedPointSetType;
+  typedef typename FixedPointSetType::PointType        FixedPointType;
+  typedef typename FixedPointSetType::PointIdentifier  FixedPointIdentifier;
+  typedef typename FixedPointSetType::ConstPointer     FixedPointSetConstPointer;
+
+  /**  Type of the moving point set. */
+  typedef TMovingPointSet                              MovingPointSetType;
+  typedef typename MovingPointSetType::PointType       MovingPointType;
+  typedef typename MovingPointSetType::PointIdentifier MovingPointIdentifier;
+  typedef typename MovingPointSetType::ConstPointer    MovingPointSetConstPointer;
 
   /** Constants for the point set dimensions */
   itkStaticConstMacro(MovingPointSetDimension, unsigned int, TMovingPointSet::PointDimension);
@@ -117,8 +119,9 @@ public:
   /**  Type of the parameters. */
   typedef Superclass::ParametersType ParametersType;
 
-  /** Get/Set the scale.  */
-  itkSetMacro(Scale, double);
+  /** Get/Set the sigma. */
+  virtual void SetScale(const ParametersType &);
+  virtual void SetScale(const double & );
   itkGetMacro(Scale, double);
 
   /** Get/Set the Fixed point set.  */
@@ -129,15 +132,12 @@ public:
   itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
   itkGetConstObjectMacro(MovingPointSet, MovingPointSetType);
 
-  /** Get/Set boolean flag to initialize KdTree.  */
-  itkSetMacro(UseFixedPointSetKdTree, bool);
+  /** Get boolean flag to use KdTree. */
   itkGetMacro(UseFixedPointSetKdTree, bool);
-
-  itkSetMacro(UseMovingPointSetKdTree, bool);
   itkGetMacro(UseMovingPointSetKdTree, bool);
 
-  itkSetMacro(Radius, double);
-  itkGetMacro(Radius, double);
+  itkSetMacro(SearchRadius, double);
+  itkGetMacro(SearchRadius, double);
 
   /** Connect the Transform. */
   itkSetObjectMacro(Transform, TransformType);
@@ -146,42 +146,80 @@ public:
   itkGetModifiableObjectMacro(Transform, TransformType);
 
   /** Get the value for single valued optimizers. */
-  MeasureType GetValue(const TransformParametersType & parameters) const ITK_OVERRIDE;
+  MeasureType GetValue(const TransformParametersType &) const ITK_OVERRIDE;
 
   /** Get the derivatives of the match measure. */
-  void GetDerivative(const TransformParametersType & parameters, DerivativeType & Derivative) const ITK_OVERRIDE;
+  void GetDerivative(const TransformParametersType &, DerivativeType &) const ITK_OVERRIDE;
 
   /**  Get value and derivatives for multiple valued optimizers. */
-  void GetValueAndDerivative(const TransformParametersType & parameters, MeasureType & Value, DerivativeType & Derivative) const ITK_OVERRIDE;
+  void GetValueAndDerivative(const TransformParametersType &, MeasureType &, DerivativeType &) const ITK_OVERRIDE;
 
-  /** Calculates the local metric value for a single point. */
-  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointType & point) const = 0;
-
-  /** Calculates the local value/derivative for a single point.*/
-  virtual void GetLocalNeighborhoodValueAndDerivative(const MovingPointType &, MeasureType &, LocalDerivativeType &) const = 0;
-
-  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize()
-  * which is a one-time initialization. */
-  virtual void InitializeForIteration(const ParametersType & parameters) const;
+  /**  Get value and derivatives for multiple valued optimizers. */
+  void GetDerivatives(const TransformParametersType &, DerivativeType &, DerivativeType &) const ITK_OVERRIDE;
 
   /** Set the parameters defining the Transform. */
-  void SetTransformParameters(const ParametersType & parameters) const;
+  void SetTransformParameters(const ParametersType &) const;
 
   /** Return the number of parameters required by the Transform */
-  virtual unsigned int GetNumberOfParameters(void) const ITK_OVERRIDE
-  { return m_Transform->GetNumberOfParameters(); }
+  virtual unsigned int GetNumberOfParameters(void) const ITK_OVERRIDE { return m_Transform->GetNumberOfParameters(); }
 
-  /** Initialize the Metric by making sure that all the components
-   *  are present and plugged together correctly     */
-  virtual void Initialize(void)
-  throw ( ExceptionObject );
+  /** Initialize the Metric by making sure that all the components are present and plugged together correctly     */
+  virtual void Initialize(void)  throw ( ExceptionObject );
+
+  bool IsInitialized() const { return m_IsInitialized; }
+
+  /** Calculates the local metric value for a single point. */
+  virtual MeasureType GetLocalNeighborhoodValue(const MovingPointIterator &) const = 0;
+
+  /** Calculates the local value/derivative for a single point.*/
+  virtual bool GetLocalNeighborhoodValueAndDerivative(const MovingPointIterator &, MeasureType &, LocalDerivativeType &) const = 0;
+
+  /** Calculates the local derivative for a single point.*/
+  virtual bool GetLocalNeighborhoodDerivative(const MovingPointIterator &, LocalDerivativeType &) const = 0;
+
+  /** Calculates the local derivatives for a single point.*/
+  virtual bool GetLocalNeighborhoodDerivatives(const MovingPointIterator &, LocalDerivativeType &, LocalDerivativeType &) const = 0;
+
+  /** Initialize to prepare for a particular iteration, generally an iteration of optimization. Distinct from Initialize() which is a one-time initialization. */
+  virtual void InitializeForIteration(const ParametersType & parameters) const;
+
+  virtual double GetNormalizingValueFactor() const = 0;
+
+  virtual double GetNormalizingDerivativeFactor() const = 0;
+
+  virtual double GetNormalizingDerivativeScaleFactor() const = 0;
 
 protected:
   GMMPointSetToPointSetMetricBase();
   virtual ~GMMPointSetToPointSetMetricBase() {}
   void InitializeFixedTree();
   void InitializeMovingTree();
+  void InitializeTransformedMovingPointSet();
+
   virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
+
+  /** Get point from point sets. */
+  virtual FixedPointType GetFixedPoint(const FixedPointIdentifier & pointIdentifier) const
+  {
+    return this->m_FixedPointSet->GetPoints()->at(pointIdentifier);
+  }
+
+  virtual MovingPointType GetMovingPoint(const MovingPointIdentifier & pointIdentifier) const
+  {
+    return this->m_MovingPointSet->GetPoints()->at(pointIdentifier);
+  }
+
+  virtual MovingPointType GetTransformedMovingPoint(const MovingPointIdentifier & pointIdentifier) const
+  {
+    return this->m_TransformedMovingPointSet->GetPoints()->at(pointIdentifier);
+  }
+
+  virtual size_t SearchFixedPoints(const FixedPointType & point, FixedNeighborsIdentifierType & idx  ) const
+  {
+    this->m_FixedPointsLocator->Search(point, this->m_SearchRadius * this->m_Scale, idx);
+
+    return idx.size();
+  }
 
   FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
@@ -194,18 +232,15 @@ protected:
   mutable TransformJacobianType m_JacobianCache;
 
   double m_Scale;
-
-  size_t m_NumberOfFixedPoints;
-  size_t m_NumberOfMovingPoints;
-
-  double m_NormalizingValueFactor;
-  double m_NormalizingDerivativeFactor;
+  double m_Variance;
 
   typename FixedPointsLocatorType::Pointer   m_FixedPointsLocator;
   typename MovingPointsLocatorType::Pointer  m_MovingPointsLocator;
   bool m_UseFixedPointSetKdTree;
   bool m_UseMovingPointSetKdTree;
-  double m_Radius;
+  double m_SearchRadius;
+
+  bool m_IsInitialized;
 
 private:
   GMMPointSetToPointSetMetricBase(const Self &) ITK_DELETE_FUNCTION;

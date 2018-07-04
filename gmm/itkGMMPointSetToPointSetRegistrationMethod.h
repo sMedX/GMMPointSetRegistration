@@ -6,6 +6,8 @@
 #include "itkSingleValuedNonLinearOptimizer.h"
 #include "itkDataObjectDecorator.h"
 #include "itkGMMPointSetToPointSetMetricBase.h"
+#include "itkGMMScalePointSetMetric.h"
+#include "itkGMMScalePointSetMetricEstimator.h"
 
 namespace itk
 {
@@ -44,6 +46,7 @@ public:
   typedef typename MetricType::Pointer                                            MetricPointer;
   typedef itk::Array<typename MetricType::MeasureType>                            MetricValuesType;
   typedef itk::Array<double>                                                      ScaleType;
+  typedef itk::GMMScalePointSetMetricEstimator<MetricType>                        MetricEstimatorType;
 
   /**  Type of the Transform . */
   typedef typename MetricType::TransformType TransformType;
@@ -61,7 +64,8 @@ public:
 
   /** Type of the Transformation parameters This is the same type used to
    *  represent the search space of the optimization algorithm */
-  typedef typename MetricType::TransformParametersType ParametersType;
+  typedef typename MetricType::TransformParametersType  ParametersType;
+  typedef typename ParametersType::ValueType            ParametersValueType;
 
   /** Smart Pointer type to a DataObject. */
   typedef typename DataObject::Pointer DataObjectPointer;
@@ -82,11 +86,13 @@ public:
   itkSetObjectMacro(Metric, MetricType);
   itkGetModifiableObjectMacro(Metric, MetricType);
 
+  /** Set/Get the Metric Estimator. */
+  itkSetObjectMacro(MetricEstimator, MetricEstimatorType);
+  itkGetModifiableObjectMacro(MetricEstimator, MetricEstimatorType);
+
   /** Set/Get the Transform. */
   itkSetObjectMacro(Transform, TransformType);
   itkGetModifiableObjectMacro(Transform, TransformType);
-  itkSetObjectMacro(FixedInitialTransform, TransformType);
-  itkSetObjectMacro(MovingInitialTransform, TransformType);
 
   /** Set/Get the initial transformation parameters. */
   virtual void SetInitialTransformParameters(const ParametersType & param);
@@ -99,14 +105,10 @@ public:
   /** Initialize by setting the interconnects between the components. */
   void Initialize() throw (ExceptionObject);
 
-  /** preprocessing of the fixed and moving point sets */
-  virtual void Preprocessing() throw (ExceptionObject);
-
   /** Returns the transform resulting from the registration process  */
   const TransformOutputType * GetOutput() const;
 
-  /** Make a DataObject of the correct type to be used as the specified
-   * output. */
+  /** Make a DataObject of the correct type to be used as the specified output. */
   typedef ProcessObject::DataObjectPointerArraySizeType DataObjectPointerArraySizeType;
   using Superclass::MakeOutput;
   virtual DataObjectPointer MakeOutput(DataObjectPointerArraySizeType idx) ITK_OVERRIDE;
@@ -114,14 +116,17 @@ public:
   /** Method to return the latest modified time of this object or any of its cached ivars */
   virtual ModifiedTimeType GetMTime() const ITK_OVERRIDE;
 
-  itkSetMacro(Scale, ScaleType);
-  itkGetMacro(Scale, ScaleType);
-
   itkSetMacro(NumberOfLevels, size_t);
   itkGetMacro(NumberOfLevels, size_t);
 
+  /** Set/Get the gradient convergence tolerance. This is a positive real number that determines the accuracy with which the solution is to
+  * be found. The optimization terminates when: ||G|| < gtol max(1,||X||) where ||.|| denotes the Euclidean norm.  */
+  itkSetMacro(GradientConvergenceTolerance, double);
+  itkGetMacro(GradientConvergenceTolerance, double);
+
   itkGetMacro(InitialMetricValues, MetricValuesType);
   itkGetMacro(FinalMetricValues, MetricValuesType);
+  itkGetMacro(MetricParameters, ScaleType);
 
 protected:
   GMMPointSetToPointSetRegistrationMethod();
@@ -129,27 +134,25 @@ protected:
 
   /** Method invoked by the pipeline in order to trigger the computation of the registration. */
   virtual void GenerateData() ITK_OVERRIDE;
+  double ComputeScaleForPointSetMetric();
 
-  FixedPointSetConstPointer  m_FixedPointSet;
+  FixedPointSetConstPointer m_FixedPointSet;
   MovingPointSetConstPointer m_MovingPointSet;
-  FixedPointSetPointer       m_FixedTransformedPointSet;
-  MovingPointSetPointer      m_MovingTransformedPointSet;
-
   MetricPointer m_Metric;
   OptimizerPointer m_Optimizer;
+  typename MetricEstimatorType::Pointer m_MetricEstimator;
 
   TransformPointer m_Transform;
-  TransformPointer m_FixedInitialTransform;
-  TransformPointer m_MovingInitialTransform;
-
   ParametersType m_InitialTransformParameters;
   ParametersType m_FinalTransformParameters;
 
   MetricValuesType m_InitialMetricValues;
   MetricValuesType m_FinalMetricValues;
 
+  ScaleType m_MetricParameters;
+
   size_t m_NumberOfLevels;
-  ScaleType m_Scale;
+  double m_GradientConvergenceTolerance;
 
 private:
   GMMPointSetToPointSetRegistrationMethod(const Self &) ITK_DELETE_FUNCTION;

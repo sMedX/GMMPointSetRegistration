@@ -36,9 +36,16 @@ namespace itk
     typedef typename itk::PointsLocator<typename FixedPointSetType::PointsContainer> FixedPointsLocatorType;
     typedef typename itk::PointsLocator<typename MovingPointSetType::PointsContainer> MovingPointsLocatorType;
 
+    typedef itk::Statistics::ListSample<itk::Vector<MeasureType, 1>> ListMeasureType;
+    typedef typename itk::Statistics::Histogram<MeasureType, itk::Statistics::DenseFrequencyContainer2> HistogramType;
+    typedef itk::Statistics::SampleToHistogramFilter<ListMeasureType, HistogramType> HistogramFilterType;
+
     /** Get/Set the Fixed Point Set.  */
     itkSetConstObjectMacro(FixedPointSet, FixedPointSetType);
     itkGetConstObjectMacro(FixedPointSet, FixedPointSetType);
+
+    itkSetConstObjectMacro(TargetPointSet, FixedPointSetType);
+    itkGetConstObjectMacro(TargetPointSet, FixedPointSetType);
 
     /** Get/Set the Moving Image.  */
     itkSetConstObjectMacro(MovingPointSet, MovingPointSetType);
@@ -60,17 +67,35 @@ namespace itk
     void PrintReport(std::ostream& os) const
     {
       std::string indent = "    ";
+
       os << "Metric values:" << std::endl;
       os << indent << "    Mean = " << m_MeanValue << std::endl;
       os << indent << "    RMSE = " << m_RMSEValue << std::endl;
       os << indent << "Quantile = " << m_QuantileValue << ", level = " << m_LevelOfQuantile << std::endl;
       os << indent << " Maximal = " << m_MaximalValue << std::endl;
       os << std::endl;
+
+      if (m_TargetPointSet) {
+        os << "Target metric values:" << std::endl;
+        os << indent << "    Mean = " << m_TargetMeanValue << std::endl;
+        os << indent << "    RMSE = " << m_TargetRMSEValue << std::endl;
+        os << indent << "Quantile = " << m_TargetQuantileValue << ", level = " << m_LevelOfQuantile << std::endl;
+        os << indent << " Maximal = " << m_TargetMaximalValue << std::endl;
+        os << std::endl;
+      }
     }
 
     /** Compute metrics. */
     void Compute()
     {
+      if (!m_FixedPointSet) {
+        itkExceptionMacro(<< "The fixed point set is not presented.");
+      }
+
+      if (!m_MovingPointSet) {
+        itkExceptionMacro(<< "The moving point set is not presented.");
+      }
+
       std::vector<MeasureType> movingToFixedMetrics;
       this->ComputeMetrics<MovingPointSetType, FixedPointSetType>(movingToFixedMetrics, m_MovingPointSet, m_FixedPointSet);
 
@@ -81,11 +106,23 @@ namespace itk
       m_RMSEValue = 0.5 * (movingToFixedMetrics[1] + fixedToMovingMetrics[1]);
       m_QuantileValue = 0.5 * (movingToFixedMetrics[2] + fixedToMovingMetrics[2]);
       m_MaximalValue = 0.5 * (movingToFixedMetrics[3] + fixedToMovingMetrics[3]);
+
+      if (m_TargetPointSet) {
+        if (m_MovingPointSet->GetNumberOfPoints() != m_TargetPointSet->GetNumberOfPoints()) {
+          itkExceptionMacro(<< "The numbers of moving points and target points are not match to each other");
+        }
+
+        this->ComputeTargetMetrics();
+      }
     }
 
-
   protected:
-    PointSetToPointSetMetrics() {}
+    PointSetToPointSetMetrics() 
+    {
+      m_FixedPointSet = ITK_NULLPTR;
+      m_TargetPointSet = ITK_NULLPTR;
+      m_MovingPointSet = ITK_NULLPTR;
+    }
     virtual ~PointSetToPointSetMetrics() {}
 
   private:
@@ -93,6 +130,7 @@ namespace itk
     void operator=(const Self &);
 
     FixedPointSetConstPointer m_FixedPointSet;
+    FixedPointSetConstPointer m_TargetPointSet;
     MovingPointSetConstPointer m_MovingPointSet;
 
     size_t m_BucketSize = 16;
@@ -103,6 +141,12 @@ namespace itk
     MeasureType m_RMSEValue;
     MeasureType m_QuantileValue;
     MeasureType m_MaximalValue;
+
+    bool m_TargetMetrics;
+    MeasureType m_TargetMeanValue;
+    MeasureType m_TargetRMSEValue;
+    MeasureType m_TargetQuantileValue;
+    MeasureType m_TargetMaximalValue;
 
     template <typename FixedPointSetType, typename MovingPointSetType>
     void ComputeMetrics(std::vector<MeasureType> & metrics, typename FixedPointSetType::ConstPointer fixedPointSet, typename MovingPointSetType::ConstPointer movingPointSet)
@@ -115,16 +159,14 @@ namespace itk
       pLocator->SetPoints(const_cast<typename FixedPointSetType::PointsContainer*> (fixedContainer.GetPointer()));
       pLocator->Initialize();
 
-      typedef itk::Vector<MeasureType, 1> VectorType;
-      typedef itk::Statistics::ListSample<VectorType> ListSampleType;
-      ListSampleType::Pointer measures = ListSampleType::New();
+      ListMeasureType::Pointer measures = ListMeasureType::New();
 
       MeasureType mean = itk::NumericTraits<MeasureType>::Zero;
       MeasureType rmse = itk::NumericTraits<MeasureType>::Zero;
       MeasureType maximal = itk::NumericTraits<MeasureType>::Zero;
 
       for (typename MovingPointSetType::PointsContainerConstIterator moving = movingContainer->Begin(); moving != movingContainer->End(); ++moving) {
-        typename FixedPointSetType::PointType movingPoint = moving.Value();
+        typename MovingPointSetType::PointType movingPoint = moving.Value();
 
         size_t idx = pLocator->FindClosestPoint(movingPoint);
         MeasureType distance = movingPoint.EuclideanDistanceTo(fixedPointSet->GetPoint(idx));
@@ -140,12 +182,10 @@ namespace itk
       rmse = std::sqrt(rmse / numberOfPoints);
 
       // compute quantile
-      typedef typename itk::Statistics::Histogram<MeasureType, itk::Statistics::DenseFrequencyContainer2> HistogramType;
       typename HistogramType::SizeType size(1);
       size.Fill(m_HistogramSize);
 
-      typedef itk::Statistics::SampleToHistogramFilter<ListSampleType, HistogramType> SampleToHistogramFilterType;
-      SampleToHistogramFilterType::Pointer sampleToHistogram = SampleToHistogramFilterType::New();
+      HistogramFilterType::Pointer sampleToHistogram = HistogramFilterType::New();
       sampleToHistogram->SetInput(measures);
       sampleToHistogram->SetAutoMinimumMaximum(true);
       sampleToHistogram->SetHistogramSize(size);
@@ -162,6 +202,47 @@ namespace itk
       metrics.push_back(rmse);
       metrics.push_back(quantile);
       metrics.push_back(maximal);
+    }
+
+    void ComputeTargetMetrics()
+    {
+      typename MovingPointSetType::PointsContainer::ConstPointer movingContainer = m_MovingPointSet->GetPoints();
+      typename MovingPointSetType::PointsContainerConstIterator moving = movingContainer->Begin();
+
+      typename FixedPointSetType::PointsContainer::ConstPointer targetContainer = m_TargetPointSet->GetPoints();
+      typename FixedPointSetType::PointsContainerConstIterator target = targetContainer->Begin();
+
+      ListMeasureType::Pointer measures = ListMeasureType::New();
+
+      m_TargetMeanValue = itk::NumericTraits<MeasureType>::Zero;
+      m_TargetRMSEValue = itk::NumericTraits<MeasureType>::Zero;
+      m_TargetMaximalValue = itk::NumericTraits<MeasureType>::Zero;
+
+      for ( ; moving != movingContainer->End(); ++moving, ++target) {
+        typename MovingPointSetType::PointType movingPoint = moving.Value();
+        MeasureType distance = movingPoint.EuclideanDistanceTo(target.Value());
+
+        measures->PushBack(distance);
+
+        m_TargetMeanValue += distance;
+        m_TargetRMSEValue += distance * distance;
+        m_TargetMaximalValue = std::max(m_TargetMaximalValue, distance);
+      }
+
+      size_t numberOfPoints = m_TargetPointSet->GetNumberOfPoints();
+      m_TargetMeanValue = m_TargetMeanValue / numberOfPoints;
+      m_TargetRMSEValue = std::sqrt(m_TargetRMSEValue / numberOfPoints);
+
+      // compute quantile
+      typename HistogramType::SizeType size(1);
+      size.Fill(m_HistogramSize);
+
+      HistogramFilterType::Pointer sampleToHistogram = HistogramFilterType::New();
+      sampleToHistogram->SetInput(measures);
+      sampleToHistogram->SetAutoMinimumMaximum(true);
+      sampleToHistogram->SetHistogramSize(size);
+      sampleToHistogram->Update();
+      m_TargetQuantileValue = sampleToHistogram->GetOutput()->Quantile(0, m_LevelOfQuantile);
     }
   };
 }

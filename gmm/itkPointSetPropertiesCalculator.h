@@ -104,14 +104,6 @@ public:
     m_Valid = true;
   }
 
-  void PrintReport(std::ostream& os)
-  {
-    os << "points " << m_PointSet->GetNumberOfPoints() << std::endl;
-    os << "center " << m_Center << std::endl;
-    os << "scale  " << m_Scale << std::endl;
-    os << std::endl;
-  }
-
 protected:
   PointSetPropertiesCalculator() {}
   virtual ~PointSetPropertiesCalculator() {};
@@ -119,7 +111,12 @@ protected:
   virtual void PrintSelf(std::ostream & os, itk::Indent indent) const ITK_OVERRIDE
   {
     Superclass::PrintSelf(os, indent);
-    os << indent << "PointSet: " << m_PointSet.GetPointer() << std::endl;
+    os << std::endl;
+    os << indent << "Point set " << m_PointSet.GetPointer() << std::endl;
+    os << indent << "Number    " << m_PointSet->GetNumberOfPoints() << std::endl;
+    os << indent << "Center    " << m_Center << std::endl;
+    os << indent << "Scale     " << m_Scale << std::endl;
+    os << std::endl;
   }
 
   size_t m_NumberOfPoints;

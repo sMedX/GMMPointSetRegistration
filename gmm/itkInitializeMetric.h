@@ -3,6 +3,7 @@
 #include "itkGMML2RigidPointSetToPointSetMetric.h"
 #include "itkGMML2PointSetToPointSetMetric.h"
 #include "itkGMMKCPointSetToPointSetMetric.h"
+#include "itkGMMMLEPointSetToPointSetMetric.h"
 
 namespace itk
 {
@@ -26,9 +27,10 @@ namespace itk
     // define type of metric
     enum class Metric
     {
-      GMML2Rigid,
-      GMML2,
-      GMMKC
+      GMML2Rigid = 0,
+      GMML2 = 1,
+      GMMKC = 2,
+      GMMMLE = 3
     };
 
     itkSetEnumMacro(TypeOfMetric, Metric);
@@ -42,46 +44,52 @@ namespace itk
     {
       switch (m_TypeOfMetric) {
       case Metric::GMML2Rigid: {
-        typedef itk::GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMML2RigidMetricType;
-        m_Metric = GMML2RigidMetricType::New();
+        typedef itk::GMML2RigidPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        m_Metric = MetricType::New();
         break;
       }
       case Metric::GMML2:{
-        typedef itk::GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMML2MetricType;
-        m_Metric = GMML2MetricType::New();
+        typedef itk::GMML2PointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        //m_Metric = MetricType::New();
         break;
       }
       case Metric::GMMKC: {
-        typedef itk::GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> GMMKCMetricType;
-        m_Metric = GMMKCMetricType::New();
+        typedef itk::GMMKCPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        //m_Metric = MetricType::New();
+        break;
+      }
+      case Metric::GMMMLE: {
+        typedef itk::GMMMLEPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet> MetricType;
+        //m_Metric = MetricType::New();
         break;
       }
       default: {
-        itkExceptionMacro(<< "Unknown type of metric");
+        itkExceptionMacro(<< "Unknown type of the metric to initialize");
         return;
       }
       }
 
-      if (m_Metric == nullptr) {
+      if (!m_Metric) {
         itkExceptionMacro(<< "metric has not been initialized.");
       }
     }
 
-    void PrintReport() const
-    {
-      std::cout << "class name " << this->GetNameOfClass() << std::endl;
-      std::cout << "metric     " << m_Metric->GetNameOfClass() << std::endl;
-      std::cout << std::endl;
-    }
-
   protected:
-    Metric m_TypeOfMetric;
-    typename MetricType::Pointer m_Metric;
-
-    InitializeMetric() 
+    InitializeMetric()
     {
-      m_Metric = nullptr;
+      m_Metric = ITK_NULLPTR;
     }
     ~InitializeMetric() {}
+
+    virtual void PrintSelf(std::ostream & os, itk::Indent indent) const ITK_OVERRIDE
+    {
+      Superclass::PrintSelf(os, indent);
+      os << std::endl;
+      os << "Metric " << m_Metric->GetNameOfClass() << std::endl;
+      os << std::endl;
+    }
+
+    Metric m_TypeOfMetric;
+    typename MetricType::Pointer m_Metric;
   };
 }
