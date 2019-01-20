@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 11) # C++11...
 set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
 set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
 
+find_package(pybind11 REQUIRED)
+include_directories(${pybind11_INCLUDE_DIR})
+
 # Find ITK
 find_package(ITK 4.9 REQUIRED)
 include(${ITK_USE_FILE})
@@ -29,3 +32,4 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/mesh)
 add_subdirectory(${CMAKE_SOURCE_DIR}/initializer)
 add_subdirectory(${CMAKE_SOURCE_DIR}/utils)
 add_subdirectory(${CMAKE_SOURCE_DIR}/application)
+add_subdirectory(${CMAKE_SOURCE_DIR}/python)
